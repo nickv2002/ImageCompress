@@ -1,10 +1,14 @@
 #!/usr/bin/env python3.9
 # from enum import Enum, unique
 # import shutil
+import sys
 import time
 from click import echo, style
 import asyncio
 from limiter import get_limiter, limit
+
+# global for if we want to use lossy compression
+doLossy = True
 
 
 def cprint(text: str, color: str = "white"):
@@ -30,7 +34,6 @@ limit_operations = limit(get_limiter(rate=3, capacity=4), consume=1)
 
 @limit_operations
 async def metricsTypeTest(deploymentName: str):
-    pass
     # tplt = metricTypeTemplate.replace("DEPLOYMENTNAMEREPLACE", deploymentName)
     # async with httpx.AsyncClient(timeout=5) as client:
     #     response = await client.post("https://api.us2.sumologic.com/api/v1/metricsQueries")
@@ -41,42 +44,41 @@ async def metricsTypeTest(deploymentName: str):
     #     raise exc
     # return response.json()["queryResult"]
 
+    # async def getDeploymentsWithMetricsInfoForNS(namespace: str) -> list:
+    #     deploymentList = await getDeploymentsForNS(namespace)
+    #     metricsTypes = await asyncio.gather(*(metricsTypeTest(i) for i in deploymentList))
+    #     typeDict = dict(zip(deploymentList, metricsTypes))
+    #     return typeDict
 
-async def getDeploymentsForNS(namespace: str) -> list:
+    # async def buildDictMapping() -> dict:
+    #     listOfNamespaces = await getListOfNamespaces()
+    #     assert len(listOfNamespaces) > 0, "No matching namespaces returned, are you in staging rather than prod context?"
+    #     deploymentLists = await asyncio.gather(*(getDeploymentsWithMetricsInfoForNS(i) for i in listOfNamespaces))
+    #     return dict(zip(listOfNamespaces, deploymentLists))
+    pass
+
+
+# ZopfliPNG, a Portable Network Graphics (PNG) image optimizer.
+# Mostly lossless
+async def zopflipng(input: str) -> str:
     args = [
-        "/opt/homebrew/bin/kubectl",
-        "get",
-        "deployment",
-        "--namespace",
-        f"{namespace}",
-        "-o=jsonpath='{.items[*].metadata.name}'",
+        "/opt/homebrew/bin/zopflipng",
+        "-y",  # allow overwrite so we can update-in-place
+        "--lossy_transparent",  # remove colors behind alpha channel 0. No visual difference
+        input,
+        input,  # will output to input
     ]
-    deploymentList = (await subProcessToStr(args)).replace("'", "").split()
-    for item in deploymentList:
-        if "worker" in item or "amqp-prom" in item:
-            cprint(f"Skipping deployment: {namespace} - {item}", color="yellow")
-            deploymentList.remove(item)
-    deploymentList.sort()
-    return deploymentList
-
-
-# async def getDeploymentsWithMetricsInfoForNS(namespace: str) -> list:
-#     deploymentList = await getDeploymentsForNS(namespace)
-#     metricsTypes = await asyncio.gather(*(metricsTypeTest(i) for i in deploymentList))
-#     typeDict = dict(zip(deploymentList, metricsTypes))
-#     return typeDict
-
-
-# async def buildDictMapping() -> dict:
-#     listOfNamespaces = await getListOfNamespaces()
-#     assert len(listOfNamespaces) > 0, "No matching namespaces returned, are you in staging rather than prod context?"
-#     deploymentLists = await asyncio.gather(*(getDeploymentsWithMetricsInfoForNS(i) for i in listOfNamespaces))
-#     return dict(zip(listOfNamespaces, deploymentLists))
+    if doLossy:
+        args.append("--lossy_8bit")  # convert 16-bit per channel image to 8-bit per channel
+    return await subProcessToStr(args)
 
 
 async def main():
     # buildDict = await buildDictMapping()
-    cprint("Adding panel for deployment:", color="green")
+    cprint(f"Processing {sys.argv}", color="green")
+    for inputFile in sys.argv[1:]:
+        result = await zopflipng(inputFile)
+        print(result)
 
 
 if __name__ == "__main__":
