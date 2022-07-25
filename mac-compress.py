@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.9
 # from enum import Enum, unique
 # import shutil
+import argparse
+import os
 import sys
 import time
 from click import echo, style
@@ -15,7 +17,9 @@ def cprint(text: str, color: str = "white"):
     echo(style(text, fg=color))
 
 
-async def subProcessToStr(args: list) -> str:
+async def subProcessToStr(args: list, printCmd: bool = True) -> str:
+    if printCmd:
+        print(" ".join(args))
     proc = await asyncio.create_subprocess_exec(
         args[0], *args[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
@@ -73,10 +77,46 @@ async def zopflipng(input: str) -> str:
     return await subProcessToStr(args)
 
 
+# pngquant is a util for lossy compression of PNG images.
+# very lossy - uses a reduced number of colors
+async def pngquant(input: str) -> str:
+    if not doLossy:
+        warnMessage = "pngquant is lossy and you requested lossles"
+        cprint(warnMessage, "yellow")
+        return warnMessage
+    args = [
+        "/opt/homebrew/bin/pngquant",
+        "--force",  # allow overwrite so we can update-in-place
+        "--skip-if-larger",  # only save converted files if they're smaller than original
+        "--strip",  # remove optional metadata (default on Mac)
+        "--quality=75-80",  # don't save below min, use fewer colors below max (0-100)
+        "--output",
+        input,  # will output to input
+        "--",  # Stops processing of arguments
+        input,
+    ]
+    return await subProcessToStr(args)
+
+
 async def main():
-    # buildDict = await buildDictMapping()
-    cprint(f"Processing {sys.argv}", color="green")
-    for inputFile in sys.argv[1:]:
+    parser = argparse.ArgumentParser(description="compress images")
+    parser.add_argument("--lossy", action="store_true")
+    parser.add_argument("files", metavar="F", type=str, nargs="+", help="an integer for the accumulator")
+    args = parser.parse_args()
+    global doLossy
+    doLossy = args.lossy
+
+    if doLossy:
+        cprint(f"Lossy processing enabled: {sys.argv}", color="yellow")
+    else:
+        cprint(f"Lossy processing off: {sys.argv}", color="green")
+
+    for inputFile in args.files:
+        assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
+        # do lossy processing first
+        if doLossy:
+            result = await pngquant(inputFile)
+        # lossless
         result = await zopflipng(inputFile)
         print(result)
 
