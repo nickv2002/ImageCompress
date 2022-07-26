@@ -4,6 +4,7 @@
 import argparse
 import glob
 import os
+import re
 import shutil
 import sys
 import time
@@ -194,6 +195,14 @@ async def gifsicle(inFile: str):
     return returnedText
 
 
+def filter_filenames(dirpath, predicate):
+    for dir_, dirnames, filenames in os.walk(dirpath):
+        for filename in filenames:
+            abspath = os.path.join(dir_, filename)
+            if predicate(abspath):
+                yield abspath
+
+
 async def main():
     parser = argparse.ArgumentParser(description="compress images")
     parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
@@ -207,18 +216,18 @@ async def main():
     else:
         cprint(f"Lossy processing off: {sys.argv}", color="green")
 
-    extList = [".png", ".jpg", ".jpeg", ".gif"]
+    # match for all image formats we work with, then walk dirs to match regex
+    reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
     imageFiles = []
     for inputFile in args.files:
         if os.path.isfile(inputFile):
-            fileExt = os.path.splitext(inputFile)[1].lower()
-            if fileExt in extList:
+            if reg_expr(inputFile):
                 imageFiles.append(inputFile)
             else:
-                print(f"no processing, unknown filetime for {inputFile}")
+                cprint(f"no processing, unknown file type for {inputFile}", "red")
         else:  # it's a dir, find images beaneath
-            for ext in extList:
-                imageFiles += glob.glob(os.path.join(inputFile, f"**/*{ext}"), recursive=True)
+            for filename in filter_filenames(inputFile, reg_expr):
+                imageFiles.append(filename)
 
     for inputFile in imageFiles:
         assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
