@@ -17,16 +17,19 @@ def cprint(text: str, color: str = "white"):
     echo(style(text, fg=color))
 
 
-async def subProcessToStr(args: list, printCmd: bool = True) -> str:
+async def subProcessToStr(args: list, printCmd: bool = True, stdErrIsErr: bool = True) -> str:
+    calledCmd = " ".join(args)
     if printCmd:
-        print(" ".join(args))
+        print(calledCmd)
     proc = await asyncio.create_subprocess_exec(
         args[0], *args[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
     stdout, stderr = await proc.communicate()
-    if stderr:
-        cprint(f"[stderr for {args}]\n{stderr.decode('utf-8')}", "yellow")
+    if stderr and stdErrIsErr:
+        cprint(f"*stderr for {calledCmd}]\n{stderr.decode('utf-8')}*", "yellow")
         raise TypeError
+    if not stdErrIsErr:
+        print(stderr.decode("utf-8"))
     return stdout.decode("utf-8")
 
 
@@ -89,13 +92,28 @@ async def pngquant(input: str) -> str:
         "--force",  # allow overwrite so we can update-in-place
         "--skip-if-larger",  # only save converted files if they're smaller than original
         "--strip",  # remove optional metadata (default on Mac)
-        "--quality=75-80",  # don't save below min, use fewer colors below max (0-100)
+        "--quality=85-90",  # don't save below min, use fewer colors below max (0-100)
         "--output",
         input,  # will output to input
         "--",  # Stops processing of arguments
         input,
     ]
     return await subProcessToStr(args)
+
+
+# Oxipng is a multithreaded lossless PNG compression optimizer
+async def oxipng(input: str) -> str:
+    args = [
+        "/opt/homebrew/bin/oxipng",
+        "--preserve",  # Preserve file attributes if possible
+        "-s",  # Strip safely-removable metadata objects
+        "--alpha",  # Perform additional alpha optimizations
+        "--interlace",
+        "0",  # disable interlacing
+        # "--zopfli",  # Use the slower but better compressing Zopfli algorithm
+        input,  # will output to input
+    ]
+    return await subProcessToStr(args, stdErrIsErr=False)
 
 
 async def main():
@@ -117,7 +135,8 @@ async def main():
         if doLossy:
             result = await pngquant(inputFile)
         # lossless
-        result = await zopflipng(inputFile)
+        result = await oxipng(inputFile)
+        # result = await zopflipng(inputFile)  # oxipng can do the same thing...
         print(result)
 
 
