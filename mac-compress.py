@@ -79,13 +79,13 @@ async def metricsTypeTest(deploymentName: str):
 
 # ZopfliPNG, a Portable Network Graphics (PNG) image optimizer.
 # Mostly lossless
-async def zopflipng(input: str) -> str:
+async def zopflipng(inFile: str) -> str:
     args = [
         "/opt/homebrew/bin/zopflipng",
         "-y",  # allow overwrite so we can update-in-place
         "--lossy_transparent",  # remove colors behind alpha channel 0. No visual difference
-        input,
-        input,  # will output to input
+        inFile,
+        inFile,  # will output to input
     ]
     if doLossy:
         args.append("--lossy_8bit")  # convert 16-bit per channel image to 8-bit per channel
@@ -94,7 +94,7 @@ async def zopflipng(input: str) -> str:
 
 # pngquant is a util for lossy compression of PNG images.
 # very lossy - uses a reduced number of colors
-async def pngquant(input: str) -> str:
+async def pngquant(inFile: str) -> str:
     if not doLossy:
         warnMessage = "pngquant is lossy and you requested lossles"
         cprint(warnMessage, "yellow")
@@ -106,15 +106,15 @@ async def pngquant(input: str) -> str:
         "--strip",  # remove optional metadata (default on Mac)
         "--quality=85-90",  # don't save below min, use fewer colors below max (0-100)
         "--output",
-        input,  # will output to input
+        inFile,  # will output to input
         "--",  # Stops processing of arguments
-        input,
+        inFile,
     ]
     return await subProcessToStr(args)
 
 
 # Oxipng is a multithreaded lossless PNG compression optimizer
-async def oxipng(input: str) -> str:
+async def oxipng(inFile: str) -> str:
     args = [
         "/opt/homebrew/bin/oxipng",
         "--preserve",  # Preserve file attributes if possible
@@ -123,13 +123,14 @@ async def oxipng(input: str) -> str:
         "--interlace",
         "0",  # disable interlacing
         # "--zopfli",  # Use the slower but better compressing Zopfli algorithm
-        input,  # will output to input
+        inFile,  # will output to input
     ]
     return await subProcessToStr(args, stdErrIsErr=False)
 
 
 # MozJPG is lossless JPG comression
-async def mozjpg(input: str):
+async def mozjpg(inFile: str):
+    outfile = os.path.join("/tmp", "mozjpg-" + os.path.split(inFile)[1])
     args = [
         "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/jpegtran",
         "-optimize",  # Optimize Huffman table (smaller file, but slow compression)
@@ -137,18 +138,19 @@ async def mozjpg(input: str):
         "-copy",  # Strip safely-removable metadata objects
         "none",  # Copy no extra markers from source file
         "-outfile",
-        f"mozjpg-{input}",  # doesn't check if result it smaller
-        input,
+        outfile,  # doesn't check if result it smaller
+        inFile,
     ]
     returnedText = await subProcessToStr(args, stdErrIsErr=False)
-    compareAndKeepSmaller(input, f"mozjpg-{input}")
+    compareAndKeepSmaller(inFile, outfile)
     return returnedText
 
 
 # cjpeg is lossy JPG compression
 # some mozjpg defaults https://calendar.perfplanet.com/2014/mozjpeg-3-0/
 # ./cjpeg -quality 70 -outfile compressed-image.jpg source-image.png
-async def cjpeg(input: str):
+async def cjpeg(inFile: str):
+    outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
     if not doLossy:
         warnMessage = "cjpeg is lossy and you requested lossles"
         cprint(warnMessage, "yellow")
@@ -160,11 +162,11 @@ async def cjpeg(input: str):
         "-sample",
         "1x1",  # enables full-resolution color (e.g. red lines won’t be smudged as badly), but it makes files larger.
         "-outfile",
-        f"cjpg-{input}",  # will output to input, doesn't check if result it smaller
-        input,  # note the input could be non-jpeg
+        outfile,  # will output to input, doesn't check if result it smaller
+        inFile,  # note the input could be non-jpeg
     ]
     returnedText = await subProcessToStr(args, stdErrIsErr=False)
-    compareAndKeepSmaller(input, f"cjpg-{input}")
+    compareAndKeepSmaller(inFile, outfile)
     return returnedText
 
 
@@ -172,18 +174,19 @@ async def cjpeg(input: str):
 # https://www.lcdf.org/gifsicle/man.html
 # lossless: gifsicle -O3 test-7.gif  -o test-7-update.gif
 # lossy: : gifsicle -O3 --lossy test-7.gif  -o test-7-update.gif
-async def gifsicle(input: str):
+async def gifsicle(inFile: str):
+    outfile = os.path.join("/tmp", "gifsicle-" + os.path.split(inFile)[1])
     args = [
         "/opt/homebrew/bin/gifsicle",
         "-O3",  # Try several optimization methods (usually slower, sometimes better results)
-        input,
+        inFile,
         "-o",
-        f"gifsicle-{input}",  # will output to input, doesn't check if result it smaller
+        outfile,  # will output to input, doesn't check if result it smaller
     ]
     if doLossy:
         args.append("--lossy")  # TODO make this more adjustable? default number is 20
     returnedText = await subProcessToStr(args, stdErrIsErr=False)
-    compareAndKeepSmaller(input, f"gifsicle-{input}")
+    compareAndKeepSmaller(inFile, outfile)
     return returnedText
 
 
