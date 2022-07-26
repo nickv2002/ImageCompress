@@ -4,7 +4,7 @@ import os
 import re
 import shutil
 import sys
-import time
+import datetime
 from click import echo, style
 import asyncio
 from limiter import get_limiter, limit
@@ -169,8 +169,7 @@ async def gifsicle(inFile: str):
     return returnedText
 
 
-# We want to rate limit the number of processes here
-limit_operations = limit(get_limiter(rate=3, capacity=4), consume=1)
+limit_operations = limit(get_limiter(rate=4, capacity=4), consume=1)
 
 
 @limit_operations
@@ -196,10 +195,17 @@ async def smartProcessFile(inputFile: str):
 async def main():
     parser = argparse.ArgumentParser(description="compress images")
     parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
+    parser.add_argument(
+        "--parallelism", metavar="p", type=int, default=4, help="how many async threads to allow, not working"
+    )
     parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
     global doLossy
     doLossy = args.lossy
+    # We want to rate limit the number of processes here via cli,
+    # but don't know how to get those into the limiter
+    # limit_operations = limit(get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1)
+    # limit_operations = limit(get_limiter(rate=4, capacity=4), consume=1)
 
     if doLossy:
         cprint(f"Lossy processing enabled: {sys.argv}", color="yellow")
@@ -219,11 +225,10 @@ async def main():
             for filename in filter_filenames(inputFile, reg_expr):
                 imageFiles.append(filename)
 
-    for inputFile in imageFiles:
-        await smartProcessFile(inputFile)
+    await asyncio.gather(*(smartProcessFile(inputFile) for inputFile in imageFiles))
 
 
 if __name__ == "__main__":
-    print(f"Started at {time.strftime('%X')}")
+    startTime = datetime.datetime.now()
     asyncio.run(main())
-    print(f"Ended at {time.strftime('%X')}")
+    print(f"Processing time {datetime.datetime.now()- startTime}")
