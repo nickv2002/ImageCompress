@@ -15,6 +15,19 @@ def cprint(text: str, color: str = "white"):
     echo(style(text, fg=color))
 
 
+def compareAndKeepSmaller(oldFile: str, newFile: str, log: bool = True):
+    oldFileSize = os.path.getsize(oldFile)
+    newFileSize = os.path.getsize(newFile)
+    if newFileSize < oldFileSize:
+        if log:
+            cprint(f"new file is {1 - newFileSize / oldFileSize:.2%} smaller! Updating it at {oldFile}", "green")
+        shutil.move(newFile, oldFile)
+    else:
+        if log:
+            cprint(f"old file is {1 - newFileSize / oldFileSize:.2%} smaller, keeping {oldFile}", "magenta")
+        os.remove(newFile)
+
+
 async def subProcessToStr(args: list, printCmd: bool = True, stdErrIsErr: bool = True) -> str:
     calledCmd = " ".join(args)
     if printCmd:
@@ -123,10 +136,12 @@ async def mozjpg(input: str):
         "-copy",  # Strip safely-removable metadata objects
         "none",  # Copy no extra markers from source file
         "-outfile",
-        input,  # will output to input, doesn't check if result it smaller
+        f"mozjpg-{input}",  # doesn't check if result it smaller
         input,
     ]
-    return await subProcessToStr(args, stdErrIsErr=False)
+    returnedText = await subProcessToStr(args, stdErrIsErr=False)
+    compareAndKeepSmaller(input, f"mozjpg-{input}")
+    return returnedText
 
 
 # cjpeg is lossy JPG compression
@@ -148,10 +163,7 @@ async def cjpeg(input: str):
         input,  # note the input could be non-jpeg
     ]
     returnedText = await subProcessToStr(args, stdErrIsErr=False)
-    shutil.move(f"cjpg-{input}", input)
-    # TODO check if output is larger than source
-    # await asyncio.sleep(15)
-
+    compareAndKeepSmaller(input, f"cjpg-{input}")
     return returnedText
 
 
@@ -179,7 +191,7 @@ async def main():
         # result = await oxipng(inputFile)
         # result = await zopflipng(inputFile)  # oxipng can do the same zopfli thing
 
-        # result = await mozjpg(inputFile)
+        result = await mozjpg(inputFile)
 
         # print(result)
 
