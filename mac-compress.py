@@ -167,10 +167,29 @@ async def cjpeg(input: str):
     return returnedText
 
 
+# gifsicle can do lossy and lossless compression
+# https://www.lcdf.org/gifsicle/man.html
+# lossless: gifsicle -O3 test-7.gif  -o test-7-update.gif
+# lossy: : gifsicle -O3 --lossy test-7.gif  -o test-7-update.gif
+async def gifsicle(input: str):
+    args = [
+        "/opt/homebrew/bin/gifsicle",
+        "-O3",  # Try several optimization methods (usually slower, sometimes better results)
+        input,
+        "-o",
+        f"gifsicle-{input}",  # will output to input, doesn't check if result it smaller
+    ]
+    if doLossy:
+        args.append("--lossy")  # TODO make this more adjustable? default number is 20
+    returnedText = await subProcessToStr(args, stdErrIsErr=False)
+    compareAndKeepSmaller(input, f"gifsicle-{input}")
+    return returnedText
+
+
 async def main():
     parser = argparse.ArgumentParser(description="compress images")
-    parser.add_argument("--lossy", action="store_true")
-    parser.add_argument("files", metavar="F", type=str, nargs="+", help="an integer for the accumulator")
+    parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
+    parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
     global doLossy
     doLossy = args.lossy
@@ -182,18 +201,21 @@ async def main():
 
     for inputFile in args.files:
         assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
+        assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
         # do lossy processing first
         if doLossy:
             # result = await pngquant(inputFile)
-            result = await cjpeg(inputFile)
+            # result = await cjpeg(inputFile)
             pass
         # lossless
         # result = await oxipng(inputFile)
         # result = await zopflipng(inputFile)  # oxipng can do the same zopfli thing
 
-        result = await mozjpg(inputFile)
+        # result = await mozjpg(inputFile)
 
-        # print(result)
+        result = await gifsicle(inputFile)
+
+        print(result)
 
 
 if __name__ == "__main__":
