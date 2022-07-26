@@ -247,6 +247,7 @@ async def main():
             print(await mozjpg(inputFile))
         else:
             assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
+        print("---")
 
 
 if __name__ == "__main__":
