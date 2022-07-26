@@ -2,6 +2,7 @@
 # from enum import Enum, unique
 # import shutil
 import argparse
+import glob
 import os
 import shutil
 import sys
@@ -18,7 +19,11 @@ def cprint(text: str, color: str = "white"):
 def compareAndKeepSmaller(oldFile: str, newFile: str, log: bool = True):
     oldFileSize = os.path.getsize(oldFile)
     newFileSize = os.path.getsize(newFile)
-    if newFileSize < oldFileSize:
+    if newFileSize == oldFileSize:
+        if log:
+            cprint(f"new file is same size, no update to {oldFile}", "blue")
+        os.remove(newFile)
+    elif newFileSize < oldFileSize:
         if log:
             cprint(f"new file is {1 - newFileSize / oldFileSize:.2%} smaller! Updating it at {oldFile}", "green")
         shutil.move(newFile, oldFile)
@@ -202,7 +207,20 @@ async def main():
     else:
         cprint(f"Lossy processing off: {sys.argv}", color="green")
 
+    extList = [".png", ".jpg", ".jpeg", ".gif"]
+    imageFiles = []
     for inputFile in args.files:
+        if os.path.isfile(inputFile):
+            fileExt = os.path.splitext(inputFile)[1].lower()
+            if fileExt in extList:
+                imageFiles.append(inputFile)
+            else:
+                print(f"no processing, unknown filetime for {inputFile}")
+        else:  # it's a dir, find images beaneath
+            for ext in extList:
+                imageFiles += glob.glob(os.path.join(inputFile, f"**/*{ext}"), recursive=True)
+
+    for inputFile in imageFiles:
         assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
         assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
         fileExt = os.path.splitext(inputFile)[1].lower()
@@ -221,8 +239,7 @@ async def main():
                 print(await cjpeg(inputFile))
             print(await mozjpg(inputFile))
         else:
-            print(f"no processing, unknown filetime for {inputFile}")
-            continue
+            assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
 
 
 if __name__ == "__main__":
