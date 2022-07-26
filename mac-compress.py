@@ -3,14 +3,12 @@
 # import shutil
 import argparse
 import os
+import shutil
 import sys
 import time
 from click import echo, style
 import asyncio
 from limiter import get_limiter, limit
-
-# global for if we want to use lossy compression
-doLossy = True
 
 
 def cprint(text: str, color: str = "white"):
@@ -110,10 +108,51 @@ async def oxipng(input: str) -> str:
         "--alpha",  # Perform additional alpha optimizations
         "--interlace",
         "0",  # disable interlacing
-        # "--zopfli",  # Use the slower but better compressing Zopfli algorithm
+        "--zopfli",  # Use the slower but better compressing Zopfli algorithm
         input,  # will output to input
     ]
     return await subProcessToStr(args, stdErrIsErr=False)
+
+
+# MozJPG is lossless JPG comression
+async def mozjpg(input: str):
+    args = [
+        "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/jpegtran",
+        "-optimize",  # Optimize Huffman table (smaller file, but slow compression)
+        "-progressive",  # Create progressive JPEG file
+        "-copy",  # Strip safely-removable metadata objects
+        "none",  # Copy no extra markers from source file
+        "-outfile",
+        input,  # will output to input, doesn't check if result it smaller
+        input,
+    ]
+    return await subProcessToStr(args, stdErrIsErr=False)
+
+
+# cjpeg is lossy JPG compression
+# some mozjpg defaults https://calendar.perfplanet.com/2014/mozjpeg-3-0/
+# ./cjpeg -quality 70 -outfile compressed-image.jpg source-image.png
+async def cjpeg(input: str):
+    if not doLossy:
+        warnMessage = "cjpeg is lossy and you requested lossles"
+        cprint(warnMessage, "yellow")
+        return warnMessage
+    args = [
+        "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/cjpeg",
+        "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
+        "85",  # TODO make this more adjustable?
+        "-sample",
+        "1x1",  # enables full-resolution color (e.g. red lines won’t be smudged as badly), but it makes files larger.
+        "-outfile",
+        f"cjpg-{input}",  # will output to input, doesn't check if result it smaller
+        input,  # note the input could be non-jpeg
+    ]
+    returnedText = await subProcessToStr(args, stdErrIsErr=False)
+    shutil.move(f"cjpg-{input}", input)
+    # TODO check if output is larger than source
+    # await asyncio.sleep(15)
+
+    return returnedText
 
 
 async def main():
@@ -133,11 +172,16 @@ async def main():
         assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
         # do lossy processing first
         if doLossy:
-            result = await pngquant(inputFile)
+            # result = await pngquant(inputFile)
+            result = await cjpeg(inputFile)
+            pass
         # lossless
-        result = await oxipng(inputFile)
-        # result = await zopflipng(inputFile)  # oxipng can do the same thing...
-        print(result)
+        # result = await oxipng(inputFile)
+        # result = await zopflipng(inputFile)  # oxipng can do the same zopfli thing
+
+        # result = await mozjpg(inputFile)
+
+        # print(result)
 
 
 if __name__ == "__main__":
