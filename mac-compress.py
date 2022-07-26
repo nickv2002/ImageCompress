@@ -192,6 +192,7 @@ async def gifsicle(inFile: str):
     return returnedText
 
 
+# regex filename filter
 def filter_filenames(dirpath, predicate):
     for dir_, dirnames, filenames in os.walk(dirpath):
         for filename in filenames:
