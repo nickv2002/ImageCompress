@@ -3,7 +3,6 @@
 # import shutil
 import argparse
 import os
-import pathlib
 import shutil
 import sys
 import time
@@ -206,7 +205,7 @@ async def main():
     for inputFile in args.files:
         assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
         assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
-        fileExt = pathlib.Path(inputFile).suffix
+        fileExt = os.path.splitext(inputFile)[1]
         if fileExt.lower() == ".png":
             # print(f"png processing for {inputFile}")
             if doLossy:
