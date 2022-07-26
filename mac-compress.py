@@ -1,8 +1,5 @@
 #!/usr/bin/env python3.9
-# from enum import Enum, unique
-# import shutil
 import argparse
-import glob
 import os
 import re
 import shutil
