@@ -169,13 +169,10 @@ async def gifsicle(inFile: str):
     return returnedText
 
 
-limit_operations = limit(get_limiter(rate=4, capacity=4), consume=1)
-
-
-@limit_operations
 async def smartProcessFile(inputFile: str):
     assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
     assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
+    # TODO: get file size before and after, print if wanted
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":
         if doLossy:
@@ -189,7 +186,6 @@ async def smartProcessFile(inputFile: str):
         print(await mozjpg(inputFile))
     else:
         assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
-    print("---")
 
 
 async def main():
@@ -202,10 +198,10 @@ async def main():
     args = parser.parse_args()
     global doLossy
     doLossy = args.lossy
-    # We want to rate limit the number of processes here via cli,
-    # but don't know how to get those into the limiter
-    # limit_operations = limit(get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1)
-    # limit_operations = limit(get_limiter(rate=4, capacity=4), consume=1)
+    # We want to rate limit the number of processes here via cli, appy decorator to create new function
+    # https://github.com/alexdelorenzo/limiter
+    limit_operations = limit(get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1)
+    limitedSmartProcessFile = limit_operations(smartProcessFile)
 
     if doLossy:
         cprint(f"Lossy processing enabled: {sys.argv}", color="yellow")
@@ -225,7 +221,7 @@ async def main():
             for filename in filter_filenames(inputFile, reg_expr):
                 imageFiles.append(filename)
 
-    await asyncio.gather(*(smartProcessFile(inputFile) for inputFile in imageFiles))
+    await asyncio.gather(*(limitedSmartProcessFile(inputFile) for inputFile in imageFiles))
 
 
 if __name__ == "__main__":
