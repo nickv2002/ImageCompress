@@ -31,6 +31,15 @@ def compareAndKeepSmaller(oldFile: str, newFile: str, log: bool = True):
         os.remove(newFile)
 
 
+# regex filename filter
+def filter_filenames(dirpath, predicate):
+    for dir_, dirnames, filenames in os.walk(dirpath):
+        for filename in filenames:
+            abspath = os.path.join(dir_, filename)
+            if predicate(abspath):
+                yield abspath
+
+
 async def subProcessToStr(args: list, printCmd: bool = True, stdErrIsErr: bool = True) -> str:
     calledCmd = " ".join(args)
     if printCmd:
@@ -45,38 +54,6 @@ async def subProcessToStr(args: list, printCmd: bool = True, stdErrIsErr: bool =
     if not stdErrIsErr:
         print(stderr.decode("utf-8"))
     return stdout.decode("utf-8")
-
-
-# We want to rate limit calls to sumo here, they allow 4 calls/second
-# API allows 4 calls/second but only allow 3 slots to free per second for safety
-# consume 1 means each call here uses 1 slot (which is adjustable for other cases)
-limit_operations = limit(get_limiter(rate=3, capacity=4), consume=1)
-
-
-@limit_operations
-async def metricsTypeTest(deploymentName: str):
-    # tplt = metricTypeTemplate.replace("DEPLOYMENTNAMEREPLACE", deploymentName)
-    # async with httpx.AsyncClient(timeout=5) as client:
-    #     response = await client.post("https://api.us2.sumologic.com/api/v1/metricsQueries")
-    # try:
-    #     response.raise_for_status()
-    # except httpx.HTTPStatusError as exc:
-    #     cprint(f"Error response {exc.response.status_code} while requesting {exc.request.url!r}.", "red")
-    #     raise exc
-    # return response.json()["queryResult"]
-
-    # async def getDeploymentsWithMetricsInfoForNS(namespace: str) -> list:
-    #     deploymentList = await getDeploymentsForNS(namespace)
-    #     metricsTypes = await asyncio.gather(*(metricsTypeTest(i) for i in deploymentList))
-    #     typeDict = dict(zip(deploymentList, metricsTypes))
-    #     return typeDict
-
-    # async def buildDictMapping() -> dict:
-    #     listOfNamespaces = await getListOfNamespaces()
-    #     assert len(listOfNamespaces) > 0, "No matching namespaces returned, are you in staging rather than prod context?"
-    #     deploymentLists = await asyncio.gather(*(getDeploymentsWithMetricsInfoForNS(i) for i in listOfNamespaces))
-    #     return dict(zip(listOfNamespaces, deploymentLists))
-    pass
 
 
 # ZopfliPNG, a Portable Network Graphics (PNG) image optimizer.
@@ -192,13 +169,28 @@ async def gifsicle(inFile: str):
     return returnedText
 
 
-# regex filename filter
-def filter_filenames(dirpath, predicate):
-    for dir_, dirnames, filenames in os.walk(dirpath):
-        for filename in filenames:
-            abspath = os.path.join(dir_, filename)
-            if predicate(abspath):
-                yield abspath
+# We want to rate limit the number of processes here
+limit_operations = limit(get_limiter(rate=3, capacity=4), consume=1)
+
+
+@limit_operations
+async def smartProcessFile(inputFile: str):
+    assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
+    assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
+    fileExt = os.path.splitext(inputFile)[1].lower()
+    if fileExt == ".png":
+        if doLossy:
+            print(await pngquant(inputFile))
+        print(await oxipng(inputFile))
+    elif fileExt == ".gif":
+        print(await gifsicle(inputFile))
+    elif fileExt == ".jpg" or fileExt == ".jpeg":
+        if doLossy:
+            print(await cjpeg(inputFile))
+        print(await mozjpg(inputFile))
+    else:
+        assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
+    print("---")
 
 
 async def main():
@@ -228,26 +220,7 @@ async def main():
                 imageFiles.append(filename)
 
     for inputFile in imageFiles:
-        assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
-        assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
-        fileExt = os.path.splitext(inputFile)[1].lower()
-        if fileExt == ".png":
-            # print(f"png processing for {inputFile}")
-            if doLossy:
-                print(await pngquant(inputFile))
-            print(await oxipng(inputFile))
-            # result = await zopflipng(inputFile)  # oxipng can do the same zopfli thing
-        elif fileExt == ".gif":
-            # print(f"gif processing for {inputFile}")
-            print(await gifsicle(inputFile))
-        elif fileExt == ".jpg" or fileExt == ".jpeg":
-            # print(f"jpg processing for {inputFile}")
-            if doLossy:
-                print(await cjpeg(inputFile))
-            print(await mozjpg(inputFile))
-        else:
-            assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
-        print("---")
+        await smartProcessFile(inputFile)
 
 
 if __name__ == "__main__":
