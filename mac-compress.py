@@ -192,7 +192,7 @@ async def main():
     parser = argparse.ArgumentParser(description="compress images")
     parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
     parser.add_argument(
-        "--parallelism", metavar="p", type=int, default=4, help="how many async threads to allow, not working"
+        "--parallelism", metavar="p", type=int, default=4, help="how many async threads to allow, default=4"
     )
     parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
