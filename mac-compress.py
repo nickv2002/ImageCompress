@@ -3,6 +3,7 @@
 # import shutil
 import argparse
 import os
+import pathlib
 import shutil
 import sys
 import time
@@ -121,7 +122,7 @@ async def oxipng(input: str) -> str:
         "--alpha",  # Perform additional alpha optimizations
         "--interlace",
         "0",  # disable interlacing
-        "--zopfli",  # Use the slower but better compressing Zopfli algorithm
+        # "--zopfli",  # Use the slower but better compressing Zopfli algorithm
         input,  # will output to input
     ]
     return await subProcessToStr(args, stdErrIsErr=False)
@@ -202,20 +203,24 @@ async def main():
     for inputFile in args.files:
         assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
         assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
-        # do lossy processing first
-        if doLossy:
-            # result = await pngquant(inputFile)
-            # result = await cjpeg(inputFile)
-            pass
-        # lossless
-        # result = await oxipng(inputFile)
-        # result = await zopflipng(inputFile)  # oxipng can do the same zopfli thing
-
-        # result = await mozjpg(inputFile)
-
-        result = await gifsicle(inputFile)
-
-        print(result)
+        fileExt = pathlib.Path(inputFile).suffix
+        if fileExt.lower() == ".png":
+            # print(f"png processing for {inputFile}")
+            if doLossy:
+                print(await pngquant(inputFile))
+            print(await oxipng(inputFile))
+            # result = await zopflipng(inputFile)  # oxipng can do the same zopfli thing
+        elif fileExt.lower() == ".gif":
+            # print(f"gif processing for {inputFile}")
+            print(await gifsicle(inputFile))
+        elif fileExt.lower() == ".jpg" or fileExt.lower() == ".jpeg":
+            # print(f"jpg processing for {inputFile}")
+            if doLossy:
+                print(await cjpeg(inputFile))
+            print(await mozjpg(inputFile))
+        else:
+            print(f"no processing, unknown filetime for {inputFile}")
+            continue
 
 
 if __name__ == "__main__":
