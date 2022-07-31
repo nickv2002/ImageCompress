@@ -56,21 +56,6 @@ async def subProcessToStr(args: list, printCmd: bool = True, stdErrIsErr: bool =
     return stdout.decode("utf-8")
 
 
-# ZopfliPNG, a Portable Network Graphics (PNG) image optimizer.
-# Mostly lossless
-async def zopflipng(inFile: str) -> str:
-    args = [
-        "/opt/homebrew/bin/zopflipng",
-        "-y",  # allow overwrite so we can update-in-place
-        "--lossy_transparent",  # remove colors behind alpha channel 0. No visual difference
-        inFile,
-        inFile,  # will output to input
-    ]
-    if doLossy:
-        args.append("--lossy_8bit")  # convert 16-bit per channel image to 8-bit per channel
-    return await subProcessToStr(args)
-
-
 # pngquant is a util for lossy compression of PNG images.
 # very lossy - uses a reduced number of colors
 async def pngquant(inFile: str) -> str:
