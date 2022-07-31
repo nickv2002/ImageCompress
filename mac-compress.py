@@ -14,20 +14,20 @@ def cprint(text: str, color: str = "white"):
     echo(style(text, fg=color))
 
 
-def compareAndKeepSmaller(oldFile: str, newFile: str, log: bool = True):
+def compareAndKeepSmaller(oldFile: str, newFile: str):
     oldFileSize = os.path.getsize(oldFile)
     newFileSize = os.path.getsize(newFile)
     if newFileSize == oldFileSize:
-        if log:
+        if verbose:
             cprint(f"new file is same size, no update to {oldFile}", "blue")
         os.remove(newFile)
     elif newFileSize < oldFileSize:
-        if log:
+        if verbose:
             cprint(f"new file is {1 - newFileSize / oldFileSize:.2%} smaller! Updating it at {oldFile}", "green")
         shutil.move(newFile, oldFile)
     else:
-        if log:
-            cprint(f"old file is {1 - newFileSize / oldFileSize:.2%} smaller, keeping {oldFile}", "magenta")
+        if verbose:
+            cprint(f"old file is smaller, keeping {oldFile}", "magenta")
         os.remove(newFile)
 
 
@@ -40,9 +40,9 @@ def filter_filenames(dirpath, predicate):
                 yield abspath
 
 
-async def subProcessToStr(args: list, printCmd: bool = True, stdErrIsErr: bool = True) -> str:
+async def subProcessToStr(args: list, stdErrIsErr: bool = True) -> str:
     calledCmd = " ".join(args)
-    if printCmd:
+    if verbose:
         print(calledCmd)
     proc = await asyncio.create_subprocess_exec(
         args[0], *args[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
@@ -51,7 +51,7 @@ async def subProcessToStr(args: list, printCmd: bool = True, stdErrIsErr: bool =
     if stderr and stdErrIsErr:
         cprint(f"*stderr for {calledCmd}]\n{stderr.decode('utf-8')}*", "yellow")
         raise TypeError
-    if not stdErrIsErr:
+    if not stdErrIsErr and verbose:
         print(stderr.decode("utf-8"))
     return stdout.decode("utf-8")
 
@@ -59,10 +59,6 @@ async def subProcessToStr(args: list, printCmd: bool = True, stdErrIsErr: bool =
 # pngquant is a util for lossy compression of PNG images.
 # very lossy - uses a reduced number of colors
 async def pngquant(inFile: str) -> str:
-    if not doLossy:
-        warnMessage = "pngquant is lossy and you requested lossles"
-        cprint(warnMessage, "yellow")
-        return warnMessage
     args = [
         "/opt/homebrew/bin/pngquant",
         "--force",  # allow overwrite so we can update-in-place
@@ -116,10 +112,6 @@ async def mozjpg(inFile: str):
 # ./cjpeg -quality 70 -outfile compressed-image.jpg source-image.png
 async def cjpeg(inFile: str):
     outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
-    if not doLossy:
-        warnMessage = "cjpeg is lossy and you requested lossles"
-        cprint(warnMessage, "yellow")
-        return warnMessage
     args = [
         "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/cjpeg",
         "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
@@ -162,20 +154,32 @@ async def smartProcessFile(inputFile: str):
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":
         if doLossy:
-            print(await pngquant(inputFile))
-        print(await oxipng(inputFile))
+            result = await pngquant(inputFile)
+            if verbose:
+                print(result)
+        result = await oxipng(inputFile)
+        if verbose:
+            print(result)
     elif fileExt == ".gif":
-        print(await gifsicle(inputFile))
+        result = await gifsicle(inputFile)
+        if verbose:
+            print(result)
     elif fileExt == ".jpg" or fileExt == ".jpeg":
         if doLossy:
-            print(await cjpeg(inputFile))
-        print(await mozjpg(inputFile))
+            result = await cjpeg(inputFile)
+            if verbose:
+                print(result)
+        result = await mozjpg(inputFile)
+        if verbose:
+            print(result)
     else:
         assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
 
 
 async def main():
+    startTime = datetime.datetime.now()
     parser = argparse.ArgumentParser(description="compress images")
+    parser.add_argument("-v", action="store_true", help="enables verbose text output")
     parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
     parser.add_argument(
         "--zopfli",
@@ -187,20 +191,22 @@ async def main():
     )
     parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
-    global doLossy, doZopfli
+    global doLossy, doZopfli, verbose
     doLossy = args.lossy
     doZopfli = args.zopfli
+    verbose = args.v
     # We want to rate limit the number of processes here via cli, appy decorator to create new function
     # https://github.com/alexdelorenzo/limiter
     limit_operations = limit(get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1)
     limitedSmartProcessFile = limit_operations(smartProcessFile)
 
-    if doLossy:
-        cprint(f"Lossy processing enabled: {sys.argv}", color="yellow")
-    else:
-        cprint(f"Lossy processing off: {sys.argv}", color="green")
-    if doZopfli:
-        cprint("Zopfli processing enabled, can be slow!", color="yellow")
+    if verbose:
+        if doLossy:
+            cprint(f"Lossy processing enabled: {sys.argv}", color="yellow")
+        else:
+            cprint(f"Lossy processing off: {sys.argv}", color="green")
+        if doZopfli:
+            cprint("Zopfli processing enabled, can be slow!", color="yellow")
 
     # match for all image formats we work with, then walk dirs to match regex
     reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
@@ -217,8 +223,9 @@ async def main():
 
     await asyncio.gather(*(limitedSmartProcessFile(inputFile) for inputFile in imageFiles))
 
+    if verbose:
+        print(f"Processing time {datetime.datetime.now()-startTime}")
+
 
 if __name__ == "__main__":
-    startTime = datetime.datetime.now()
     asyncio.run(main())
-    print(f"Processing time {datetime.datetime.now()- startTime}")
