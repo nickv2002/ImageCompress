@@ -10,6 +10,65 @@ import asyncio
 from limiter import get_limiter, limit
 
 
+SYMBOLS = {
+    "customary": ("B", "K", "M", "G", "T", "P", "E", "Z", "Y"),
+    "customary_ext": ("byte", "kilo", "mega", "giga", "tera", "peta", "exa", "zetta", "iotta"),
+    "iec": ("Bi", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"),
+    "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
+}
+
+
+def bytes2human(n: int, format: str = "%(value).1f %(symbol)s", symbols: str = "customary") -> str:
+    """
+    Convert n bytes into a human readable string based on format.
+    symbols can be either "customary", "customary_ext", "iec" or "iec_ext",
+    see: http://goo.gl/kTQMs
+
+      >>> bytes2human(0)
+      '0.0 B'
+      >>> bytes2human(0.9)
+      '0.0 B'
+      >>> bytes2human(1)
+      '1.0 B'
+      >>> bytes2human(1.9)
+      '1.0 B'
+      >>> bytes2human(1024)
+      '1.0 K'
+      >>> bytes2human(1048576)
+      '1.0 M'
+      >>> bytes2human(1099511627776127398123789121)
+      '909.5 Y'
+
+      >>> bytes2human(9856, symbols="customary")
+      '9.6 K'
+      >>> bytes2human(9856, symbols="customary_ext")
+      '9.6 kilo'
+      >>> bytes2human(9856, symbols="iec")
+      '9.6 Ki'
+      >>> bytes2human(9856, symbols="iec_ext")
+      '9.6 kibi'
+
+      >>> bytes2human(10000, "%(value).1f %(symbol)s/sec")
+      '9.8 K/sec'
+
+      >>> # precision can be adjusted by playing with %f operator
+      >>> bytes2human(10000, format="%(value).5f %(symbol)s")
+      '9.76562 K'
+    """
+    n = int(n)
+    if n < 0:
+        raise ValueError("n < 0")
+    symbols = SYMBOLS[symbols]
+    prefix = {}
+    for i, s in enumerate(symbols[1:]):
+        prefix[s] = 1 << (i + 1) * 10
+    for symbol in reversed(symbols[1:]):
+        if n >= prefix[symbol]:
+            value = float(n) / prefix[symbol]
+            return format % locals()
+    return format % dict(symbol=symbols[0], value=n)
+
+
 def cprint(text: str, color: str = "white"):
     echo(style(text, fg=color))
 
@@ -147,10 +206,10 @@ async def gifsicle(inFile: str):
     return returnedText
 
 
-async def smartProcessFile(inputFile: str):
+async def smartProcessFile(inputTuple: tuple):  # using a tupal here since it's easier to wrap in gather()
+    inputFile, inputSize = inputTuple
     assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
     assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
-    # TODO: get file size before and after, print if wanted
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":
         if doLossy:
@@ -175,11 +234,24 @@ async def smartProcessFile(inputFile: str):
     else:
         assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
 
+    newSize = os.path.getsize(inputFile)
+    if not quiet:
+        if newSize < inputSize:
+            cprint(
+                f"Compressed {inputFile} by {1 - newSize / inputSize:.2%} & saved: {bytes2human(inputSize-newSize)}",
+                "green",
+            )
+        else:
+            cprint(f"No space saved for {inputFile}, keeping original.", "red")
+
+    return newSize
+
 
 async def main():
     startTime = datetime.datetime.now()
     parser = argparse.ArgumentParser(description="compress images")
     parser.add_argument("-v", action="store_true", help="enables verbose text output")
+    parser.add_argument("-q", action="store_true", help="quiet, silences all text output")
     parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
     parser.add_argument(
         "--zopfli",
@@ -191,10 +263,12 @@ async def main():
     )
     parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
-    global doLossy, doZopfli, verbose
+    global doLossy, doZopfli, verbose, quiet
     doLossy = args.lossy
     doZopfli = args.zopfli
     verbose = args.v
+    quiet = args.q
+    assert not (verbose and quiet), "ERROR: can't have verbose (-v) and quiet (-q) flags enabled at once"
     # We want to rate limit the number of processes here via cli, appy decorator to create new function
     # https://github.com/alexdelorenzo/limiter
     limit_operations = limit(get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1)
@@ -206,23 +280,32 @@ async def main():
         else:
             cprint(f"Lossy processing off: {sys.argv}", color="green")
         if doZopfli:
-            cprint("Zopfli processing enabled, can be slow!", color="yellow")
+            cprint("Warning: qopfli processing enabled. This can be slow!", color="yellow")
 
     # match for all image formats we work with, then walk dirs to match regex
     reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
     imageFiles = []
+    sourceSizes = 0
     for inputFile in args.files:
         if os.path.isfile(inputFile):
             if reg_expr(inputFile):
-                imageFiles.append(inputFile)
+                originalSize = os.path.getsize(inputFile)
+                sourceSizes += originalSize
+                imageFiles.append((inputFile, originalSize))
             else:
                 cprint(f"no processing, unknown file type for {inputFile}", "red")
         else:  # it's a dir, find images beaneath
             for filename in filter_filenames(inputFile, reg_expr):
-                imageFiles.append(filename)
+                originalSize = os.path.getsize(filename)
+                sourceSizes += originalSize
+                imageFiles.append((filename, originalSize))
 
-    await asyncio.gather(*(limitedSmartProcessFile(inputFile) for inputFile in imageFiles))
-
+    resultSizes = await asyncio.gather(*(limitedSmartProcessFile(inputTuple) for inputTuple in imageFiles))
+    if not quiet:
+        cprint(
+            f"---Totals---\nOriginal size {bytes2human(sourceSizes)} | "
+            + f"Final size {bytes2human(sum(resultSizes))} | Saved {bytes2human(sourceSizes - sum(resultSizes))}",
+        )
     if verbose:
         print(f"Processing time {datetime.datetime.now()-startTime}")
 
