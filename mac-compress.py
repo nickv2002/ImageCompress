@@ -17,7 +17,8 @@ SYMBOLS = {
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
 
-
+# Function via
+# https://code.activestate.com/recipes/578019-bytes-to-human-human-to-bytes-converter/?in=user-4178764
 def bytes2human(n: int, format: str = "%(value).1f %(symbol)s", symbols: str = "customary") -> str:
     """
     Convert n bytes into a human readable string based on format.
@@ -280,7 +281,7 @@ async def main():
         else:
             cprint(f"Lossy processing off: {sys.argv}", color="green")
         if doZopfli:
-            cprint("Warning: qopfli processing enabled. This can be slow!", color="yellow")
+            cprint("Warning: zopfli processing enabled. This can be slow!", color="yellow")
 
     # match for all image formats we work with, then walk dirs to match regex
     reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
