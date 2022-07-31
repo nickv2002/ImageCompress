@@ -17,6 +17,7 @@ SYMBOLS = {
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
 
+
 # Function via
 # https://code.activestate.com/recipes/578019-bytes-to-human-human-to-bytes-converter/?in=user-4178764
 def bytes2human(n: int, format: str = "%(value).1f %(symbol)s", symbols: str = "customary") -> str:
