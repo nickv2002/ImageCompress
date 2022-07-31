@@ -86,9 +86,10 @@ async def oxipng(inFile: str) -> str:
         "--alpha",  # Perform additional alpha optimizations
         "--interlace",
         "0",  # disable interlacing
-        # "--zopfli",  # Use the slower but better compressing Zopfli algorithm
         inFile,  # will output to input
     ]
+    if doZopfli:
+        args.append("--zopfli")  # Use the slower but better compressing Zopfli algorithm
     return await subProcessToStr(args, stdErrIsErr=False)
 
 
@@ -177,12 +178,18 @@ async def main():
     parser = argparse.ArgumentParser(description="compress images")
     parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
     parser.add_argument(
+        "--zopfli",
+        action="store_true",
+        help="default false, enables zopfli compression for PNGs (slow & CPU inensive)",
+    )
+    parser.add_argument(
         "--parallelism", metavar="p", type=int, default=4, help="how many async threads to allow, default=4"
     )
     parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
-    global doLossy
+    global doLossy, doZopfli
     doLossy = args.lossy
+    doZopfli = args.zopfli
     # We want to rate limit the number of processes here via cli, appy decorator to create new function
     # https://github.com/alexdelorenzo/limiter
     limit_operations = limit(get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1)
@@ -192,6 +199,8 @@ async def main():
         cprint(f"Lossy processing enabled: {sys.argv}", color="yellow")
     else:
         cprint(f"Lossy processing off: {sys.argv}", color="green")
+    if doZopfli:
+        cprint("Zopfli processing enabled, can be slow!", color="yellow")
 
     # match for all image formats we work with, then walk dirs to match regex
     reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
