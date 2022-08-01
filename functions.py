@@ -164,12 +164,13 @@ async def mozjpg(inFile: str, verbose: bool = False) -> str:
 # cjpeg is lossy JPG compression
 # some mozjpg defaults https://calendar.perfplanet.com/2014/mozjpeg-3-0/
 # ./cjpeg -quality 70 -outfile compressed-image.jpg source-image.png
-async def cjpeg(inFile: str, verbose: bool = False) -> str:
+# can also convert non-JPEG to JPEG
+async def cjpeg(inFile: str, verbose: bool = False, quality: int = 85) -> str:
     outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
     args = [
         "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/cjpeg",
         "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
-        "85",  # TODO make this more adjustable?
+        f"{quality}",
         "-sample",
         "1x1",  # enables full-resolution color (e.g. red lines won’t be smudged as badly), but it makes files larger.
         "-outfile",
@@ -201,17 +202,61 @@ async def gifsicle(inFile: str, doLossy: bool = False, verbose: bool = False) ->
     return returnedText
 
 
+# convert from imagemagick
+async def convert(
+    inFile: str, toFmt: str, deleteOnConvert: bool = False, verbose: bool = False, quiet: bool = False
+) -> str:
+    assert toFmt == "jpg" or toFmt == "png", "ERROR: unsupported conversion format"
+    baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
+    baseFileExt = os.path.splitext(inFile)[1].lower()
+    outFile = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.{toFmt}")
+
+    if toFmt == "jpg" and (baseFileExt != ".jpeg" and baseFileExt != ".jpg"):
+        pass
+    elif toFmt == "png" and (baseFileExt != ".png"):
+        pass
+    else:
+        if verbose:
+            cprint(f"{inFile} was already in the desired format ({toFmt}), skipping", "yellow")
+        return inFile
+    args = [
+        "/opt/homebrew/bin/convert",
+        inFile,
+        outFile,
+    ]
+    returnText = await subProcessToStr(args, verbose=verbose)
+    if verbose:
+        print(returnText)
+    if deleteOnConvert:
+        os.remove(inFile)
+    if not quiet:
+        cprint(f"Converted {inFile} to {outFile}", "blue")
+    return outFile
+
+
 async def smartProcessFile(
-    inputTuple: tuple,
+    inputFile: str,
+    inputSize: int,
     verbose: bool = False,
     quiet: bool = False,
     doLossy: bool = False,
     doZopfli: bool = False,
+    jpgConvert: bool = False,
+    pngConvert: bool = False,
+    deleteOnConvert: bool = False,
 ):
-    # using a tupal here since it's easier to wrap in gather()
-    inputFile, inputSize = inputTuple
     assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
     assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
+
+    if jpgConvert:
+        inputFile = await convert(
+            inputFile, toFmt="jpg", deleteOnConvert=deleteOnConvert, verbose=verbose, quiet=quiet
+        )
+    elif pngConvert:
+        inputFile = await convert(
+            inputFile, toFmt="png", deleteOnConvert=deleteOnConvert, verbose=verbose, quiet=quiet
+        )
+
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":
         if doLossy:

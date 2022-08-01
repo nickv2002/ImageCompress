@@ -12,9 +12,16 @@ from functions import cprint, bytes2human, filter_filenames, smartProcessFile
 async def main():
     startTime = datetime.datetime.now()
     parser = argparse.ArgumentParser(description="compress images")
-    parser.add_argument("-v", action="store_true", help="enables verbose text output")
-    parser.add_argument("-q", action="store_true", help="quiet, silences all text output")
+    parser.add_argument("-v", action="store_true", help="default false, enables verbose text output")
+    parser.add_argument("-q", action="store_true", help="default false, quiet, silences all text output")
     parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
+    parser.add_argument("--jpg", action="store_true", help="default false, convert images to JPEGs")
+    parser.add_argument("--png", action="store_true", help="default false, convert images to PNGs")
+    parser.add_argument(
+        "--deleteOnConvert",
+        action="store_true",
+        help="default false, when converting PNG to JPG or vice versa delete orig",
+    )
     parser.add_argument(
         "--zopfli",
         action="store_true",
@@ -26,6 +33,7 @@ async def main():
     parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
     assert not (args.v and args.q), "ERROR: can't have verbose (-v) and quiet (-q) flags enabled at once"
+    assert not (args.jpg and args.png), "ERROR: can't have png (--png) and jpg (--jpg) flags enabled at once"
 
     # We want to rate limit the number of processes here via cli, apply decorator to create new function
     # https://github.com/alexdelorenzo/limiter
@@ -39,6 +47,14 @@ async def main():
             cprint(f"Lossy processing off: {sys.argv}", color="green")
         if args.zopfli:
             cprint("Warning: zopfli processing enabled. This can be slow!", color="yellow")
+    if not args.q:
+        if args.jpg:
+            message = "Warning: will convert all images to JPEGs."
+        elif args.png:
+            message = "Warning: will convert all images to PNGs."
+        if args.deleteOnConvert:
+            message += " Original images will be deleted after format conversion!"
+        cprint(message, color="yellow")
 
     # match for all image formats we work with, then walk dirs to match regex
     reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
@@ -52,14 +68,27 @@ async def main():
                 imageFiles.append((inputFile, originalSize))
             else:
                 cprint(f"no processing, unknown file type for {inputFile}", "red")
-        else:  # it's a dir, find images beaneath
+        else:  # it's a dir, find images beneath
             for filename in filter_filenames(inputFile, reg_expr):
                 originalSize = os.path.getsize(filename)
                 sourceSizes += originalSize
                 imageFiles.append((filename, originalSize))
 
     resultSizes = await asyncio.gather(
-        *(limitedSmartProcessFile(inputTuple, args.v, args.q, args.lossy, args.zopfli) for inputTuple in imageFiles)
+        *(
+            limitedSmartProcessFile(
+                inputTuple[0],
+                inputTuple[1],
+                args.v,
+                args.q,
+                args.lossy,
+                args.zopfli,
+                args.jpg,
+                args.png,
+                args.deleteOnConvert,
+            )
+            for inputTuple in imageFiles
+        )
     )
     if not args.q:
         cprint(
