@@ -18,7 +18,7 @@ async def main():
     parser.add_argument(
         "--zopfli",
         action="store_true",
-        help="default false, enables zopfli compression for PNGs (slow & CPU inensive)",
+        help="default false, enables zopfli compression for PNGs (slow & CPU intenstive)",
     )
     parser.add_argument(
         "--parallelism", metavar="p", type=int, default=4, help="how many async threads to allow, default=4"
@@ -27,7 +27,7 @@ async def main():
     args = parser.parse_args()
     assert not (args.v and args.q), "ERROR: can't have verbose (-v) and quiet (-q) flags enabled at once"
 
-    # We want to rate limit the number of processes here via cli, appy decorator to create new function
+    # We want to rate limit the number of processes here via cli, apply decorator to create new function
     # https://github.com/alexdelorenzo/limiter
     limit_operations = limit(get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1)
     limitedSmartProcessFile = limit_operations(smartProcessFile)
