@@ -47,7 +47,7 @@ async def main():
             cprint(f"Lossy processing off: {sys.argv}", color="green")
         if args.zopfli:
             cprint("Warning: zopfli processing enabled. This can be slow!", color="yellow")
-    if not args.q:
+    if not args.q and (args.jpg or args.png):
         if args.jpg:
             message = "Warning: will convert all images to JPEGs."
         elif args.png:
