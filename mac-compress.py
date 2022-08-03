@@ -57,7 +57,7 @@ async def main():
         cprint(message, color="yellow")
 
     # we'll use this to help find the right paths later
-    if platform == "linux" or platform == "linux2":
+    if platform.startswith("linux"):
         args.platform = "linux"
     elif platform == "darwin":
         args.platform = "mac"
