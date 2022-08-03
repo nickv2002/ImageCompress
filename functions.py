@@ -2,7 +2,7 @@ import os
 import shutil
 from click import echo, style
 import asyncio
-from argparse import Namespace as apns
+from argparse import Namespace as apns  # just importing this for type hinting
 
 SYMBOLS = {
     "customary": ("B", "K", "M", "G", "T", "P", "E", "Z", "Y"),
