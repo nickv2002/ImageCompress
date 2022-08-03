@@ -2,7 +2,7 @@
 import argparse
 import os
 import re
-import sys
+from sys import platform, argv
 import datetime
 import asyncio
 from limiter import get_limiter, limit
@@ -42,9 +42,9 @@ async def main():
 
     if args.v:
         if args.lossy:
-            cprint(f"Lossy processing enabled: {sys.argv}", color="yellow")
+            cprint(f"Lossy processing enabled: {argv}", color="yellow")
         else:
-            cprint(f"Lossy processing off: {sys.argv}", color="green")
+            cprint(f"Lossy processing off: {argv}", color="green")
         if args.zopfli:
             cprint("Warning: zopfli processing enabled. This can be slow!", color="yellow")
     if not args.q and (args.jpg or args.png):
@@ -55,6 +55,14 @@ async def main():
         if args.deleteOnConvert:
             message += " Original images will be deleted after format conversion!"
         cprint(message, color="yellow")
+
+    # we'll use this to help find the right paths later
+    if platform == "linux" or platform == "linux2":
+        args.platform = "linux"
+    elif platform == "darwin":
+        args.platform = "mac"
+    elif platform == "win32":
+        args.platform = "win"
 
     # match for all image formats we work with, then walk dirs to match regex
     reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
@@ -79,13 +87,7 @@ async def main():
             limitedSmartProcessFile(
                 inputTuple[0],
                 inputTuple[1],
-                args.v,
-                args.q,
-                args.lossy,
-                args.zopfli,
-                args.jpg,
-                args.png,
-                args.deleteOnConvert,
+                args,
             )
             for inputTuple in imageFiles
         )

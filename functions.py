@@ -2,12 +2,24 @@ import os
 import shutil
 from click import echo, style
 import asyncio
+from argparse import Namespace as apns
 
 SYMBOLS = {
     "customary": ("B", "K", "M", "G", "T", "P", "E", "Z", "Y"),
     "customary_ext": ("byte", "kilo", "mega", "giga", "tera", "peta", "exa", "zetta", "iotta"),
     "iec": ("Bi", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"),
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
+}
+
+PATHS = {
+    "mac": {
+        "pngquant": "/opt/homebrew/bin/pngquant",
+        "oxipng": "/opt/homebrew/bin/oxipng",
+        "jpegtran": "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/jpegtran",
+        "cjpeg": "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/cjpeg",
+        "gifsicle": "/opt/homebrew/bin/gifsicle",
+        "convert": "/opt/homebrew/bin/convert",
+    }
 }
 
 
@@ -68,19 +80,19 @@ def cprint(text: str, color: str = "white"):
     echo(style(text, fg=color))
 
 
-def compareAndKeepSmaller(oldFile: str, newFile: str, verbose: bool = False):
+def compareAndKeepSmaller(oldFile: str, newFile: str, args: apns):
     oldFileSize = os.path.getsize(oldFile)
     newFileSize = os.path.getsize(newFile)
     if newFileSize == oldFileSize:
-        if verbose:
+        if args.v:
             cprint(f"new file is same size, no update to {oldFile}", "blue")
         os.remove(newFile)
     elif newFileSize < oldFileSize:
-        if verbose:
+        if args.v:
             cprint(f"new file is {1 - newFileSize / oldFileSize:.2%} smaller! Updating it at {oldFile}", "green")
         shutil.move(newFile, oldFile)
     else:
-        if verbose:
+        if args.v:
             cprint(f"old file is smaller, keeping {oldFile}", "magenta")
         os.remove(newFile)
 
@@ -94,27 +106,27 @@ def filter_filenames(dirpath, predicate):
                 yield abspath
 
 
-async def subProcessToStr(args: list, stdErrIsErr: bool = True, verbose: bool = False) -> str:
-    calledCmd = " ".join(args)
-    if verbose:
+async def subProcessToStr(subpArgs: list, args: apns, stdErrIsErr: bool = True) -> str:
+    calledCmd = " ".join(subpArgs)
+    if args.v:
         print(calledCmd)
     proc = await asyncio.create_subprocess_exec(
-        args[0], *args[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        subpArgs[0], *subpArgs[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
     stdout, stderr = await proc.communicate()
     if stderr and stdErrIsErr:
         cprint(f"*stderr for {calledCmd}]\n{stderr.decode('utf-8')}*", "yellow")
         raise TypeError
-    if not stdErrIsErr and verbose:
+    if not stdErrIsErr and args.v:
         print(stderr.decode("utf-8"))
     return stdout.decode("utf-8")
 
 
 # pngquant is a util for lossy compression of PNG images.
 # very lossy - uses a reduced number of colors
-async def pngquant(inFile: str, verbose: bool = False) -> str:
-    args = [
-        "/opt/homebrew/bin/pngquant",
+async def pngquant(inFile: str, args: apns) -> str:
+    subpArgs = [
+        PATHS[args.platform]["pngquant"],
         "--force",  # allow overwrite so we can update-in-place
         "--skip-if-larger",  # only save converted files if they're smaller than original
         "--strip",  # remove optional metadata (default on Mac)
@@ -124,13 +136,13 @@ async def pngquant(inFile: str, verbose: bool = False) -> str:
         "--",  # Stops processing of arguments
         inFile,
     ]
-    return await subProcessToStr(args, verbose=verbose)
+    return await subProcessToStr(subpArgs, args=args)
 
 
 # Oxipng is a multithreaded lossless PNG compression optimizer
-async def oxipng(inFile: str, doZopfli: bool = False, verbose: bool = False) -> str:
-    args = [
-        "/opt/homebrew/bin/oxipng",
+async def oxipng(inFile: str, args: apns) -> str:
+    subpArgs = [
+        PATHS[args.platform]["oxipng"],
         "--preserve",  # Preserve file attributes if possible
         "-s",  # Strip safely-removable metadata objects
         "--alpha",  # Perform additional alpha optimizations
@@ -138,16 +150,16 @@ async def oxipng(inFile: str, doZopfli: bool = False, verbose: bool = False) -> 
         "0",  # disable interlacing
         inFile,  # will output to input
     ]
-    if doZopfli:
+    if args.zopfli:
         args.append("--zopfli")  # Use the slower but better compressing Zopfli algorithm
-    return await subProcessToStr(args, stdErrIsErr=False, verbose=verbose)
+    return await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
 
 
 # MozJPG is lossless JPG comression
-async def mozjpg(inFile: str, verbose: bool = False) -> str:
+async def mozjpg(inFile: str, args: apns) -> str:
     outfile = os.path.join("/tmp", "mozjpg-" + os.path.split(inFile)[1])
-    args = [
-        "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/jpegtran",
+    subpArgs = [
+        PATHS[args.platform]["jpegtran"],
         "-optimize",  # Optimize Huffman table (smaller file, but slow compression)
         "-progressive",  # Create progressive JPEG file
         "-copy",  # Strip safely-removable metadata objects
@@ -156,8 +168,8 @@ async def mozjpg(inFile: str, verbose: bool = False) -> str:
         outfile,  # doesn't check if result it smaller
         inFile,
     ]
-    returnedText = await subProcessToStr(args, stdErrIsErr=False, verbose=verbose)
-    compareAndKeepSmaller(inFile, outfile, verbose)
+    returnedText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
+    compareAndKeepSmaller(inFile, outfile, args)
     return returnedText
 
 
@@ -165,10 +177,10 @@ async def mozjpg(inFile: str, verbose: bool = False) -> str:
 # some mozjpg defaults https://calendar.perfplanet.com/2014/mozjpeg-3-0/
 # ./cjpeg -quality 70 -outfile compressed-image.jpg source-image.png
 # can also convert non-JPEG to JPEG
-async def cjpeg(inFile: str, verbose: bool = False, quality: int = 85) -> str:
+async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
     outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
     args = [
-        "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/cjpeg",
+        PATHS[args.platform]["cjpeg"],
         "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
         f"{quality}",
         "-sample",
@@ -177,8 +189,8 @@ async def cjpeg(inFile: str, verbose: bool = False, quality: int = 85) -> str:
         outfile,  # will output to input, doesn't check if result it smaller
         inFile,  # note the input could be non-jpeg
     ]
-    returnedText = await subProcessToStr(args, stdErrIsErr=False, verbose=verbose)
-    compareAndKeepSmaller(inFile, outfile, verbose)
+    returnedText = await subProcessToStr(args, stdErrIsErr=False, args=args)
+    compareAndKeepSmaller(inFile, outfile, args)
     return returnedText
 
 
@@ -186,26 +198,24 @@ async def cjpeg(inFile: str, verbose: bool = False, quality: int = 85) -> str:
 # https://www.lcdf.org/gifsicle/man.html
 # lossless: gifsicle -O3 test-7.gif  -o test-7-update.gif
 # lossy: : gifsicle -O3 --lossy test-7.gif  -o test-7-update.gif
-async def gifsicle(inFile: str, doLossy: bool = False, verbose: bool = False) -> str:
+async def gifsicle(inFile: str, args: apns) -> str:
     outfile = os.path.join("/tmp", "gifsicle-" + os.path.split(inFile)[1])
-    args = [
-        "/opt/homebrew/bin/gifsicle",
+    subpArgs = [
+        PATHS[args.platform]["gifsicle"],
         "-O3",  # Try several optimization methods (usually slower, sometimes better results)
         inFile,
         "-o",
         outfile,  # will output to input, doesn't check if result it smaller
     ]
-    if doLossy:
+    if args.lossy:
         args.append("--lossy")  # TODO make this more adjustable? default number is 20
-    returnedText = await subProcessToStr(args, stdErrIsErr=False, verbose=verbose)
-    compareAndKeepSmaller(inFile, outfile, verbose=verbose)
+    returnedText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
+    compareAndKeepSmaller(inFile, outfile, args=args)
     return returnedText
 
 
 # convert from imagemagick
-async def convert(
-    inFile: str, toFmt: str, deleteOnConvert: bool = False, verbose: bool = False, quiet: bool = False
-) -> str:
+async def convert(inFile: str, toFmt: str, args: apns) -> str:
     assert toFmt == "jpg" or toFmt == "png", "ERROR: unsupported conversion format"
     baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
     baseFileExt = os.path.splitext(inFile)[1].lower()
@@ -216,20 +226,20 @@ async def convert(
     elif toFmt == "png" and (baseFileExt != ".png"):
         pass
     else:
-        if verbose:
+        if args.v:
             cprint(f"{inFile} was already in the desired format ({toFmt}), skipping", "yellow")
         return inFile
-    args = [
-        "/opt/homebrew/bin/convert",
+    subpArgs = [
+        PATHS[args.platform]["convert"],
         inFile,
         outFile,
     ]
-    returnText = await subProcessToStr(args, verbose=verbose)
-    if verbose:
+    returnText = await subProcessToStr(subpArgs, args=args)
+    if args.v:
         print(returnText)
-    if deleteOnConvert:
+    if args.deleteOnConvert:
         os.remove(inFile)
-    if not quiet:
+    if not args.q:
         cprint(f"Converted {inFile} to {outFile}", "blue")
     return outFile
 
@@ -237,52 +247,42 @@ async def convert(
 async def smartProcessFile(
     inputFile: str,
     inputSize: int,
-    verbose: bool = False,
-    quiet: bool = False,
-    doLossy: bool = False,
-    doZopfli: bool = False,
-    jpgConvert: bool = False,
-    pngConvert: bool = False,
-    deleteOnConvert: bool = False,
+    args: apns,
 ):
     assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
     assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
 
-    if jpgConvert:
-        inputFile = await convert(
-            inputFile, toFmt="jpg", deleteOnConvert=deleteOnConvert, verbose=verbose, quiet=quiet
-        )
-    elif pngConvert:
-        inputFile = await convert(
-            inputFile, toFmt="png", deleteOnConvert=deleteOnConvert, verbose=verbose, quiet=quiet
-        )
+    if args.jpg:
+        inputFile = await convert(inputFile, toFmt="jpg", args=args)
+    elif args.png:
+        inputFile = await convert(inputFile, toFmt="png", args=args)
 
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":
-        if doLossy:
-            result = await pngquant(inputFile, verbose=verbose)
-            if verbose:
+        if args.lossy:
+            result = await pngquant(inputFile, args=args)
+            if args.v:
                 print(result)
-        result = await oxipng(inputFile, doZopfli=doZopfli, verbose=verbose)
-        if verbose:
+        result = await oxipng(inputFile, args=args)
+        if args.v:
             print(result)
     elif fileExt == ".gif":
-        result = await gifsicle(inputFile, doLossy=doLossy, verbose=verbose)
-        if verbose:
+        result = await gifsicle(inputFile, args=args)
+        if args.v:
             print(result)
     elif fileExt == ".jpg" or fileExt == ".jpeg":
-        if doLossy:
-            result = await cjpeg(inputFile, verbose=verbose)
-            if verbose:
+        if args.lossy:
+            result = await cjpeg(inputFile, args=args)
+            if args.v:
                 print(result)
-        result = await mozjpg(inputFile, verbose=verbose)
-        if verbose:
+        result = await mozjpg(inputFile, args=args)
+        if args.v:
             print(result)
     else:
         assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
 
     newSize = os.path.getsize(inputFile)
-    if not quiet:
+    if not args.q:
         if newSize < inputSize:
             cprint(
                 f"Compressed {inputFile} by {1 - newSize / inputSize:.2%} & saved: {bytes2human(inputSize-newSize)}",
