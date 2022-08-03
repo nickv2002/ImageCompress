@@ -19,7 +19,15 @@ PATHS = {
         "cjpeg": "/opt/homebrew/Cellar/mozjpeg/4.0.3/bin/cjpeg",
         "gifsicle": "/opt/homebrew/bin/gifsicle",
         "convert": "/opt/homebrew/bin/convert",
-    }
+    },
+    "linux": {
+        "pngquant": "/usr/bin/pngquant",
+        "oxipng": "/usr/local/bin/oxipng",
+        "jpegtran": "/usr/local/bin/jpegtran-static",
+        "cjpeg": "/usr/local/bin/cjpeg-static",
+        "gifsicle": "/usr/bin/gifsicle",
+        "convert": "/usr/bin/convert",
+    },
 }
 
 
@@ -179,7 +187,7 @@ async def mozjpg(inFile: str, args: apns) -> str:
 # can also convert non-JPEG to JPEG
 async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
     outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
-    args = [
+    subpArgs = [
         PATHS[args.platform]["cjpeg"],
         "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
         f"{quality}",
@@ -189,7 +197,7 @@ async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
         outfile,  # will output to input, doesn't check if result it smaller
         inFile,  # note the input could be non-jpeg
     ]
-    returnedText = await subProcessToStr(args, stdErrIsErr=False, args=args)
+    returnedText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
     compareAndKeepSmaller(inFile, outfile, args)
     return returnedText
 
