@@ -94,8 +94,8 @@ async def main():
     )
     if not args.q:
         cprint(
-            f"---Totals---\nOriginal size {bytes2human(sourceSizes)} | "
-            + f"Final size {bytes2human(sum(resultSizes))} | Saved {bytes2human(sourceSizes - sum(resultSizes))}",
+            f"---Totals---\nOriginal size {bytes2human(sourceSizes)} | Final size {bytes2human(sum(resultSizes))} | "
+            + f"Saved {bytes2human(sourceSizes - sum(resultSizes))} ({1- sum(resultSizes)/sourceSizes:.2%})",
         )
     if args.v:
         print(f"Processing time {datetime.datetime.now()-startTime}")
