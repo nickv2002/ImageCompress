@@ -12,6 +12,7 @@ SYMBOLS = {
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
 
+# TODO use shutl.which() to look up these paths
 PATHS = {
     "mac": {
         "pngquant": "/opt/homebrew/bin/pngquant",
@@ -253,10 +254,49 @@ async def convert(inFile: str, toFmt: str, args: apns) -> str:
     return outFile
 
 
+class CompressHistory:
+    def __init__(self, path):
+        try:
+            con = sqlite3.connect(path, timeout=60, check_same_thread=False)
+        except sqlite3.OperationalError:
+            os.makedirs(os.path.dirname(path))
+            con = sqlite3.connect(path, timeout=60, check_same_thread=False)
+        con.isolation_level = None
+
+        self.close = con.close
+        self.cursor = con.cursor()
+
+        try:
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY) WITHOUT ROWID")
+        except sqlite3.OperationalError:
+            # fallback for missing WITHOUT ROWID support (#553)
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY)")
+
+    def check(self, relativePath):
+        """Return True if the item described by relativePath exists in archive, after converting to realpath"""
+        key = os.path.realpath(relativePath)
+        self.cursor.execute("SELECT 1 FROM archive WHERE entry=? LIMIT 1", (key,))
+        return self.cursor.fetchone()
+
+    def add(self, relativePath):
+        """Add item described by 'relativePath' to archive, after converting to realpath"""
+        key = os.path.realpath(relativePath)
+        self.cursor.execute("INSERT OR IGNORE INTO archive VALUES (?)", (key,))
+
+    def appendToListIfNotInArchive(self, list: list, path: str, originalsize: int, args: apns) -> list:
+        if self.check(path):  # item is in archive, don't do anything
+            if args.v:
+                cprint(f"{path} has been previously processed", "blue")
+        else:
+            list.append((path, originalsize))
+        return list
+
+
 async def smartProcessFile(
     inputFile: str,
     inputSize: int,
     args: apns,
+    historyObj: CompressHistory,
 ):
     assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
     assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
@@ -300,42 +340,7 @@ async def smartProcessFile(
         else:
             cprint(f"No space saved for {inputFile}, keeping original.", "red")
 
+    if historyObj:
+        historyObj.add(inputFile)
+
     return newSize, inputFile
-
-
-class CompressHistory:
-    def __init__(self, path):
-        try:
-            con = sqlite3.connect(path, timeout=60, check_same_thread=False)
-        except sqlite3.OperationalError:
-            os.makedirs(os.path.dirname(path))
-            con = sqlite3.connect(path, timeout=60, check_same_thread=False)
-        con.isolation_level = None
-
-        self.close = con.close
-        self.cursor = con.cursor()
-
-        try:
-            self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY) WITHOUT ROWID")
-        except sqlite3.OperationalError:
-            # fallback for missing WITHOUT ROWID support (#553)
-            self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY)")
-
-    def check(self, relativePath):
-        """Return True if the item described by relativePath exists in archive, after converting to realpath"""
-        key = os.path.realpath(relativePath)
-        self.cursor.execute("SELECT 1 FROM archive WHERE entry=? LIMIT 1", (key,))
-        return self.cursor.fetchone()
-
-    def add(self, relativePath):
-        """Add item described by 'relativePath' to archive, after converting to realpath"""
-        key = os.path.realpath(relativePath)
-        self.cursor.execute("INSERT OR IGNORE INTO archive VALUES (?)", (key,))
-
-    def appendToListIfNotInArchive(self, list: list, path: str, originalsize: int, args: apns) -> list:
-        if self.check(path):  # item is in archive, don't do anything
-            if args.v:
-                cprint(f"{path} has been previously processed", "blue")
-        else:
-            list.append((path, originalsize))
-        return list

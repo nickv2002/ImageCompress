@@ -5,6 +5,7 @@ import re
 from sys import platform, argv
 import datetime
 import asyncio
+from sys import exit
 from limiter import get_limiter, limit
 from functions import CompressHistory, cprint, bytes2human, filter_filenames, smartProcessFile
 
@@ -104,22 +105,22 @@ async def main():
                 inputTuple[0],
                 inputTuple[1],
                 args,
+                historyObj,
             )
             for inputTuple in imageFiles
         )
     )
-
-    if historyObj:
-        for _, processedFile in results:
-            historyObj.add(processedFile)
-
-    if not args.q:
-        totalResultSize = sum(i for i, _ in results)
-        # TODO this math might change for previously processed files we skip
-        cprint(
-            f"---Totals---\nOriginal size {bytes2human(sourceSizes)} | Final size {bytes2human(totalResultSize)} | "
-            + f"Saved {bytes2human(sourceSizes - totalResultSize)} ({1- totalResultSize/sourceSizes:.2%})",
-        )
+    if len(results) > 0:
+        if not args.q:
+            totalResultSize = sum(i for i, _ in results)
+            # TODO this math might change for previously processed files we skip
+            cprint(
+                f"---Totals---\nOriginal size {bytes2human(sourceSizes)} | Final size {bytes2human(totalResultSize)} | "
+                + f"Saved {bytes2human(sourceSizes - totalResultSize)} ({1- totalResultSize/sourceSizes:.2%})",
+            )
+    else:
+        cprint("No files processed", "red")
+        exit(1)
     if args.v:
         print(f"Processing time {datetime.datetime.now()-startTime}")
 
