@@ -1,5 +1,6 @@
 import os
 import shutil
+import sqlite3
 from click import echo, style
 import asyncio
 from argparse import Namespace as apns  # just importing this for type hinting
@@ -299,4 +300,42 @@ async def smartProcessFile(
         else:
             cprint(f"No space saved for {inputFile}, keeping original.", "red")
 
-    return newSize
+    return newSize, inputFile
+
+
+class CompressHistory:
+    def __init__(self, path):
+        try:
+            con = sqlite3.connect(path, timeout=60, check_same_thread=False)
+        except sqlite3.OperationalError:
+            os.makedirs(os.path.dirname(path))
+            con = sqlite3.connect(path, timeout=60, check_same_thread=False)
+        con.isolation_level = None
+
+        self.close = con.close
+        self.cursor = con.cursor()
+
+        try:
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY) WITHOUT ROWID")
+        except sqlite3.OperationalError:
+            # fallback for missing WITHOUT ROWID support (#553)
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY)")
+
+    def check(self, relativePath):
+        """Return True if the item described by relativePath exists in archive, after converting to absolute path"""
+        key = os.path.abspath(relativePath)
+        self.cursor.execute("SELECT 1 FROM archive WHERE entry=? LIMIT 1", (key,))
+        return self.cursor.fetchone()
+
+    def add(self, relativePath):
+        """Add item described by 'relativePath' to archive, after converting to absolute path"""
+        key = os.path.abspath(relativePath)
+        self.cursor.execute("INSERT OR IGNORE INTO archive VALUES (?)", (key,))
+
+    def appendToListIfNotInArchive(self, list: list, path: str, originalsize: int) -> list:
+        if self.check(path):  # item is in archive, don't do anything
+            # TODO, add verbose check here
+            cprint(f"{path} has been previously processed", "magenta")
+        else:
+            list.append((path, originalsize))
+        return list

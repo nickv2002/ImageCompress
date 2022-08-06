@@ -6,7 +6,7 @@ from sys import platform, argv
 import datetime
 import asyncio
 from limiter import get_limiter, limit
-from functions import cprint, bytes2human, filter_filenames, smartProcessFile
+from functions import CompressHistory, cprint, bytes2human, filter_filenames, smartProcessFile
 
 
 async def main():
@@ -29,6 +29,13 @@ async def main():
     )
     parser.add_argument(
         "--parallelism", metavar="p", type=int, default=4, help="how many async threads to allow, default=4"
+    )
+    parser.add_argument(
+        "--history",
+        metavar="d",
+        type=str,
+        default=None,
+        help="a file that tracks images that have already been compressed",
     )
     parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
@@ -64,6 +71,9 @@ async def main():
     elif platform == "win32":
         args.platform = "win"
 
+    # set up our SQLite history object
+    historyObj = CompressHistory(args.history) if args.history else None
+
     # match for all image formats we work with, then walk dirs to match regex
     reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
     imageFiles = []
@@ -73,16 +83,22 @@ async def main():
             if reg_expr(inputFile):
                 originalSize = os.path.getsize(inputFile)
                 sourceSizes += originalSize
-                imageFiles.append((inputFile, originalSize))
+                if historyObj:
+                    imageFiles = historyObj.appendToListIfNotInArchive(imageFiles, inputFile, originalSize)
+                else:
+                    imageFiles.append((inputFile, originalSize))
             else:
                 cprint(f"no processing, unknown file type for {inputFile}", "red")
         else:  # it's a dir, find images beneath
             for filename in filter_filenames(inputFile, reg_expr):
                 originalSize = os.path.getsize(filename)
                 sourceSizes += originalSize
-                imageFiles.append((filename, originalSize))
+                if historyObj:
+                    imageFiles = historyObj.appendToListIfNotInArchive(imageFiles, filename, originalSize)
+                else:
+                    imageFiles.append((filename, originalSize))
 
-    resultSizes = await asyncio.gather(
+    results = await asyncio.gather(
         *(
             limitedSmartProcessFile(
                 inputTuple[0],
@@ -92,10 +108,18 @@ async def main():
             for inputTuple in imageFiles
         )
     )
+
+    if historyObj:
+        for _, processedFile in results:
+            print(f"adding {processedFile}")
+            historyObj.add(processedFile)
+
     if not args.q:
+        totalResultSize = sum(i for i, _ in results)
+        # TODO this math might change for previously processed files we skip
         cprint(
-            f"---Totals---\nOriginal size {bytes2human(sourceSizes)} | Final size {bytes2human(sum(resultSizes))} | "
-            + f"Saved {bytes2human(sourceSizes - sum(resultSizes))} ({1- sum(resultSizes)/sourceSizes:.2%})",
+            f"---Totals---\nOriginal size {bytes2human(sourceSizes)} | Final size {bytes2human(totalResultSize)} | "
+            + f"Saved {bytes2human(sourceSizes - totalResultSize)} ({1- totalResultSize/sourceSizes:.2%})",
         )
     if args.v:
         print(f"Processing time {datetime.datetime.now()-startTime}")
