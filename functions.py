@@ -1,3 +1,4 @@
+from genericpath import isfile
 import os
 import shutil
 import sqlite3
@@ -329,6 +330,10 @@ async def smartProcessFile(
             print(result)
     else:
         assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
+
+    if not os.path.isfile(inputFile):
+        cprint(f"WARNING: missing expected output {inputFile}, returning nothing", "yellow")
+        return inputSize, inputFile
 
     newSize = os.path.getsize(inputFile)
     if not args.q:
