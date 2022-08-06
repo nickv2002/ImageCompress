@@ -322,20 +322,20 @@ class CompressHistory:
             self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY)")
 
     def check(self, relativePath):
-        """Return True if the item described by relativePath exists in archive, after converting to absolute path"""
-        key = os.path.abspath(relativePath)
+        """Return True if the item described by relativePath exists in archive, after converting to realpath"""
+        key = os.path.realpath(relativePath)
         self.cursor.execute("SELECT 1 FROM archive WHERE entry=? LIMIT 1", (key,))
         return self.cursor.fetchone()
 
     def add(self, relativePath):
-        """Add item described by 'relativePath' to archive, after converting to absolute path"""
-        key = os.path.abspath(relativePath)
+        """Add item described by 'relativePath' to archive, after converting to realpath"""
+        key = os.path.realpath(relativePath)
         self.cursor.execute("INSERT OR IGNORE INTO archive VALUES (?)", (key,))
 
-    def appendToListIfNotInArchive(self, list: list, path: str, originalsize: int) -> list:
+    def appendToListIfNotInArchive(self, list: list, path: str, originalsize: int, args: apns) -> list:
         if self.check(path):  # item is in archive, don't do anything
-            # TODO, add verbose check here
-            cprint(f"{path} has been previously processed", "magenta")
+            if args.v:
+                cprint(f"{path} has been previously processed", "blue")
         else:
             list.append((path, originalsize))
         return list

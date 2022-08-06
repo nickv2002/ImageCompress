@@ -84,7 +84,7 @@ async def main():
                 originalSize = os.path.getsize(inputFile)
                 sourceSizes += originalSize
                 if historyObj:
-                    imageFiles = historyObj.appendToListIfNotInArchive(imageFiles, inputFile, originalSize)
+                    imageFiles = historyObj.appendToListIfNotInArchive(imageFiles, inputFile, originalSize, args)
                 else:
                     imageFiles.append((inputFile, originalSize))
             else:
@@ -94,7 +94,7 @@ async def main():
                 originalSize = os.path.getsize(filename)
                 sourceSizes += originalSize
                 if historyObj:
-                    imageFiles = historyObj.appendToListIfNotInArchive(imageFiles, filename, originalSize)
+                    imageFiles = historyObj.appendToListIfNotInArchive(imageFiles, filename, originalSize, args)
                 else:
                     imageFiles.append((filename, originalSize))
 
@@ -111,7 +111,6 @@ async def main():
 
     if historyObj:
         for _, processedFile in results:
-            print(f"adding {processedFile}")
             historyObj.add(processedFile)
 
     if not args.q:
