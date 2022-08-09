@@ -1,4 +1,3 @@
-from genericpath import isfile
 import os
 import shutil
 import sqlite3
@@ -93,6 +92,9 @@ def cprint(text: str, color: str = "white"):
 
 def compareAndKeepSmaller(oldFile: str, newFile: str, args: apns):
     oldFileSize = os.path.getsize(oldFile)
+    if not os.path.isfile(newFile):
+        cprint(f"WARNING: missing expected output {newFile}", "yellow")
+        return
     newFileSize = os.path.getsize(newFile)
     if newFileSize == oldFileSize:
         if args.v:
