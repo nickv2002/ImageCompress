@@ -18,6 +18,7 @@ async def main():
     parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
     parser.add_argument("--jpg", action="store_true", help="default false, convert images to JPEGs")
     parser.add_argument("--png", action="store_true", help="default false, convert images to PNGs")
+    parser.add_argument("--heif", action="store_true", help="default false, convert images to HEIFs")
     parser.add_argument(
         "--deleteOnConvert",
         action="store_true",
@@ -41,7 +42,9 @@ async def main():
     parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
     args = parser.parse_args()
     assert not (args.v and args.q), "ERROR: can't have verbose (-v) and quiet (-q) flags enabled at once"
-    assert not (args.jpg and args.png), "ERROR: can't have png (--png) and jpg (--jpg) flags enabled at once"
+    assert (
+        sum([args.jpg, args.png, args.heif]) <= 1
+    ), "ERROR: can't have multiple output format flags (--png, --jpg, and/or --heif)"
 
     # We want to rate limit the number of processes here via cli, apply decorator to create new function
     # https://github.com/alexdelorenzo/limiter
@@ -60,6 +63,8 @@ async def main():
             message = "Warning: will convert all images to JPEGs."
         elif args.png:
             message = "Warning: will convert all images to PNGs."
+        elif args.heif:
+            message = "Warning: will convert all images to HEIFs."
         if args.deleteOnConvert:
             message += " Original images will be deleted after format conversion!"
         cprint(message, color="yellow")

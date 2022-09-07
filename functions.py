@@ -21,6 +21,7 @@ PATHS = {
         "cjpeg": "/opt/homebrew/Cellar/mozjpeg/4.1.1/bin/cjpeg",
         "gifsicle": "/opt/homebrew/bin/gifsicle",
         "convert": "/opt/homebrew/bin/convert",
+        "heif-enc": "/opt/homebrew/bin/heif-enc",
     },
     "linux": {
         "pngquant": "/usr/bin/pngquant",
@@ -29,6 +30,7 @@ PATHS = {
         "cjpeg": "/usr/local/bin/cjpeg-static",
         "gifsicle": "/usr/bin/gifsicle",
         "convert": "/usr/bin/convert",
+        "heif-enc": "/usr/bin/heif-enc",
     },
 }
 
@@ -227,8 +229,8 @@ async def gifsicle(inFile: str, args: apns) -> str:
     return returnedText
 
 
-# convert from imagemagick
-async def convert(inFile: str, toFmt: str, args: apns) -> str:
+# convert with imagemagick
+async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
     assert toFmt == "jpg" or toFmt == "png", "ERROR: unsupported conversion format"
     baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
     baseFileExt = os.path.splitext(inFile)[1].lower()
@@ -245,6 +247,35 @@ async def convert(inFile: str, toFmt: str, args: apns) -> str:
     subpArgs = [
         PATHS[args.platform]["convert"],
         inFile,
+        outFile,
+    ]
+    returnText = await subProcessToStr(subpArgs, args=args)
+    if args.v:
+        print(returnText)
+    if args.deleteOnConvert:
+        os.remove(inFile)
+    if not args.q:
+        cprint(f"Converted {inFile} to {outFile}", "blue")
+    return outFile
+
+
+# convert with heif-enc
+async def convertHEIF(inFile: str, args: apns) -> str:
+    baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
+    baseFileExt = os.path.splitext(inFile)[1].lower()
+    outFile = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.heif")
+
+    if baseFileExt == ".heif" or baseFileExt == ".heic":
+        if args.v:
+            cprint(f"{inFile} was already in the desired format ({baseFileExt}), skipping", "yellow")
+        return inFile
+    # heif-enc $i.jpg --quality $q --output $i-$q.heif
+    subpArgs = [
+        PATHS[args.platform]["heif-enc"],
+        inFile,
+        "--quality",
+        "50",
+        "--output",
         outFile,
     ]
     returnText = await subProcessToStr(subpArgs, args=args)
@@ -305,9 +336,11 @@ async def smartProcessFile(
     assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
 
     if args.jpg:
-        inputFile = await convert(inputFile, toFmt="jpg", args=args)
+        inputFile = await convertImageMagick(inputFile, toFmt="jpg", args=args)
     elif args.png:
-        inputFile = await convert(inputFile, toFmt="png", args=args)
+        inputFile = await convertImageMagick(inputFile, toFmt="png", args=args)
+    elif args.heif:
+        inputFile = await convertHEIF(inputFile, args=args)
 
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":
@@ -330,6 +363,8 @@ async def smartProcessFile(
         result = await mozjpg(inputFile, args=args)
         if args.v:
             print(result)
+    elif fileExt == ".heif" or fileExt == ".heic":
+        pass  # no aditional operations here for now since we aren't recompressing HEIF images
     else:
         assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
 
