@@ -17,8 +17,8 @@ PATHS = {
     "mac": {
         "pngquant": "/opt/homebrew/bin/pngquant",
         "oxipng": "/opt/homebrew/bin/oxipng",
-        "jpegtran": "/opt/homebrew/Cellar/mozjpeg/4.1.1/bin/jpegtran",
-        "cjpeg": "/opt/homebrew/Cellar/mozjpeg/4.1.1/bin/cjpeg",
+        "jpegtran": "/opt/homebrew/Cellar/mozjpeg/4.1.3/bin/jpegtran",
+        "cjpeg": "/opt/homebrew/Cellar/mozjpeg/4.1.3/bin/cjpeg",
         "gifsicle": "/opt/homebrew/bin/gifsicle",
         "convert": "/opt/homebrew/bin/convert",
         "heif-enc": "/opt/homebrew/bin/heif-enc",
