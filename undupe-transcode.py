@@ -77,6 +77,7 @@ if __name__ == "__main__":
         if "hevc" in vidFile or "HEVC" in vidFile or "265" in vidFile:
             already265 = True
         else:
+            print(f"Processing {vidFile}")
             command = shlex.split(f'{FFPROBE} -hide_banner "{vidFile}"')
             output = subprocess.run(command, capture_output=True, text=True, universal_newlines=True)
             for line in output.stderr.split("\n"):
@@ -161,7 +162,7 @@ if __name__ == "__main__":
                     print(
                         f"Saved {convert_bytes(vidFilesSizeDiff)} ({int(100*(vidFilesSizeDiff)/float(vidFileSize))}%) by converting to {vidFile265}"
                     )
-                    # os.remove(vidFile)
+                    os.remove(vidFile)
                     if REPLACEIFMP4ORMKV:
                         shutil.move(vidFile265, vidFile)
                         print(f"Also moved {vidFile265} to {vidFile}")
