@@ -59,6 +59,7 @@ async def main():
         if args.zopfli:
             cprint("Warning: zopfli processing enabled. This can be slow!", color="yellow")
     if not args.q and (args.jpg or args.png):
+        message = ""
         if args.jpg:
             message = "Warning: will convert all images to JPEGs."
         elif args.png:
@@ -81,7 +82,8 @@ async def main():
     historyObj = CompressHistory(args.history) if args.history else None
 
     # match for all image formats we work with, then walk dirs to match regex
-    reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
+    # reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
+    reg_expr = re.compile(r".*\.(jpg|png|jpeg)$", re.IGNORECASE).match  # now ignoring GIFs
     imageFiles = []
     sourceSizes = 0
     for inputFile in args.files:

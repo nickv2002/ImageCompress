@@ -1,6 +1,7 @@
 import os
 import shutil
 import sqlite3
+import subprocess
 from click import echo, style
 import asyncio
 from argparse import Namespace as apns  # just importing this for type hinting
@@ -260,10 +261,13 @@ async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
 
 
 # convert with heif-enc
-async def convertHEIF(inFile: str, args: apns) -> str:
+def convertHEIF(inFile: str, args: apns) -> str:
     baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
     baseFileExt = os.path.splitext(inFile)[1].lower()
     outFile = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.heif")
+    if baseFileExt == ".gif":
+        cprint(f"Warning skipping conversion for {inFile} since we don't want to flatten animated GIFs", "yellow")
+        return inFile
 
     if baseFileExt == ".heif" or baseFileExt == ".heic":
         if args.v:
@@ -278,9 +282,23 @@ async def convertHEIF(inFile: str, args: apns) -> str:
         "--output",
         outFile,
     ]
-    returnText = await subProcessToStr(subpArgs, args=args)
+    calledCmd = " ".join(subpArgs)
     if args.v:
-        print(returnText)
+        print(calledCmd)
+    # proc = await asyncio.create_subprocess_exec(
+    #     subpArgs[0], *subpArgs[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    # )
+    # stdout, stderr = await proc.communicate()
+
+    p = subprocess.run(subpArgs, capture_output=True)
+    stdout = p.stdout
+    stderr = p.stderr
+
+    if stderr:
+        cprint(f"*stderr for {calledCmd}]\n{stderr.decode('utf-8')}*", "yellow")
+        return inFile
+    if args.v:
+        print(stdout.decode("utf-8"))
     if args.deleteOnConvert:
         os.remove(inFile)
     if not args.q:
@@ -340,7 +358,7 @@ async def smartProcessFile(
     elif args.png:
         inputFile = await convertImageMagick(inputFile, toFmt="png", args=args)
     elif args.heif:
-        inputFile = await convertHEIF(inputFile, args=args)
+        inputFile = convertHEIF(inputFile, args=args)
 
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":
