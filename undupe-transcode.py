@@ -9,7 +9,9 @@ import itertools
 
 
 def multiple_file_types(*patterns):
-    return itertools.chain.from_iterable(glob.iglob(pattern, recursive=True) for pattern in patterns)
+    return itertools.chain.from_iterable(
+        glob.iglob(pattern, recursive=True) for pattern in patterns
+    )
 
 
 def convert_bytes(num):
@@ -24,7 +26,9 @@ def convert_bytes(num):
 
 def get_first_line_from_command(command):
     command = shlex.split(command)
-    output = subprocess.run(command, capture_output=True, text=True, universal_newlines=True)
+    output = subprocess.run(
+        command, capture_output=True, text=True, universal_newlines=True
+    )
     for line in output.stdout.split("\n"):
         return line.strip()
 
@@ -32,20 +36,31 @@ def get_first_line_from_command(command):
 if __name__ == "__main__":
     FFPROBE = "/opt/homebrew/bin/ffprobe"
     TVPATH = "/usr/local/bin/transcode-video"
-    MAXCOMPRESSRATIO = 0.95  # size of H.265 file over size of original file, max ratio allowed
+    MAXCOMPRESSRATIO = (
+        0.95  # size of H.265 file over size of original file, max ratio allowed
+    )
     MAXSECONDSSHIFT = 2.5  # max seconds the new file is alowed to be shorter or longer than the old file
     REPLACEIFMP4ORMKV = False
 
     assert os.path.isfile(
         FFPROBE
     ), f"ERROR: please install ffmpeg which includes a seperate ffprobe binary and fix the listed path: {FFPROBE}"
-    assert os.path.isfile(TVPATH), f"ERROR: please install transcode-video and fix the listed path: {TVPATH}"
+    assert os.path.isfile(
+        TVPATH
+    ), f"ERROR: please install transcode-video and fix the listed path: {TVPATH}"
     assert (
         0.25 <= MAXCOMPRESSRATIO <= 1.1
     ), f"ERROR: value given for MAXCOMPRESSRATIO is unreasonable: {MAXCOMPRESSRATIO} (it should probably be somewhere between .95 & .75)"
 
     for vidFile in multiple_file_types(
-        "**/*.mov", "**/*.mp4", "**/*.mkv", "**/*.m4v", "**/*.avi", "**/*.wmv", "**/*.webm", "**/*.flv"
+        "**/*.mov",
+        "**/*.mp4",
+        "**/*.mkv",
+        "**/*.m4v",
+        "**/*.avi",
+        "**/*.wmv",
+        "**/*.webm",
+        "**/*.flv",
     ):
         already265 = False
         foundVideoType = False
@@ -53,8 +68,12 @@ if __name__ == "__main__":
             vidFile265 = ".".join(vidFile.split(".")[:-1]) + ".h265.mp4"
         else:
             vidFile265 = ".".join(vidFile.split(".")[:-1]) + ".h265.mkv"
-        poorTranscodeLogPath = os.path.join(os.path.split(vidFile)[0], ".poorTranscodeLog")
-        badTranscodeLogPath = os.path.join(os.path.split(vidFile)[0], ".badTranscodeLog")
+        poorTranscodeLogPath = os.path.join(
+            os.path.split(vidFile)[0], ".poorTranscodeLog"
+        )
+        badTranscodeLogPath = os.path.join(
+            os.path.split(vidFile)[0], ".badTranscodeLog"
+        )
 
         if os.path.isfile(poorTranscodeLogPath):
             lines = [line.strip("\n") for line in open(poorTranscodeLogPath)]
@@ -62,7 +81,9 @@ if __name__ == "__main__":
                 # print(f'Skipping {vidFile} because it had a poor H.265 encode (A)')
                 continue
             elif vidFile in lines:
-                print(f"Skipping {vidFile} because this is the poor H.265 encode, perhaps delete this file? (B)")
+                print(
+                    f"Skipping {vidFile} because this is the poor H.265 encode, perhaps delete this file? (B)"
+                )
                 continue
 
         if os.path.isfile(badTranscodeLogPath):
@@ -71,7 +92,9 @@ if __name__ == "__main__":
                 # print(f'Skipping {vidFile} because it had a bad H.265 encode (C)')
                 continue
             elif vidFile in lines:
-                print(f"Skipping {vidFile} because this is the bad H.265 encode, perhaps delete this file? (D)")
+                print(
+                    f"Skipping {vidFile} because this is the bad H.265 encode, perhaps delete this file? (D)"
+                )
                 continue
 
         if "hevc" in vidFile or "HEVC" in vidFile or "265" in vidFile:
@@ -79,7 +102,9 @@ if __name__ == "__main__":
         else:
             print(f"Processing {vidFile}")
             command = shlex.split(f'{FFPROBE} -hide_banner "{vidFile}"')
-            output = subprocess.run(command, capture_output=True, text=True, universal_newlines=True)
+            output = subprocess.run(
+                command, capture_output=True, text=True, universal_newlines=True
+            )
             for line in output.stderr.split("\n"):
                 line = line.strip()
                 if line.startswith("Stream") and "Video" in line:
@@ -98,7 +123,9 @@ if __name__ == "__main__":
             continue
         else:
             print(f"--------------------\nProcessing {vidFile} to {vidFile265}")
-            command = shlex.split(f'{TVPATH} -q --encoder vt_h265 --target small -o "{vidFile265}" "{vidFile}"')
+            command = shlex.split(
+                f'{TVPATH} -q --encoder vt_h265 --target small -o "{vidFile265}" "{vidFile}"'
+            )
             print(command)
             subprocess.run(command)
 
@@ -128,7 +155,9 @@ if __name__ == "__main__":
                     )
                 except ValueError:
                     # we probably have a bad conversion here somwhere, we should be able to read this info about our new conversion
-                    print(f"Bad encode, error getting video length from {vidFile265} (F)")
+                    print(
+                        f"Bad encode, error getting video length from {vidFile265} (F)"
+                    )
                     with open(poorTranscodeLogPath, "a") as pTLO:
                         pTLO.write(vidFile265 + "\n")
                     os.remove(vidFile265)
@@ -145,7 +174,9 @@ if __name__ == "__main__":
                     )
                 except ValueError:
                     # we probably have a bad conversion here somwhere
-                    print(f"Bad source, error getting video length from {vidFile}, check file in player (G)")
+                    print(
+                        f"Bad source, error getting video length from {vidFile}, check file in player (G)"
+                    )
                     with open(poorTranscodeLogPath, "a") as pTLO:
                         pTLO.write(vidFile265 + "\n")
                     continue
