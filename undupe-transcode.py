@@ -119,7 +119,9 @@ if __name__ == "__main__":
                 sys.exit()
 
         if already265:
-            # print(f'--------------------\nSkipping {vidFile} which is alredy H.265 (this is probably good)')
+            print(
+                f"--------------------\nSkipping {vidFile} which is alredy H.265 (this is probably good)"
+            )
             continue
         else:
             print(f"--------------------\nProcessing {vidFile} to {vidFile265}")
