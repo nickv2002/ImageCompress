@@ -45,6 +45,7 @@ PATHS = {
     },
 }
 
+
 def bytes2human(
     n: int, format: str = "%(value).1f %(symbol)s", symbols: str = "customary"
 ) -> str:
@@ -303,7 +304,7 @@ def convertHEIF(inFile: str, args: apns) -> str:
         return inFile
     # heif-enc $i.jpg --quality $q --output $i-$q.heif
     subpArgs = [
-        shutl.which("heif-)nc"],
+        shutl.which("heif-enc"),
         inFile,
         "--quality",
         "50",
