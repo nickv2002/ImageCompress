@@ -8,7 +8,17 @@ from argparse import Namespace as apns  # just importing this for type hinting
 
 SYMBOLS = {
     "customary": ("B", "K", "M", "G", "T", "P", "E", "Z", "Y"),
-    "customary_ext": ("byte", "kilo", "mega", "giga", "tera", "peta", "exa", "zetta", "iotta"),
+    "customary_ext": (
+        "byte",
+        "kilo",
+        "mega",
+        "giga",
+        "tera",
+        "peta",
+        "exa",
+        "zetta",
+        "iotta",
+    ),
     "iec": ("Bi", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"),
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
@@ -36,7 +46,9 @@ PATHS = {
 }
 
 
-def bytes2human(n: int, format: str = "%(value).1f %(symbol)s", symbols: str = "customary") -> str:
+def bytes2human(
+    n: int, format: str = "%(value).1f %(symbol)s", symbols: str = "customary"
+) -> str:
     """
     Convert n bytes into a human readable string based on format.
     symbols can be either "customary", "customary_ext", "iec" or "iec_ext",
@@ -105,7 +117,10 @@ def compareAndKeepSmaller(oldFile: str, newFile: str, args: apns):
         os.remove(newFile)
     elif newFileSize < oldFileSize:
         if args.v:
-            cprint(f"new file is {1 - newFileSize / oldFileSize:.2%} smaller! Updating it at {oldFile}", "green")
+            cprint(
+                f"new file is {1 - newFileSize / oldFileSize:.2%} smaller! Updating it at {oldFile}",
+                "green",
+            )
         shutil.move(newFile, oldFile)
     else:
         if args.v:
@@ -127,7 +142,10 @@ async def subProcessToStr(subpArgs: list, args: apns, stdErrIsErr: bool = True) 
     if args.v:
         print(calledCmd)
     proc = await asyncio.create_subprocess_exec(
-        subpArgs[0], *subpArgs[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        subpArgs[0],
+        *subpArgs[1:],
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await proc.communicate()
     if stderr and stdErrIsErr:
@@ -167,7 +185,9 @@ async def oxipng(inFile: str, args: apns) -> str:
         inFile,  # will output to input
     ]
     if args.zopfli:
-        args.append("--zopfli")  # Use the slower but better compressing Zopfli algorithm
+        args.append(
+            "--zopfli"
+        )  # Use the slower but better compressing Zopfli algorithm
     return await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
 
 
@@ -243,7 +263,10 @@ async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
         pass
     else:
         if args.v:
-            cprint(f"{inFile} was already in the desired format ({toFmt}), skipping", "yellow")
+            cprint(
+                f"{inFile} was already in the desired format ({toFmt}), skipping",
+                "yellow",
+            )
         return inFile
     subpArgs = [
         PATHS[args.platform]["convert"],
@@ -266,12 +289,18 @@ def convertHEIF(inFile: str, args: apns) -> str:
     baseFileExt = os.path.splitext(inFile)[1].lower()
     outFile = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.heif")
     if baseFileExt == ".gif":
-        cprint(f"Warning skipping conversion for {inFile} since we don't want to flatten animated GIFs", "yellow")
+        cprint(
+            f"Warning skipping conversion for {inFile} since we don't want to flatten animated GIFs",
+            "yellow",
+        )
         return inFile
 
     if baseFileExt == ".heif" or baseFileExt == ".heic":
         if args.v:
-            cprint(f"{inFile} was already in the desired format ({baseFileExt}), skipping", "yellow")
+            cprint(
+                f"{inFile} was already in the desired format ({baseFileExt}), skipping",
+                "yellow",
+            )
         return inFile
     # heif-enc $i.jpg --quality $q --output $i-$q.heif
     subpArgs = [
@@ -319,10 +348,15 @@ class CompressHistory:
         self.cursor = con.cursor()
 
         try:
-            self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY) WITHOUT ROWID")
+            self.cursor.execute(
+                "CREATE TABLE IF NOT EXISTS archive "
+                "(entry PRIMARY KEY) WITHOUT ROWID"
+            )
         except sqlite3.OperationalError:
             # fallback for missing WITHOUT ROWID support (#553)
-            self.cursor.execute("CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY)")
+            self.cursor.execute(
+                "CREATE TABLE IF NOT EXISTS archive " "(entry PRIMARY KEY)"
+            )
 
     def check(self, relativePath):
         """Return True if the item described by relativePath exists in archive, after converting to realpath"""
@@ -335,7 +369,9 @@ class CompressHistory:
         key = os.path.realpath(relativePath)
         self.cursor.execute("INSERT OR IGNORE INTO archive VALUES (?)", (key,))
 
-    def appendToListIfNotInArchive(self, list: list, path: str, originalsize: int, args: apns) -> list:
+    def appendToListIfNotInArchive(
+        self, list: list, path: str, originalsize: int, args: apns
+    ) -> list:
         if self.check(path):  # item is in archive, don't do anything
             if args.v:
                 cprint(f"{path} has been previously processed", "blue")
@@ -384,10 +420,14 @@ async def smartProcessFile(
     elif fileExt == ".heif" or fileExt == ".heic":
         pass  # no aditional operations here for now since we aren't recompressing HEIF images
     else:
-        assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
+        assert (
+            False
+        ), f"error, this should not be here, no processing, unknown filetime for {inputFile}"
 
     if not os.path.isfile(inputFile):
-        cprint(f"WARNING: missing expected output {inputFile}, returning nothing", "yellow")
+        cprint(
+            f"WARNING: missing expected output {inputFile}, returning nothing", "yellow"
+        )
         return inputSize, inputFile
 
     newSize = os.path.getsize(inputFile)
