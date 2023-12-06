@@ -9,3 +9,6 @@ cp -a /usr/bin/jpegtran-static /host-volume
 chown $(id -u):$(id -g) /usr/bin/cjpeg-static
 cp -a /usr/bin/cjpeg-static /host-volume
 EOF
+
+echo "sudo mv cjpeg-static jpegtran-static oxipng /usr/local/bin/"
+sudo mv cjpeg-static jpegtran-static oxipng /usr/local/bin/
