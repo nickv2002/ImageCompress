@@ -104,14 +104,6 @@ async def main():
             message += " Original images will be deleted after format conversion!"
         cprint(message, color="yellow")
 
-    # we'll use this to help find the right paths later
-    if platform.startswith("linux"):
-        args.platform = "linux"
-    elif platform == "darwin":
-        args.platform = "mac"
-    elif platform == "win32":
-        args.platform = "win"
-
     # set up our SQLite history object
     historyObj = CompressHistory(args.history) if args.history else None
 
