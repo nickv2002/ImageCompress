@@ -7,18 +7,36 @@ import datetime
 import asyncio
 from sys import exit
 from limiter import get_limiter, limit
-from functions import CompressHistory, cprint, bytes2human, filter_filenames, smartProcessFile
+from functions import (
+    CompressHistory,
+    cprint,
+    bytes2human,
+    filter_filenames,
+    smartProcessFile,
+)
 
 
 async def main():
     startTime = datetime.datetime.now()
     parser = argparse.ArgumentParser(description="compress images")
-    parser.add_argument("-v", action="store_true", help="default false, enables verbose text output")
-    parser.add_argument("-q", action="store_true", help="default false, quiet, silences all text output")
-    parser.add_argument("--lossy", action="store_true", help="default false, enables lossy optimzations")
-    parser.add_argument("--jpg", action="store_true", help="default false, convert images to JPEGs")
-    parser.add_argument("--png", action="store_true", help="default false, convert images to PNGs")
-    parser.add_argument("--heif", action="store_true", help="default false, convert images to HEIFs")
+    parser.add_argument(
+        "-v", action="store_true", help="default false, enables verbose text output"
+    )
+    parser.add_argument(
+        "-q", action="store_true", help="default false, quiet, silences all text output"
+    )
+    parser.add_argument(
+        "--lossy", action="store_true", help="default false, enables lossy optimzations"
+    )
+    parser.add_argument(
+        "--jpg", action="store_true", help="default false, convert images to JPEGs"
+    )
+    parser.add_argument(
+        "--png", action="store_true", help="default false, convert images to PNGs"
+    )
+    parser.add_argument(
+        "--heif", action="store_true", help="default false, convert images to HEIFs"
+    )
     parser.add_argument(
         "--deleteOnConvert",
         action="store_true",
@@ -30,7 +48,11 @@ async def main():
         help="default false, enables zopfli compression for PNGs (slow & CPU intenstive)",
     )
     parser.add_argument(
-        "--parallelism", metavar="p", type=int, default=4, help="how many async threads to allow, default=4"
+        "--parallelism",
+        metavar="p",
+        type=int,
+        default=4,
+        help="how many async threads to allow, default=4",
     )
     parser.add_argument(
         "--history",
@@ -39,16 +61,26 @@ async def main():
         default=None,
         help="a file that tracks images that have already been compressed",
     )
-    parser.add_argument("files", metavar="F", type=str, nargs="+", help="any files or folders to process")
+    parser.add_argument(
+        "files",
+        metavar="F",
+        type=str,
+        nargs="+",
+        help="any files or folders to process",
+    )
     args = parser.parse_args()
-    assert not (args.v and args.q), "ERROR: can't have verbose (-v) and quiet (-q) flags enabled at once"
+    assert not (
+        args.v and args.q
+    ), "ERROR: can't have verbose (-v) and quiet (-q) flags enabled at once"
     assert (
         sum([args.jpg, args.png, args.heif]) <= 1
     ), "ERROR: can't have multiple output format flags (--png, --jpg, and/or --heif)"
 
     # We want to rate limit the number of processes here via cli, apply decorator to create new function
     # https://github.com/alexdelorenzo/limiter
-    limit_operations = limit(get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1)
+    limit_operations = limit(
+        get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1
+    )
     limitedSmartProcessFile = limit_operations(smartProcessFile)
 
     if args.v:
@@ -57,7 +89,9 @@ async def main():
         else:
             cprint(f"Lossy processing off: {argv}", color="green")
         if args.zopfli:
-            cprint("Warning: zopfli processing enabled. This can be slow!", color="yellow")
+            cprint(
+                "Warning: zopfli processing enabled. This can be slow!", color="yellow"
+            )
     if not args.q and (args.jpg or args.png):
         message = ""
         if args.jpg:
@@ -83,7 +117,9 @@ async def main():
 
     # match for all image formats we work with, then walk dirs to match regex
     # reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
-    reg_expr = re.compile(r".*\.(jpg|png|jpeg)$", re.IGNORECASE).match  # now ignoring GIFs
+    reg_expr = re.compile(
+        r".*\.(jpg|png|jpeg)$", re.IGNORECASE
+    ).match  # now ignoring GIFs
     imageFiles = []
     sourceSizes = 0
     for inputFile in args.files:
@@ -92,7 +128,9 @@ async def main():
                 originalSize = os.path.getsize(inputFile)
                 sourceSizes += originalSize
                 if historyObj:
-                    imageFiles = historyObj.appendToListIfNotInArchive(imageFiles, inputFile, originalSize, args)
+                    imageFiles = historyObj.appendToListIfNotInArchive(
+                        imageFiles, inputFile, originalSize, args
+                    )
                 else:
                     imageFiles.append((inputFile, originalSize))
             else:
@@ -102,7 +140,9 @@ async def main():
                 originalSize = os.path.getsize(filename)
                 sourceSizes += originalSize
                 if historyObj:
-                    imageFiles = historyObj.appendToListIfNotInArchive(imageFiles, filename, originalSize, args)
+                    imageFiles = historyObj.appendToListIfNotInArchive(
+                        imageFiles, filename, originalSize, args
+                    )
                 else:
                     imageFiles.append((filename, originalSize))
 
