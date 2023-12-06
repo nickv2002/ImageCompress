@@ -23,7 +23,7 @@ SYMBOLS = {
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
 
-# TODO use shutl.which() to look up these paths
+# TODO use shutil.which() to look up these paths
 PATHS = {
     "mac": {
         "pngquant": "/opt/homebrew/bin/pngquant",
@@ -160,7 +160,7 @@ async def subProcessToStr(subpArgs: list, args: apns, stdErrIsErr: bool = True) 
 # very lossy - uses a reduced number of colors
 async def pngquant(inFile: str, args: apns) -> str:
     subpArgs = [
-        shutl.which("pngquant"),
+        shutil.which("pngquant"),
         "--force",  # allow overwrite so we can update-in-place
         "--skip-if-larger",  # only save converted files if they're smaller than original
         "--strip",  # remove optional metadata (default on Mac)
@@ -176,7 +176,7 @@ async def pngquant(inFile: str, args: apns) -> str:
 # Oxipng is a multithreaded lossless PNG compression optimizer
 async def oxipng(inFile: str, args: apns) -> str:
     subpArgs = [
-        shutl.which("oxipng"),
+        shutil.which("oxipng"),
         "--preserve",  # Preserve file attributes if possible
         "-s",  # Strip safely-removable metadata objects
         "--alpha",  # Perform additional alpha optimizations
@@ -195,7 +195,7 @@ async def oxipng(inFile: str, args: apns) -> str:
 async def mozjpg(inFile: str, args: apns) -> str:
     outfile = os.path.join("/tmp", "mozjpg-" + os.path.split(inFile)[1])
     subpArgs = [
-        shutl.which("jpegtran"),
+        shutil.which("jpegtran"),
         "-optimize",  # Optimize Huffman table (smaller file, but slow compression)
         "-progressive",  # Create progressive JPEG file
         "-copy",  # Strip safely-removable metadata objects
@@ -216,7 +216,7 @@ async def mozjpg(inFile: str, args: apns) -> str:
 async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
     outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
     subpArgs = [
-        shutl.which("cjpeg"),
+        shutil.which("cjpeg"),
         "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
         f"{quality}",
         "-sample",
@@ -237,7 +237,7 @@ async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
 async def gifsicle(inFile: str, args: apns) -> str:
     outfile = os.path.join("/tmp", "gifsicle-" + os.path.split(inFile)[1])
     subpArgs = [
-        shutl.which("gifsicle"),
+        shutil.which("gifsicle"),
         "-O3",  # Try several optimization methods (usually slower, sometimes better results)
         inFile,
         "-o",
@@ -269,7 +269,7 @@ async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
             )
         return inFile
     subpArgs = [
-        shutl.which("convert"),
+        shutil.which("convert"),
         inFile,
         outFile,
     ]
@@ -304,7 +304,7 @@ def convertHEIF(inFile: str, args: apns) -> str:
         return inFile
     # heif-enc $i.jpg --quality $q --output $i-$q.heif
     subpArgs = [
-        shutl.which("heif-enc"),
+        shutil.which("heif-enc"),
         inFile,
         "--quality",
         "50",
