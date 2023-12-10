@@ -388,9 +388,10 @@ async def smartProcessFile(
 ):
     assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
     assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
-    assert (
-        os.path.getsize(inputFile) != 0
-    ), f"ERROR: file {inputFile} is empty (zero bytes)"
+
+    if os.path.getsize(inputFile) < 9999:  # bytes
+        cprint(f"WARNING: input size too small {inputFile}, no processing", "yellow")
+        return inputSize, inputFile
 
     if args.jpg:
         inputFile = await convertImageMagick(inputFile, toFmt="jpg", args=args)
