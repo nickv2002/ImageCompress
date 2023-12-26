@@ -5,6 +5,7 @@ import subprocess
 from click import echo, style
 import asyncio
 from argparse import Namespace as apns  # just importing this for type hinting
+from platform import system as sysplat
 
 SYMBOLS = {
     "customary": ("B", "K", "M", "G", "T", "P", "E", "Z", "Y"),
@@ -24,8 +25,10 @@ SYMBOLS = {
 }
 
 # TODO use shutil.which() to look up these paths
+# but mozjpeg is keg-only, which means it was not symlinked into /opt/homebrew,
+# because mozjpeg is not linked to prevent conflicts with the standard libjpeg.
 PATHS = {
-    "mac": {
+    "Darwin": { # Mac
         "pngquant": "/opt/homebrew/bin/pngquant",
         "oxipng": "/opt/homebrew/bin/oxipng",
         "jpegtran": "/opt/homebrew/Cellar/mozjpeg/4.1.5/bin/jpegtran",
@@ -34,7 +37,7 @@ PATHS = {
         "convert": "/opt/homebrew/bin/convert",
         "heif-enc": "/opt/homebrew/bin/heif-enc",
     },
-    "linux": {
+    "Linux": {
         "pngquant": "/usr/bin/pngquant",
         "oxipng": "/usr/local/bin/oxipng",
         "jpegtran": "/usr/local/bin/jpegtran-static",
@@ -160,7 +163,7 @@ async def subProcessToStr(subpArgs: list, args: apns, stdErrIsErr: bool = True) 
 # very lossy - uses a reduced number of colors
 async def pngquant(inFile: str, args: apns) -> str:
     subpArgs = [
-        shutil.which("pngquant"),
+        PATHS[sysplat()]["pngquant"],
         "--force",  # allow overwrite so we can update-in-place
         "--skip-if-larger",  # only save converted files if they're smaller than original
         "--strip",  # remove optional metadata (default on Mac)
@@ -176,7 +179,7 @@ async def pngquant(inFile: str, args: apns) -> str:
 # Oxipng is a multithreaded lossless PNG compression optimizer
 async def oxipng(inFile: str, args: apns) -> str:
     subpArgs = [
-        shutil.which("oxipng"),
+        PATHS[sysplat()]["oxipng"],
         "--preserve",  # Preserve file attributes if possible
         "-s",  # Strip safely-removable metadata objects
         "--alpha",  # Perform additional alpha optimizations
@@ -195,7 +198,7 @@ async def oxipng(inFile: str, args: apns) -> str:
 async def mozjpg(inFile: str, args: apns) -> str:
     outfile = os.path.join("/tmp", "mozjpg-" + os.path.split(inFile)[1])
     subpArgs = [
-        shutil.which("jpegtran"),
+        PATHS[sysplat()]["jpegtran"],
         "-optimize",  # Optimize Huffman table (smaller file, but slow compression)
         "-progressive",  # Create progressive JPEG file
         "-copy",  # Strip safely-removable metadata objects
@@ -216,7 +219,7 @@ async def mozjpg(inFile: str, args: apns) -> str:
 async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
     outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
     subpArgs = [
-        shutil.which("cjpeg"),
+        PATHS[sysplat()]["cjpeg"],
         "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
         f"{quality}",
         "-sample",
@@ -237,7 +240,7 @@ async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
 async def gifsicle(inFile: str, args: apns) -> str:
     outfile = os.path.join("/tmp", "gifsicle-" + os.path.split(inFile)[1])
     subpArgs = [
-        shutil.which("gifsicle"),
+        PATHS[sysplat()]["gifsicle"],
         "-O3",  # Try several optimization methods (usually slower, sometimes better results)
         inFile,
         "-o",
@@ -269,7 +272,7 @@ async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
             )
         return inFile
     subpArgs = [
-        shutil.which("convert"),
+        PATHS[sysplat()]["convert"],
         inFile,
         outFile,
     ]
@@ -304,7 +307,7 @@ def convertHEIF(inFile: str, args: apns) -> str:
         return inFile
     # heif-enc $i.jpg --quality $q --output $i-$q.heif
     subpArgs = [
-        shutil.which("heif-enc"),
+        PATHS[sysplat()]["heif-enc"],
         inFile,
         "--quality",
         "50",
