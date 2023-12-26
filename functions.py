@@ -24,27 +24,24 @@ SYMBOLS = {
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
 
+
+# mozjpeg is keg-only, which means it was not symlinked into the standard path
+def mozjpeglatestbinpath():
+    brewpathprefix = os.getenv("HOMEBREW_PREFIX", "/usr/bin/")
+    try:
+        # TODO human sort version numbers
+        versionNumber = os.listdir(f"{brewpathprefix}/Cellar/mozjpeg")[0]
+    except:
+        versionNumber = "1.0"
+    return f"{brewpathprefix}/Cellar/mozjpeg/{versionNumber}/bin/"
+
+
 PATHS = {
     "Darwin": {  # Mac
         "pngquant": shutil.which("pngquant"),
         "oxipng": shutil.which("oxipng"),
-        # mozjpeg is keg-only, which means it was not symlinked into the standard path
-        "jpegtran": os.path.join(
-            os.environ["HOMEBREW_PREFIX"],
-            "Cellar",
-            "mozjpeg",
-            os.listdir("/opt/homebrew/Cellar/mozjpeg")[0],
-            "bin",
-            "jpegtran",
-        ),
-        "cjpeg": os.path.join(
-            os.environ["HOMEBREW_PREFIX"],
-            "Cellar",
-            "mozjpeg",
-            os.listdir("/opt/homebrew/Cellar/mozjpeg")[0],
-            "bin",
-            "cjpeg",
-        ),
+        "jpegtran": f"{mozjpeglatestbinpath()}/jpegtran",
+        "cjpeg": f"{mozjpeglatestbinpath()}/cjpeg",
         "gifsicle": shutil.which("gifsicle"),
         "convert": shutil.which("convert"),
         "heif-enc": shutil.which("heif-enc"),
