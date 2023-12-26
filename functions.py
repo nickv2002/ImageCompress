@@ -25,26 +25,28 @@ SYMBOLS = {
 }
 
 
+HOMEBREW_PREFIX = os.getenv("HOMEBREW_PREFIX", "/opt/homebrew")
+
+
 # mozjpeg is keg-only, which means it was not symlinked into the standard path
 def mozjpeglatestbinpath():
-    brewpathprefix = os.getenv("HOMEBREW_PREFIX", "/usr/bin/")
     try:
         # TODO human sort version numbers
-        versionNumber = os.listdir(f"{brewpathprefix}/Cellar/mozjpeg")[0]
+        versionNumber = os.listdir(f"{HOMEBREW_PREFIX}/Cellar/mozjpeg")[0]
     except:
         versionNumber = "1.0"
-    return f"{brewpathprefix}/Cellar/mozjpeg/{versionNumber}/bin/"
+    return f"{HOMEBREW_PREFIX}/Cellar/mozjpeg/{versionNumber}/bin"
 
 
 PATHS = {
     "Darwin": {  # Mac
-        "pngquant": shutil.which("pngquant"),
-        "oxipng": shutil.which("oxipng"),
+        "pngquant": f"{HOMEBREW_PREFIX}/bin/pngquant",
+        "oxipng": f"{HOMEBREW_PREFIX}/bin/oxipng",
         "jpegtran": f"{mozjpeglatestbinpath()}/jpegtran",
         "cjpeg": f"{mozjpeglatestbinpath()}/cjpeg",
-        "gifsicle": shutil.which("gifsicle"),
-        "convert": shutil.which("convert"),
-        "heif-enc": shutil.which("heif-enc"),
+        "gifsicle": f"{HOMEBREW_PREFIX}/bin/gifsicle",
+        "convert": f"{HOMEBREW_PREFIX}/bin/convert",
+        "heif-enc": f"{HOMEBREW_PREFIX}/bin/heif-enc",
     },
     "Linux": {
         "pngquant": shutil.which("pngquant"),
