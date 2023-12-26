@@ -24,27 +24,39 @@ SYMBOLS = {
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
 
-# TODO use shutil.which() to look up these paths
-# but mozjpeg is keg-only, which means it was not symlinked into /opt/homebrew,
-# because mozjpeg is not linked to prevent conflicts with the standard libjpeg.
 PATHS = {
-    "Darwin": { # Mac
-        "pngquant": "/opt/homebrew/bin/pngquant",
-        "oxipng": "/opt/homebrew/bin/oxipng",
-        "jpegtran": "/opt/homebrew/Cellar/mozjpeg/4.1.5/bin/jpegtran",
-        "cjpeg": "/opt/homebrew/Cellar/mozjpeg/4.1.5/bin/cjpeg",
-        "gifsicle": "/opt/homebrew/bin/gifsicle",
-        "convert": "/opt/homebrew/bin/convert",
-        "heif-enc": "/opt/homebrew/bin/heif-enc",
+    "Darwin": {  # Mac
+        "pngquant": shutil.which("pngquant"),
+        "oxipng": shutil.which("oxipng"),
+        # mozjpeg is keg-only, which means it was not symlinked into the standard path
+        "jpegtran": os.path.join(
+            os.environ["HOMEBREW_PREFIX"],
+            "Cellar",
+            "mozjpeg",
+            os.listdir("/opt/homebrew/Cellar/mozjpeg")[0],
+            "bin",
+            "jpegtran",
+        ),
+        "cjpeg": os.path.join(
+            os.environ["HOMEBREW_PREFIX"],
+            "Cellar",
+            "mozjpeg",
+            os.listdir("/opt/homebrew/Cellar/mozjpeg")[0],
+            "bin",
+            "cjpeg",
+        ),
+        "gifsicle": shutil.which("gifsicle"),
+        "convert": shutil.which("convert"),
+        "heif-enc": shutil.which("heif-enc"),
     },
     "Linux": {
-        "pngquant": "/usr/bin/pngquant",
-        "oxipng": "/usr/local/bin/oxipng",
-        "jpegtran": "/usr/local/bin/jpegtran-static",
-        "cjpeg": "/usr/local/bin/cjpeg-static",
-        "gifsicle": "/usr/bin/gifsicle",
-        "convert": "/usr/bin/convert",
-        "heif-enc": "/usr/bin/heif-enc",
+        "pngquant": shutil.which("pngquant"),
+        "oxipng": shutil.which("oxipng"),
+        "jpegtran": shutil.which("jpegtran-static"),
+        "cjpeg": shutil.which("cjpeg-static"),
+        "gifsicle": shutil.which("gifsicle"),
+        "convert": shutil.which("convert"),
+        "heif-enc": shutil.which("heif-enc"),
     },
 }
 
