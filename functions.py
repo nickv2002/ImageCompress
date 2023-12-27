@@ -23,17 +23,18 @@ SYMBOLS = {
     "iec": ("Bi", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"),
     "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
-
-
 HOMEBREW_PREFIX = os.getenv("HOMEBREW_PREFIX", "/opt/homebrew")
 
 
 # mozjpeg is keg-only, which means it was not symlinked into the standard path
 def mozjpeglatestbinpath():
     try:
-        # TODO human sort version numbers
-        versionNumber = os.listdir(f"{HOMEBREW_PREFIX}/Cellar/mozjpeg")[0]
-    except:
+        # this applies a human-sort to version numbers
+        versionNumber = sorted(
+            os.listdir(f"{HOMEBREW_PREFIX}/Cellar/mozjpeg"),
+            key=lambda s: [int(u) for u in s.split(".")],
+        )[-1]
+    except (IndexError, FileNotFoundError):
         versionNumber = "1.0"
     return f"{HOMEBREW_PREFIX}/Cellar/mozjpeg/{versionNumber}/bin"
 
