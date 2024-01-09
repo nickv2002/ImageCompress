@@ -1,6 +1,5 @@
 #/bin/sh
-# docker buildx build . -t imgcompress --no-cache
-docker buildx build . -t imgcompress
+docker buildx build . -t imgcompress --no-cache
 
 docker run --rm -iv${PWD}:/host-volume imgcompress sh -s <<EOF
 chown $(id -u):$(id -g) /usr/bin/oxipng
