@@ -479,8 +479,8 @@ async def smartProcessFile(
         result = await mozjpg(inputFile, args=args)
         if args.v:
             print(result)
-    elif fileExt == ".heif" or fileExt == ".heic":
-        pass  # no aditional operations here for now since we aren't recompressing HEIF images
+    elif fileExt == ".heif" or fileExt == ".heic" or fileExt == ".avif":
+        pass  # no aditional operations here for now since we aren't recompressing these image types
     else:
         assert (
             False
