@@ -48,6 +48,7 @@ PATHS = {
         "gifsicle": f"{HOMEBREW_PREFIX}/bin/gifsicle",
         "convert": f"{HOMEBREW_PREFIX}/bin/convert",
         "heif-enc": f"{HOMEBREW_PREFIX}/bin/heif-enc",
+        "cavif": shutil.which("cavif"),
     },
     "Linux": {
         "pngquant": shutil.which("pngquant"),
@@ -57,6 +58,7 @@ PATHS = {
         "gifsicle": shutil.which("gifsicle"),
         "convert": shutil.which("convert"),
         "heif-enc": shutil.which("heif-enc"),
+        "cavif": shutil.which("cavif"),
     },
 }
 
@@ -298,6 +300,45 @@ async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
     return outFile
 
 
+# convert with cavif
+def convertAVIF(inFile: str, args: apns) -> str:
+    baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
+    baseFileExt = os.path.splitext(inFile)[1].lower()
+    outFile = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.avif")
+
+    if baseFileExt == ".avif":
+        if args.v:
+            cprint(
+                f"{inFile} was already an AVIF, skipping",
+                "yellow",
+            )
+        return inFile
+    subpArgs = [
+        PATHS[sysplat()]["cavif"],
+        inFile,
+        "-o",
+        outFile,
+    ]
+
+    calledCmd = " ".join(subpArgs)
+    if args.v:
+        print(calledCmd)
+    p = subprocess.run(subpArgs, capture_output=True)
+    stdout = p.stdout
+    stderr = p.stderr
+
+    if stderr:
+        cprint(f"*stderr for {calledCmd}]\n{stderr.decode('utf-8')}*", "yellow")
+        return inFile
+    if args.v:
+        print(stdout.decode("utf-8"))
+    if args.deleteOnConvert:
+        os.remove(inFile)
+    if not args.q:
+        cprint(f"Converted {inFile} to {outFile}", "blue")
+    return outFile
+
+
 # convert with heif-enc
 def convertHEIF(inFile: str, args: apns) -> str:
     baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
@@ -414,6 +455,8 @@ async def smartProcessFile(
         inputFile = await convertImageMagick(inputFile, toFmt="png", args=args)
     elif args.heif:
         inputFile = convertHEIF(inputFile, args=args)
+    elif args.avif:
+        inputFile = convertAVIF(inputFile, args=args)
 
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":
