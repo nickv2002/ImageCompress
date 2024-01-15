@@ -24,13 +24,14 @@ def convert_bytes(num):
         num /= 1024.0
 
 
-def get_first_line_from_command(command):
-    command = shlex.split(command)
+def get_first_line_from_command(command: str) -> str:
+    command_parts = shlex.split(command)
     output = subprocess.run(
-        command, capture_output=True, text=True, universal_newlines=True
+        command_parts, capture_output=True, text=True, universal_newlines=True
     )
     for line in output.stdout.split("\n"):
         return line.strip()
+    raise TypeError(f"ERROR: we expected output but `{command}` had none")
 
 
 if __name__ == "__main__":
