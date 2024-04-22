@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../../exos/undupe/Undupe.noindex/undupe.scripts"
+		},
+		{
+			"path": "../Code"
 		}
 	],
 	"settings": {}
