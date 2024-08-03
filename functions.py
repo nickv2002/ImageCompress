@@ -1,11 +1,12 @@
+import asyncio
 import os
 import shutil
 import sqlite3
 import subprocess
-from click import echo, style
-import asyncio
 from argparse import Namespace as apns  # just importing this for type hinting
 from platform import system as sysplat
+
+from click import echo, style
 
 SYMBOLS = {
     "customary": ("B", "K", "M", "G", "T", "P", "E", "Z", "Y"),
@@ -48,7 +49,7 @@ PATHS = {
         "gifsicle": f"{HOMEBREW_PREFIX}/bin/gifsicle",
         "convert": f"{HOMEBREW_PREFIX}/bin/convert",
         "heif-enc": f"{HOMEBREW_PREFIX}/bin/heif-enc",
-        "cavif": shutil.which("cavif"),
+        "cavif": os.path.expanduser("~/.cargo/bin/cavif"),
     },
     "Linux": {
         "pngquant": shutil.which("pngquant"),
@@ -302,9 +303,9 @@ async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
 
 # convert with cavif
 def convertAVIF(inFile: str, args: apns) -> str:
-    baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
-    baseFileExt = os.path.splitext(inFile)[1].lower()
-    outFile = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.avif")
+    baseFileNameNoExt: str = os.path.splitext(os.path.split(inFile)[1])[0]
+    baseFileExt: str = os.path.splitext(inFile)[1].lower()
+    outFile: str = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.avif")
 
     if baseFileExt == ".avif":
         if args.v:
@@ -319,7 +320,9 @@ def convertAVIF(inFile: str, args: apns) -> str:
         "-o",
         outFile,
     ]
-
+    assert os.path.isfile(
+        subpArgs[0]
+    ), f"ERROR: Can't find executable at: {subpArgs[0]}"
     calledCmd = " ".join(subpArgs)
     if args.v:
         print(calledCmd)
@@ -482,9 +485,7 @@ async def smartProcessFile(
     elif fileExt == ".heif" or fileExt == ".heic" or fileExt == ".avif":
         pass  # no aditional operations here for now since we aren't recompressing these image types
     else:
-        assert (
-            False
-        ), f"error, this should not be here, no processing, unknown filetime for {inputFile}"
+        assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
 
     if not os.path.isfile(inputFile):
         cprint(
