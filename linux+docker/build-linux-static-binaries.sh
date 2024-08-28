@@ -1,4 +1,6 @@
 #/bin/sh
+set -e
+
 docker buildx build . -t imgcompress --no-cache
 
 docker run --rm -iv${PWD}:/host-volume imgcompress sh -s <<EOF

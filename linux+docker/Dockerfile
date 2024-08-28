@@ -7,7 +7,7 @@ WORKDIR /opt
 RUN apt -y install imagemagick pkg-config autoconf automake libtool make cmake flex libpng-tools libpng-dev \
     zlib1g-dev optipng advancecomp parallel
 RUN git clone https://github.com/mozilla/mozjpeg.git
-RUN cd mozjpeg
+WORKDIR /opt/mozjpeg
 RUN cmake .
 RUN make
 
