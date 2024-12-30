@@ -107,6 +107,8 @@ async def main():
             message = "Warning: will convert all images to PNGs."
         elif args.heif:
             message = "Warning: will convert all images to HEIFs."
+        elif args.jxl:
+            message = "Warning: will convert all images to JPEG-XL."
         if args.deleteOnConvert:
             message += " Original images will be deleted after format conversion!"
         cprint(message, color="yellow")
