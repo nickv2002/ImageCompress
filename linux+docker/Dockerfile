@@ -8,14 +8,16 @@ RUN apt -y install imagemagick pkg-config autoconf automake libtool make cmake f
     zlib1g-dev optipng advancecomp parallel
 RUN git clone https://github.com/mozilla/mozjpeg.git
 WORKDIR /opt/mozjpeg
-RUN cmake .
+# Add this for debugging:
+# CMD ["bash"]
+RUN cmake -DCMAKE_C_STANDARD_LIBRARIES="-lm" .
 RUN make
 
 FROM base AS oxipngbuild
 WORKDIR /rust
-RUN curl https://sh.rustup.rs -s >> rustup.sh && \
-    chmod 755 /rust/rustup.sh && \
-    /rust/rustup.sh -y
+RUN curl https://sh.rustup.rs -s >> rustup.sh
+RUN chmod 755 /rust/rustup.sh
+RUN /rust/rustup.sh -y
 RUN /root/.cargo/bin/cargo install oxipng cavif
 
 FROM base AS final
