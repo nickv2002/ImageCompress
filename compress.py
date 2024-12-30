@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 import argparse
+import asyncio
+import datetime
 import os
 import re
-from sys import platform, argv
-import datetime
-import asyncio
-from sys import exit
+from sys import argv, exit
+
 from limiter import get_limiter, limit
+
 from functions import (
     CompressHistory,
-    cprint,
     bytes2human,
+    cprint,
     filter_filenames,
     smartProcessFile,
 )
