@@ -46,6 +46,9 @@ PATHS = {
         "oxipng": f"{HOMEBREW_PREFIX}/bin/oxipng",
         "jpegtran": f"{mozjpeglatestbinpath()}/jpegtran",
         "cjpeg": f"{mozjpeglatestbinpath()}/cjpeg",
+        # Does not exist on MacOS easily yet
+        # "cjpegli": f"{HOMEBREW_PREFIX}/bin/cjpegli",
+        "cjxl": f"{HOMEBREW_PREFIX}/bin/cjxl",
         "gifsicle": f"{HOMEBREW_PREFIX}/bin/gifsicle",
         "convert": f"{HOMEBREW_PREFIX}/bin/convert",
         "heif-enc": f"{HOMEBREW_PREFIX}/bin/heif-enc",
@@ -56,6 +59,8 @@ PATHS = {
         "oxipng": shutil.which("oxipng"),
         "jpegtran": shutil.which("jpegtran-static"),
         "cjpeg": shutil.which("cjpeg-static"),
+        "cjpegli": shutil.which("cjpegli"),
+        "cjxl": shutil.which("cjxl"),
         "gifsicle": shutil.which("gifsicle"),
         "convert": shutil.which("convert"),
         "heif-enc": shutil.which("heif-enc"),
@@ -248,6 +253,41 @@ async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
     return returnedText
 
 
+# jpegli is lossy JPG compression, based on some of JPEG-XL
+# https://github.com/google/jpegli
+# cjpegli --quality=95 Cover.png cover.jpg
+# can also convert non-JPEG to JPEG
+async def cjpegli(inFile: str, args: apns, quality: int = 85) -> str:
+    outfile = os.path.join("/tmp", "cjpegli-" + os.path.split(inFile)[1])
+    subpArgs = [
+        PATHS[sysplat()]["cjpegli"],
+        "--quality",  # Compression quality (0..100; 5-95 is most useful range, default is 90)
+        f"{quality}",
+        inFile,  # note the input could be non-jpeg
+        outfile,  # will output to input, doesn't check if result it smaller
+    ]
+    returnedText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
+    compareAndKeepSmaller(inFile, outfile, args)
+    return returnedText
+
+
+# jpeg-xl is lossy and lossless, used as lossy here
+# https://github.com/libjxl/libjxl
+# cjxl --quality=95 Cover.png cover.jxl
+async def cjxl(inFile: str, args: apns, quality: int = 90) -> str:
+    outfile = os.path.join("/tmp", "cjxl-" + os.path.split(inFile)[1])
+    subpArgs = [
+        PATHS[sysplat()]["cjxl"],
+        "--quality",  # Compression quality (0..100; 68..96 is most useful range)
+        f"{quality}",
+        inFile,
+        outfile,  # will output to input, doesn't check if result it smaller
+    ]
+    returnedText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
+    compareAndKeepSmaller(inFile, outfile, args)
+    return returnedText
+
+
 # gifsicle can do lossy and lossless compression
 # https://www.lcdf.org/gifsicle/man.html
 # lossless: gifsicle -O3 test-7.gif  -o test-7-update.gif
@@ -394,6 +434,57 @@ def convertHEIF(inFile: str, args: apns) -> str:
     return outFile
 
 
+# convert with cjxl
+def convertJXL(inFile: str, args: apns, quality: int = 90) -> str:
+    baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
+    baseFileExt = os.path.splitext(inFile)[1].lower()
+    outFile = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.jxl")
+    if baseFileExt == ".gif":
+        cprint(
+            f"Warning skipping conversion for {inFile} since we don't want to flatten animated GIFs",
+            "yellow",
+        )
+        return inFile
+
+    if baseFileExt == ".jxl":
+        if args.v:
+            cprint(
+                f"{inFile} was already in the desired format ({baseFileExt}), skipping",
+                "yellow",
+            )
+        return inFile
+    # cjxl --quality=95 Cover.png cover.jxl
+    subpArgs = [
+        PATHS[sysplat()]["cjxl"],
+        "--quiet",
+        f"--quality={int(quality)}",
+        inFile,
+        outFile,
+    ]
+    calledCmd = " ".join(subpArgs)
+    if args.v:
+        print(calledCmd)
+    # proc = await asyncio.create_subprocess_exec(
+    #     subpArgs[0], *subpArgs[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    # )
+    # stdout, stderr = await proc.communicate()
+
+    p = subprocess.run(subpArgs, capture_output=True)
+    stdout = p.stdout
+    stderr = p.stderr
+
+    if stderr:
+        cprint(f"*stderr for {calledCmd}]\n{stderr.decode('utf-8')}*", "yellow")
+        return inFile
+    if args.v:
+        print(stdout.decode("utf-8"))
+    if args.deleteOnConvert:
+        os.remove(inFile)
+    if not args.q:
+        cprint(f"Converted {inFile} to {outFile}", "blue")
+    return outFile
+
+
 class CompressHistory:
     def __init__(self, path):
         try:
@@ -460,6 +551,9 @@ async def smartProcessFile(
         inputFile = convertHEIF(inputFile, args=args)
     elif args.avif:
         inputFile = convertAVIF(inputFile, args=args)
+    elif args.jxl:
+        quality: int = 100 if not args.lossy else 90
+        inputFile = convertJXL(inputFile, args=args, quality=quality)
 
     fileExt = os.path.splitext(inputFile)[1].lower()
     if fileExt == ".png":

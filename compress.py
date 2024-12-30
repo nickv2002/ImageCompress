@@ -41,6 +41,9 @@ async def main():
         "--avif", action="store_true", help="default false, convert images to AVIFs"
     )
     parser.add_argument(
+        "--jxl", action="store_true", help="default false, convert images to JPEG-XL"
+    )
+    parser.add_argument(
         "--deleteOnConvert",
         action="store_true",
         help="default false, when converting PNG to JPG or vice versa delete orig",
@@ -76,7 +79,7 @@ async def main():
         args.v and args.q
     ), "ERROR: can't have verbose (-v) and quiet (-q) flags enabled at once"
     assert (
-        sum([args.jpg, args.png, args.heif, args.avif]) <= 1
+        sum([args.jpg, args.png, args.heif, args.avif, args.jxl]) <= 1
     ), "ERROR: can't have multiple output format flags (--png, --jpg, --heif, --avif)"
 
     # We want to rate limit the number of processes here via cli, apply decorator to create new function
