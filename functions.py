@@ -253,7 +253,7 @@ async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
     return returnedText
 
 
-# jpegli is lossy JPG compression, based on some of JPEG-XL
+# jpegli is lossy/lossess, based on some of JPEG-XL
 # https://github.com/google/jpegli
 # cjpegli --quality=95 Cover.png cover.jpg
 # can also convert non-JPEG to JPEG
