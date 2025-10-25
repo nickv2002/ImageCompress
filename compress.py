@@ -6,7 +6,7 @@ import os
 import re
 from sys import argv, exit
 
-from limiter import get_limiter, limit
+from limiter import limit_calls
 
 from functions import (
     CompressHistory,
@@ -85,10 +85,7 @@ async def main():
 
     # We want to rate limit the number of processes here via cli, apply decorator to create new function
     # https://github.com/alexdelorenzo/limiter
-    limit_operations = limit(
-        get_limiter(rate=args.parallelism, capacity=args.parallelism), consume=1
-    )
-    limitedSmartProcessFile = limit_operations(smartProcessFile)
+    limitedSmartProcessFile = limit_calls(per_second=args.parallelism)(smartProcessFile)
 
     if args.v:
         if args.lossy:

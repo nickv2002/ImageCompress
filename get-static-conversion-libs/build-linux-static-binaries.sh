@@ -1,19 +1,11 @@
-#/bin/sh
+#!/bin/bash
 set -e
 
-docker buildx build . -t imgcompress --no-cache
-# docker buildx build . -t imgcompress --progress=plain
+echo "Installing image compression tools using individual downloaders..."
+echo "This replaces the previous Docker-based approach with direct package installation."
 
-docker run --rm -iv${PWD}:/host-volume imgcompress sh -s <<EOF
-chown $(id -u):$(id -g) /usr/bin/oxipng
-cp -a /usr/bin/oxipng /host-volume
-chown $(id -u):$(id -g) /usr/bin/cavif
-cp -a /usr/bin/cavif /host-volume
-chown $(id -u):$(id -g) /usr/bin/jpegtran-static
-cp -a /usr/bin/jpegtran-static /host-volume
-chown $(id -u):$(id -g) /usr/bin/cjpeg-static
-cp -a /usr/bin/cjpeg-static /host-volume
-EOF
+# Run the master installation script
+./install-all-tools.sh
 
-echo "sudo mv -v cjpeg-static jpegtran-static oxipng cavif /usr/local/bin/"
-sudo mv -v cjpeg-static jpegtran-static oxipng cavif /usr/local/bin/
+echo "Installation complete!"
+echo "Note: mozjpeg (cjpeg-static, jpegtran-static) has been removed since we now use jpegli from JXL instead."

@@ -27,45 +27,120 @@ SYMBOLS = {
 HOMEBREW_PREFIX = os.getenv("HOMEBREW_PREFIX", "/opt/homebrew")
 
 
-# mozjpeg is keg-only, which means it was not symlinked into the standard path
-def mozjpeglatestbinpath():
-    try:
-        # this applies a human-sort to version numbers
-        versionNumber = sorted(
-            os.listdir(f"{HOMEBREW_PREFIX}/Cellar/mozjpeg"),
-            key=lambda s: [int(u) for u in s.split(".")],
-        )[-1]
-    except (IndexError, FileNotFoundError):
-        versionNumber = "1.0"
-    return f"{HOMEBREW_PREFIX}/Cellar/mozjpeg/{versionNumber}/bin"
+def find_tool_path(tool_name, platform=None):
+    """Dynamically find the path to a tool, handling platform-specific locations."""
+    if platform is None:
+        platform = sysplat()
+
+    # First try the standard 'which' command
+    standard_path = shutil.which(tool_name)
+    if standard_path and os.path.isfile(standard_path):
+        return standard_path
+
+    if platform == "Darwin":  # macOS
+        # Common Homebrew locations
+        homebrew_paths = [
+            f"{HOMEBREW_PREFIX}/bin/{tool_name}",
+            f"/usr/local/bin/{tool_name}",
+            f"/opt/homebrew/bin/{tool_name}",
+        ]
+
+        # Check for keg-only packages in Cellar
+        keg_only_packages = {
+            "jpegtran": "mozjpeg",
+            "cjpeg": "mozjpeg",
+            "cjpegli": "jpeg-xl",  # might be keg-only
+            "cjxl": "jpeg-xl",     # might be keg-only
+        }
+
+        if tool_name in keg_only_packages:
+            package_name = keg_only_packages[tool_name]
+            cellar_base = f"{HOMEBREW_PREFIX}/Cellar/{package_name}"
+            if os.path.exists(cellar_base):
+                try:
+                    # Get the latest version directory
+                    versions = [v for v in os.listdir(cellar_base) if os.path.isdir(os.path.join(cellar_base, v))]
+                    if versions:
+                        # Sort versions naturally (handles things like 1.10 vs 1.2)
+                        latest_version = sorted(versions, key=lambda s: [int(x) if x.isdigit() else x for x in s.replace('.', ' ').split()])[-1]
+                        keg_path = f"{cellar_base}/{latest_version}/bin/{tool_name}"
+                        if os.path.isfile(keg_path):
+                            homebrew_paths.insert(0, keg_path)
+                except (OSError, IndexError):
+                    pass
+
+        # Check Cargo/Rust tools
+        if tool_name in ["cavif", "oxipng"]:
+            cargo_paths = [
+                os.path.expanduser("~/.cargo/bin/{tool_name}"),
+                f"/usr/local/bin/{tool_name}",
+            ]
+            homebrew_paths.extend(cargo_paths)
+
+        # Test all potential paths
+        for path in homebrew_paths:
+            if os.path.isfile(path):
+                return path
+
+    elif platform == "Linux":
+        # Linux-specific search paths
+        linux_paths = [
+            f"/usr/local/bin/{tool_name}",
+            f"/usr/bin/{tool_name}",
+            f"/bin/{tool_name}",
+        ]
+
+        # Handle static versions for mozjpeg tools
+        if tool_name in ["jpegtran", "cjpeg"]:
+            static_name = f"{tool_name}-static"
+            static_path = shutil.which(static_name)
+            if static_path:
+                return static_path
+            linux_paths.extend([
+                f"/usr/local/bin/{static_name}",
+                f"/usr/bin/{static_name}",
+            ])
+
+        # Test all potential paths
+        for path in linux_paths:
+            if os.path.isfile(path):
+                return path
+
+    # If nothing found, return None
+    return None
 
 
+def get_all_tool_paths():
+    """Get paths for all tools, dynamically discovered."""
+    tools = [
+        "pngquant", "oxipng", "jpegtran", "cjpeg", "cjpegli",
+        "cjxl", "gifsicle", "convert", "heif-enc", "cavif"
+    ]
+
+    return {tool: find_tool_path(tool) for tool in tools}
+
+
+# Dynamic PATHS - rebuilt each time it's accessed to handle installations/updates
+def get_paths():
+    """Get current tool paths dynamically."""
+    return get_all_tool_paths()
+
+# Helper function to get tool path easily
+def get_tool_path(tool_name):
+    """Get the path for a specific tool."""
+    return find_tool_path(tool_name)
+
+def require_tool(tool_name):
+    """Get tool path and raise error if not found."""
+    path = find_tool_path(tool_name)
+    if not path:
+        raise FileNotFoundError(f"{tool_name} not found. Please install it first.")
+    return path
+
+# For backward compatibility, maintain PATHS as a callable
 PATHS = {
-    "Darwin": {  # Mac
-        "pngquant": f"{HOMEBREW_PREFIX}/bin/pngquant",
-        "oxipng": f"{HOMEBREW_PREFIX}/bin/oxipng",
-        "jpegtran": f"{mozjpeglatestbinpath()}/jpegtran",
-        "cjpeg": f"{mozjpeglatestbinpath()}/cjpeg",
-        # Does not exist on MacOS easily yet
-        # "cjpegli": f"{HOMEBREW_PREFIX}/bin/cjpegli",
-        "cjxl": f"{HOMEBREW_PREFIX}/bin/cjxl",
-        "gifsicle": f"{HOMEBREW_PREFIX}/bin/gifsicle",
-        "convert": f"{HOMEBREW_PREFIX}/bin/convert",
-        "heif-enc": f"{HOMEBREW_PREFIX}/bin/heif-enc",
-        "cavif": os.path.expanduser("~/.cargo/bin/cavif"),
-    },
-    "Linux": {
-        "pngquant": shutil.which("pngquant"),
-        "oxipng": shutil.which("oxipng"),
-        "jpegtran": shutil.which("jpegtran-static"),
-        "cjpeg": shutil.which("cjpeg-static"),
-        "cjpegli": shutil.which("cjpegli"),
-        "cjxl": shutil.which("cjxl"),
-        "gifsicle": shutil.which("gifsicle"),
-        "convert": shutil.which("convert"),
-        "heif-enc": shutil.which("heif-enc"),
-        "cavif": shutil.which("cavif"),
-    },
+    "Darwin": get_all_tool_paths,
+    "Linux": get_all_tool_paths,
 }
 
 
@@ -183,7 +258,7 @@ async def subProcessToStr(subpArgs: list, args: apns, stdErrIsErr: bool = True) 
 # very lossy - uses a reduced number of colors
 async def pngquant(inFile: str, args: apns) -> str:
     subpArgs = [
-        PATHS[sysplat()]["pngquant"],
+        get_tool_path("pngquant"),
         "--force",  # allow overwrite so we can update-in-place
         "--skip-if-larger",  # only save converted files if they're smaller than original
         "--strip",  # remove optional metadata (default on Mac)
@@ -199,7 +274,7 @@ async def pngquant(inFile: str, args: apns) -> str:
 # Oxipng is a multithreaded lossless PNG compression optimizer
 async def oxipng(inFile: str, args: apns) -> str:
     subpArgs = [
-        PATHS[sysplat()]["oxipng"],
+        get_tool_path("oxipng"),
         "--preserve",  # Preserve file attributes if possible
         "-s",  # Strip safely-removable metadata objects
         "--alpha",  # Perform additional alpha optimizations
@@ -218,7 +293,7 @@ async def oxipng(inFile: str, args: apns) -> str:
 async def mozjpg(inFile: str, args: apns) -> str:
     outfile = os.path.join("/tmp", "mozjpg-" + os.path.split(inFile)[1])
     subpArgs = [
-        PATHS[sysplat()]["jpegtran"],
+        get_tool_path("jpegtran"),
         "-optimize",  # Optimize Huffman table (smaller file, but slow compression)
         "-progressive",  # Create progressive JPEG file
         "-copy",  # Strip safely-removable metadata objects
@@ -239,7 +314,28 @@ async def mozjpg(inFile: str, args: apns) -> str:
 async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
     outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
     subpArgs = [
-        PATHS[sysplat()]["cjpeg"],
+        get_tool_path("cjpeg"),
+        "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
+        f"{quality}",
+        "-sample",
+        "1x1",  # enables full-resolution color (e.g. red lines won't be smudged as badly), but it makes files larger.
+        "-outfile",
+        outfile,  # will output to input, doesn't check if result it smaller
+        inFile,  # note the input could be non-jpeg
+    ]
+    returnedText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
+    compareAndKeepSmaller(inFile, outfile, args)
+    return returnedText
+
+
+# cjpeg is lossy JPG compression
+# some mozjpg defaults https://calendar.perfplanet.com/2014/mozjpeg-3-0/
+# ./cjpeg -quality 70 -outfile compressed-image.jpg source-image.png
+# can also convert non-JPEG to JPEG
+async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
+    outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
+    subpArgs = [
+        get_tool_path("cjpeg"),
         "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
         f"{quality}",
         "-sample",
@@ -260,7 +356,7 @@ async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
 async def cjpegli(inFile: str, args: apns, quality: int = 85) -> str:
     outfile = os.path.join("/tmp", "cjpegli-" + os.path.split(inFile)[1])
     subpArgs = [
-        PATHS[sysplat()]["cjpegli"],
+        get_tool_path("cjpegli"),
         "--quality",  # Compression quality (0..100; 5-95 is most useful range, default is 90)
         f"{quality}",
         inFile,  # note the input could be non-jpeg
@@ -277,7 +373,7 @@ async def cjpegli(inFile: str, args: apns, quality: int = 85) -> str:
 async def cjxl(inFile: str, args: apns, quality: int = 90) -> str:
     outfile = os.path.join("/tmp", "cjxl-" + os.path.split(inFile)[1])
     subpArgs = [
-        PATHS[sysplat()]["cjxl"],
+        get_tool_path("cjxl"),
         "--quality",  # Compression quality (0..100; 68..96 is most useful range)
         f"{quality}",
         inFile,
@@ -295,7 +391,7 @@ async def cjxl(inFile: str, args: apns, quality: int = 90) -> str:
 async def gifsicle(inFile: str, args: apns) -> str:
     outfile = os.path.join("/tmp", "gifsicle-" + os.path.split(inFile)[1])
     subpArgs = [
-        PATHS[sysplat()]["gifsicle"],
+        get_tool_path("gifsicle"),
         "-O3",  # Try several optimization methods (usually slower, sometimes better results)
         inFile,
         "-o",
@@ -327,7 +423,7 @@ async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
             )
         return inFile
     subpArgs = [
-        PATHS[sysplat()]["convert"],
+        get_tool_path("convert"),
         inFile,
         outFile,
     ]
@@ -355,7 +451,7 @@ def convertAVIF(inFile: str, args: apns) -> str:
             )
         return inFile
     subpArgs = [
-        PATHS[sysplat()]["cavif"],
+        get_tool_path("cavif"),
         inFile,
         "-o",
         outFile,
@@ -403,7 +499,7 @@ def convertHEIF(inFile: str, args: apns) -> str:
         return inFile
     # heif-enc $i.jpg --quality $q --output $i-$q.heif
     subpArgs = [
-        PATHS[sysplat()]["heif-enc"],
+        get_tool_path("heif-enc"),
         inFile,
         "--quality",
         "50",
@@ -455,7 +551,7 @@ def convertJXL(inFile: str, args: apns, quality: int = 90) -> str:
         return inFile
     # cjxl --quality=95 Cover.png cover.jxl
     subpArgs = [
-        PATHS[sysplat()]["cjxl"],
+        get_tool_path("cjxl"),
         "--quiet",
         f"--quality={int(quality)}",
         inFile,
@@ -569,13 +665,26 @@ async def smartProcessFile(
         if args.v:
             print(result)
     elif fileExt == ".jpg" or fileExt == ".jpeg":
-        if args.lossy:
-            result = await cjpeg(inputFile, args=args)
+        # Prefer jpegli over mozjpeg when available (better compression)
+        if get_tool_path("cjpegli"):
+            if args.lossy:
+                result = await cjpegli(inFile, args=args, quality=85)
+                if args.v:
+                    print(result)
+            else:
+                # For lossless JPEG optimization, use jpegli with quality 100
+                result = await cjpegli(inFile, args=args, quality=100)
+                if args.v:
+                    print(result)
+        else:
+            # Fall back to mozjpeg if jpegli not available
+            if args.lossy:
+                result = await cjpeg(inFile, args=args)
+                if args.v:
+                    print(result)
+            result = await mozjpg(inFile, args=args)
             if args.v:
                 print(result)
-        result = await mozjpg(inputFile, args=args)
-        if args.v:
-            print(result)
     elif fileExt == ".heif" or fileExt == ".heic" or fileExt == ".avif" or fileExt == ".jxl":
         pass  # no aditional operations here for now since we aren't recompressing these image types
     else:

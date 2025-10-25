@@ -1,29 +1,25 @@
 FROM debian:bullseye-slim AS base
 RUN apt update && apt upgrade -y
-RUN apt -y install git curl build-essential libboost-all-dev nasm
-
-FROM base AS mozjpegbuild
-WORKDIR /opt
-RUN apt -y install imagemagick pkg-config autoconf automake libtool make cmake flex libpng-tools libpng-dev \
-    zlib1g-dev optipng advancecomp parallel
-RUN git clone https://github.com/mozilla/mozjpeg.git
-WORKDIR /opt/mozjpeg
-# Add this for debugging:
-# CMD ["bash"]
-RUN cmake -DCMAKE_C_STANDARD_LIBRARIES="-lm" .
-RUN make
-
-FROM base AS oxipngbuild
-WORKDIR /rust
-RUN curl https://sh.rustup.rs -s >> rustup.sh
-RUN chmod 755 /rust/rustup.sh
-RUN /rust/rustup.sh -y
-RUN /root/.cargo/bin/cargo install oxipng cavif
+RUN apt -y install curl wget
 
 FROM base AS final
-# RUN apt install -y pngquant gifsicle imagemagick && \
-#     apt clean && \
-#     rm -rf /var/lib/apt/lists/*
-COPY --from=mozjpegbuild /opt/mozjpeg/cjpeg-static /opt/mozjpeg/jpegtran-static /usr/bin/
-COPY --from=oxipngbuild /root/.cargo/bin/oxipng /usr/bin/oxipng
-COPY --from=oxipngbuild /root/.cargo/bin/cavif /usr/bin/cavif
+# Install packages available via apt
+RUN apt update && apt install -y pngquant gifsicle && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Download and install oxipng from GitHub releases
+RUN curl -s -L https://api.github.com/repos/shssoichiro/oxipng/releases/latest | \
+    grep "browser_download_url.*oxipng.*amd64.deb" | \
+    cut -d '"' -f 4 | \
+    xargs wget -O oxipng.deb && \
+    dpkg -i oxipng.deb && \
+    rm oxipng.deb
+
+# Download and install cavif from GitHub releases
+RUN curl -s -L https://api.github.com/repos/kornelski/cavif-rs/releases/latest | \
+    grep "browser_download_url.*cavif.*amd64.deb" | \
+    cut -d '"' -f 4 | \
+    xargs wget -O cavif.deb && \
+    dpkg -i cavif.deb && \
+    rm cavif.deb
