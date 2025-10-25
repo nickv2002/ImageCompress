@@ -4,6 +4,24 @@ set -e
 # Set repository details
 REPO="libjxl/libjxl"
 
+# Check current version if tools are installed
+echo "Checking current version..."
+CURRENT_VERSION=""
+if command -v cjxl >/dev/null 2>&1; then
+    # Extract version from cjxl --version output (format: "cjxl v0.11.1 794a5dc [AVX2,SSE4,SSE2]")
+    CURRENT_VERSION_OUTPUT=$(cjxl --version 2>&1 | head -n1)
+    if [[ -n "$CURRENT_VERSION_OUTPUT" ]]; then
+        # Extract version number from the first line (e.g., "v0.11.1" from "cjxl v0.11.1 ...")
+        CURRENT_VERSION=$(echo "$CURRENT_VERSION_OUTPUT" | grep -oP 'v\d+\.\d+\.\d+' | head -n1)
+    fi
+fi
+
+if [[ -n "$CURRENT_VERSION" ]]; then
+    echo "Current installed version: $CURRENT_VERSION"
+else
+    echo "JXL tools not found or version could not be determined"
+fi
+
 # Fetch the latest release information from GitHub API
 echo "Fetching the latest release information..."
 RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO/releases/latest")
@@ -15,6 +33,24 @@ LATEST_VERSION=$(echo "$RELEASE_INFO" | grep -Po '"tag_name": "\K.*?(?=")')
 if [[ -z "$LATEST_VERSION" ]]; then
     echo "Error: Could not determine the latest version."
     exit 1
+fi
+
+echo "Latest available version: $LATEST_VERSION"
+
+# Compare versions if current version is available
+if [[ -n "$CURRENT_VERSION" ]]; then
+    # Remove 'v' prefix from both versions for comparison
+    CURRENT_CLEAN=$(echo "$CURRENT_VERSION" | sed 's/^v//')
+    LATEST_CLEAN=$(echo "$LATEST_VERSION" | sed 's/^v//')
+
+    if [[ "$CURRENT_CLEAN" == "$LATEST_CLEAN" ]]; then
+        echo "You already have the latest version ($CURRENT_VERSION). No update needed."
+        exit 0
+    else
+        echo "Update available: $CURRENT_VERSION -> $LATEST_VERSION"
+    fi
+else
+    echo "Installing JXL tools for the first time."
 fi
 
 # Construct the download URL for the static binary
