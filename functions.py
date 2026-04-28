@@ -283,7 +283,7 @@ async def oxipng(inFile: str, args: apns) -> str:
         inFile,  # will output to input
     ]
     if args.zopfli:
-        args.append(
+        subpArgs.append(
             "--zopfli"
         )  # Use the slower but better compressing Zopfli algorithm
     return await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
@@ -398,7 +398,7 @@ async def gifsicle(inFile: str, args: apns) -> str:
         outfile,  # will output to input, doesn't check if result it smaller
     ]
     if args.lossy:
-        args.append("--lossy")  # TODO make this more adjustable? default number is 20
+        subpArgs.append("--lossy")  # TODO make this more adjustable? default number is 20
     returnedText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
     compareAndKeepSmaller(inFile, outfile, args=args)
     return returnedText
