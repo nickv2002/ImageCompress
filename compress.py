@@ -1,5 +1,8 @@
-#!/usr/bin/env python3
-# Run with: uv run compress.py [args]
+#!/usr/bin/env -S uv run
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["click", "limiter"]
+# ///
 import argparse
 import asyncio
 import datetime
