@@ -406,7 +406,7 @@ async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
         inFile,
         outFile,
     ]
-    returnText = await subProcessToStr(subpArgs, args=args)
+    returnText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
     if args.v:
         print(returnText)
     if args.deleteOnConvert:
