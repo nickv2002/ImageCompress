@@ -77,12 +77,10 @@ async def main():
         help="any files or folders to process",
     )
     args = parser.parse_args()
-    assert not (
-        args.v and args.q
-    ), "ERROR: can't have verbose (-v) and quiet (-q) flags enabled at once"
-    assert (
-        sum([args.jpg, args.png, args.heif, args.avif, args.jxl]) <= 1
-    ), "ERROR: can't have multiple output format flags (--png, --jpg, --heif, --avif)"
+    if args.v and args.q:
+        parser.error("can't have verbose (-v) and quiet (-q) flags enabled at once")
+    if sum([args.jpg, args.png, args.heif, args.avif, args.jxl]) > 1:
+        parser.error("can't have multiple output format flags (--png, --jpg, --heif, --avif)")
 
     # We want to rate limit the number of processes here via cli, apply decorator to create new function
     limiter = Limiter(rate=args.parallelism)
