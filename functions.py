@@ -318,27 +318,6 @@ async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
         "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
         f"{quality}",
         "-sample",
-        "1x1",  # enables full-resolution color (e.g. red lines won't be smudged as badly), but it makes files larger.
-        "-outfile",
-        outfile,  # will output to input, doesn't check if result it smaller
-        inFile,  # note the input could be non-jpeg
-    ]
-    returnedText = await subProcessToStr(subpArgs, stdErrIsErr=False, args=args)
-    compareAndKeepSmaller(inFile, outfile, args)
-    return returnedText
-
-
-# cjpeg is lossy JPG compression
-# some mozjpg defaults https://calendar.perfplanet.com/2014/mozjpeg-3-0/
-# ./cjpeg -quality 70 -outfile compressed-image.jpg source-image.png
-# can also convert non-JPEG to JPEG
-async def cjpeg(inFile: str, args: apns, quality: int = 85) -> str:
-    outfile = os.path.join("/tmp", "cjpeg-" + os.path.split(inFile)[1])
-    subpArgs = [
-        get_tool_path("cjpeg"),
-        "-quality",  # Compression quality (0..100; 5-95 is most useful range, default is 75)
-        f"{quality}",
-        "-sample",
         "1x1",  # enables full-resolution color (e.g. red lines won’t be smudged as badly), but it makes files larger.
         "-outfile",
         outfile,  # will output to input, doesn't check if result it smaller
