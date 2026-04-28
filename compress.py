@@ -7,7 +7,7 @@ import os
 import re
 from sys import argv, exit
 
-from limiter import Limiter, limit_calls
+from limiter import Limiter
 
 from functions import (
     CompressHistory,
