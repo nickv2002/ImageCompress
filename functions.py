@@ -106,7 +106,6 @@ def find_tool_path(tool_name, platform=None):
             if os.path.isfile(path):
                 return path
 
-    # If nothing found, return None
     return None
 
 
@@ -296,7 +295,7 @@ async def mozjpg(inFile: str, args: apns) -> str:
         get_tool_path("jpegtran"),
         "-optimize",  # Optimize Huffman table (smaller file, but slow compression)
         "-progressive",  # Create progressive JPEG file
-        "-copy",  # Strip safely-removable metadata objects
+        "-copy",
         "none",  # Copy no extra markers from source file
         "-outfile",
         outfile,  # doesn't check if result it smaller
@@ -488,11 +487,6 @@ def convertHEIF(inFile: str, args: apns) -> str:
     calledCmd = " ".join(subpArgs)
     if args.v:
         print(calledCmd)
-    # proc = await asyncio.create_subprocess_exec(
-    #     subpArgs[0], *subpArgs[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-    # )
-    # stdout, stderr = await proc.communicate()
-
     p = subprocess.run(subpArgs, capture_output=True)
     stdout = p.stdout
     stderr = p.stderr
@@ -539,11 +533,6 @@ def convertJXL(inFile: str, args: apns, quality: int = 90) -> str:
     calledCmd = " ".join(subpArgs)
     if args.v:
         print(calledCmd)
-    # proc = await asyncio.create_subprocess_exec(
-    #     subpArgs[0], *subpArgs[1:], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-    # )
-    # stdout, stderr = await proc.communicate()
-
     p = subprocess.run(subpArgs, capture_output=True)
     stdout = p.stdout
     stderr = p.stderr

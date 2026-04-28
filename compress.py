@@ -113,10 +113,9 @@ async def main():
     historyObj = CompressHistory(args.history) if args.history else None
 
     # match for all image formats we work with, then walk dirs to match regex
-    # reg_expr = re.compile(r".*\.(jpg|png|jpeg|gif)$", re.IGNORECASE).match
     reg_expr = re.compile(
         r".*\.(jpg|png|jpeg)$", re.IGNORECASE
-    ).match  # now ignoring GIFs
+    ).match
     imageFiles = []
     sourceSizes = 0
     for inputFile in args.files:
@@ -157,7 +156,6 @@ async def main():
     if len(results) > 0:
         if not args.q:
             totalResultSize = sum(i for i, _ in results)
-            # TODO this math might change for previously processed files we skip
             cprint(
                 f"---Totals---\nOriginal size {bytes2human(sourceSizes)} | Final size {bytes2human(totalResultSize)} | "
                 + f"Saved {bytes2human(sourceSizes - totalResultSize)} ({1- totalResultSize/sourceSizes:.2%})",
