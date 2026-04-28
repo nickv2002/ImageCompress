@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Run with: uv run compress.py [args]
 import argparse
 import asyncio
 import datetime
@@ -6,7 +7,7 @@ import os
 import re
 from sys import argv, exit
 
-from limiter import limit_calls
+from limiter import Limiter, limit_calls
 
 from functions import (
     CompressHistory,
@@ -84,8 +85,8 @@ async def main():
     ), "ERROR: can't have multiple output format flags (--png, --jpg, --heif, --avif)"
 
     # We want to rate limit the number of processes here via cli, apply decorator to create new function
-    # https://github.com/alexdelorenzo/limiter
-    limitedSmartProcessFile = limit_calls(per_second=args.parallelism)(smartProcessFile)
+    limiter = Limiter(rate=args.parallelism)
+    limitedSmartProcessFile = limiter(smartProcessFile)
 
     if args.v:
         if args.lossy:

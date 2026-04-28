@@ -1,0 +1,9 @@
+[project]
+name = "imagecompress"
+version = "1.0.0"
+description = "Image compression tool supporting multiple formats and optimization strategies"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.0",
+    "limiter>=0.1.0",
+]
