@@ -385,7 +385,8 @@ async def gifsicle(inFile: str, args: apns) -> str:
 
 # convert with imagemagick
 async def convertImageMagick(inFile: str, toFmt: str, args: apns) -> str:
-    assert toFmt == "jpg" or toFmt == "png", "ERROR: unsupported conversion format"
+    if toFmt not in ("jpg", "png"):
+        raise ValueError("unsupported conversion format")
     baseFileNameNoExt = os.path.splitext(os.path.split(inFile)[1])[0]
     baseFileExt = os.path.splitext(inFile)[1].lower()
     outFile = os.path.join(os.path.split(inFile)[0], f"{baseFileNameNoExt}.{toFmt}")
@@ -435,9 +436,8 @@ def convertAVIF(inFile: str, args: apns) -> str:
         "-o",
         outFile,
     ]
-    assert os.path.isfile(
-        subpArgs[0]
-    ), f"ERROR: Can't find executable at: {subpArgs[0]}"
+    if not os.path.isfile(subpArgs[0]):
+        raise FileNotFoundError(f"Can't find executable at: {subpArgs[0]}")
     calledCmd = " ".join(subpArgs)
     if args.v:
         print(calledCmd)
@@ -611,8 +611,10 @@ async def smartProcessFile(
     args: apns,
     historyObj: CompressHistory,
 ):
-    assert os.path.isfile(inputFile), f"ERROR: missing file {inputFile}"
-    assert os.access(inputFile, os.W_OK), f"ERROR: file {inputFile} is not writeable"
+    if not os.path.isfile(inputFile):
+        raise FileNotFoundError(f"missing file {inputFile}")
+    if not os.access(inputFile, os.W_OK):
+        raise PermissionError(f"file {inputFile} is not writeable")
 
     if os.path.getsize(inputFile) < 9999:  # bytes
         cprint(f"WARNING: input size too small {inputFile}, no processing", "yellow")
@@ -667,7 +669,7 @@ async def smartProcessFile(
     elif fileExt == ".heif" or fileExt == ".heic" or fileExt == ".avif" or fileExt == ".jxl":
         pass  # no aditional operations here for now since we aren't recompressing these image types
     else:
-        assert False, f"error, this should not be here, no processing, unknown filetime for {inputFile}"
+        raise ValueError(f"unknown filetype for {inputFile}")
 
     if not os.path.isfile(inputFile):
         cprint(
