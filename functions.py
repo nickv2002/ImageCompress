@@ -668,21 +668,21 @@ async def smartProcessFile(
         # Prefer jpegli over mozjpeg when available (better compression)
         if get_tool_path("cjpegli"):
             if args.lossy:
-                result = await cjpegli(inFile, args=args, quality=85)
+                result = await cjpegli(inputFile, args=args, quality=85)
                 if args.v:
                     print(result)
             else:
                 # For lossless JPEG optimization, use jpegli with quality 100
-                result = await cjpegli(inFile, args=args, quality=100)
+                result = await cjpegli(inputFile, args=args, quality=100)
                 if args.v:
                     print(result)
         else:
             # Fall back to mozjpeg if jpegli not available
             if args.lossy:
-                result = await cjpeg(inFile, args=args)
+                result = await cjpeg(inputFile, args=args)
                 if args.v:
                     print(result)
-            result = await mozjpg(inFile, args=args)
+            result = await mozjpg(inputFile, args=args)
             if args.v:
                 print(result)
     elif fileExt == ".heif" or fileExt == ".heic" or fileExt == ".avif" or fileExt == ".jxl":
