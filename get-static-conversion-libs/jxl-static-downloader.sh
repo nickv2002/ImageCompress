@@ -24,10 +24,15 @@ fi
 
 # Fetch the latest release information from GitHub API
 echo "Fetching the latest release information..."
-RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO/releases/latest")
+RELEASE_INFO=$(curl -s --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 "https://api.github.com/repos/$REPO/releases/latest")
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq is required but not installed. Install it with: sudo apt install jq"
+    exit 1
+fi
 
 # Extract the version tag (e.g., "v0.11.1")
-LATEST_VERSION=$(echo "$RELEASE_INFO" | grep -Po '"tag_name": "\K.*?(?=")')
+LATEST_VERSION=$(echo "$RELEASE_INFO" | jq -r '.tag_name // empty')
 
 # Check if a version was found
 if [[ -z "$LATEST_VERSION" ]]; then
@@ -54,12 +59,19 @@ else
 fi
 
 # Construct the download URL for the static binary
-ASSET_NAME="jxl-linux-x86_64-static-${LATEST_VERSION}.tar.gz"
+ASSET_NAME="jxl-linux-x86_64-static.tar.lz"
 ASSET_URL="https://github.com/$REPO/releases/download/$LATEST_VERSION/$ASSET_NAME"
+
+# tar needs the `lzip` binary to extract .tar.lz archives
+if ! command -v lzip >/dev/null 2>&1; then
+    echo "Installing lzip (required to extract .tar.lz archive)..."
+    sudo apt update
+    sudo apt install -y lzip
+fi
 
 # Download the asset
 echo "Downloading $ASSET_NAME..."
-curl -Ss -L -o "$ASSET_NAME" "$ASSET_URL"
+curl -Ss -L --connect-timeout 10 --max-time 120 --retry 2 --retry-delay 2 -o "$ASSET_NAME" "$ASSET_URL"
 
 # Verify the download
 if [[ $? -ne 0 ]]; then
@@ -71,8 +83,8 @@ fi
 echo "Extracting $ASSET_NAME..."
 
 EXTRACTED_DIR="$PWD/jxl-static"
-mkdir -p $EXTRACTED_DIR
-tar -xzf "$ASSET_NAME" --directory $EXTRACTED_DIR
+mkdir -p "$EXTRACTED_DIR"
+tar -xf "$ASSET_NAME" --lzip --directory "$EXTRACTED_DIR"
 
 if [[ ! -d "$EXTRACTED_DIR/tools" ]]; then
     echo "Error: 'tools' directory not found in the archive."
@@ -80,7 +92,13 @@ if [[ ! -d "$EXTRACTED_DIR/tools" ]]; then
 fi
 
 cd "$EXTRACTED_DIR/tools"
-sudo mv -v cjpegli cjxl /usr/local/bin/
+
+if [[ ! -f cjxl ]]; then
+    echo "Error: 'cjxl' not found in the archive."
+    exit 1
+fi
+
+sudo mv -v cjxl /usr/local/bin/
 cd ../..
 
 echo "Cleaning up..."

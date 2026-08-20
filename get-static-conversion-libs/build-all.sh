@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+cd "$(dirname "$0")"
+
 echo "Installing image compression tools..."
 
 # Install tools available via apt
@@ -19,6 +21,10 @@ echo "Installing cavif from GitHub releases..."
 # Install JXL tools using existing script
 echo "Installing JXL tools..."
 ./jxl-static-downloader.sh
+
+# Build cjpegli from source (no longer shipped in libjxl releases)
+echo "Building cjpegli from source..."
+./cjpegli-static-builder.sh
 
 echo "All image compression tools installed successfully!"
 echo "Installed tools:"
