@@ -1,0 +1,171 @@
+name: ImageCompress
+options:
+  bundleIdPrefix: com.nickvance
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: 3D9SMH4RWM
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
+
+targets:
+  ImageCompress:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+      - path: Shared
+    dependencies:
+      - package: Sparkle
+        product: Sparkle
+      - target: FinderMenu
+        embed: true
+    # Unsandboxed, but a member of the team-prefixed App Group so reading the shared container never prompts.
+    entitlements:
+      path: App/ImageCompress.entitlements
+      properties:
+        com.apple.security.application-groups: ["3D9SMH4RWM.com.nickvance.imagecompress"]
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: ImageCompress
+        LSMinimumSystemVersion: "15.0"
+        LSApplicationCategoryType: public.app-category.graphics-design
+        # Sparkle. The EdDSA key is the one `sign_update` uses from the login keychain (shared with Transmission Remote).
+        SUFeedURL: https://raw.githubusercontent.com/nickv2002/ImageCompress/main/appcast.xml
+        SUPublicEDKey: "+ONkpmgvNWrF3vZIpoBPehwCK9SH4FgKELrAkXpvUgQ="
+        SUEnableAutomaticChecks: true
+        NSDesktopFolderUsageDescription: ImageCompress reads and compresses images in folders you choose.
+        NSDocumentsFolderUsageDescription: ImageCompress reads and compresses images in folders you choose.
+        NSDownloadsFolderUsageDescription: ImageCompress reads and compresses images in folders you choose.
+        NSServices:
+          - NSMenuItem: {default: "Compress with ImageCompress"}
+            NSMessage: compressService
+            NSPortName: ImageCompress
+            NSSendFileTypes: [public.image, public.folder]
+            NSRequiredContext: {}
+          - NSMenuItem: {default: "Compress Smaller with ImageCompress"}
+            NSMessage: compressSmallerService
+            NSPortName: ImageCompress
+            NSSendFileTypes: [public.image, public.folder]
+          - NSMenuItem: {default: "Open in ImageCompress…"}
+            NSMessage: openService
+            NSPortName: ImageCompress
+            NSSendFileTypes: [public.image, public.folder]
+        CFBundleURLTypes:
+          - CFBundleURLName: com.nickvance.imagecompress
+            CFBundleURLSchemes: [imagecompress]
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Folder
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.folder]
+          - CFBundleTypeName: Image
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.image]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nickvance.imagecompress
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        ENABLE_DEBUG_DYLIB: NO
+      configs:
+        Debug:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Development"
+          ENABLE_HARDENED_RUNTIME: NO
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Developer ID Application: Nicholas Vance (3D9SMH4RWM)"
+          ENABLE_HARDENED_RUNTIME: YES
+          OTHER_CODE_SIGN_FLAGS: "--timestamp"
+    postCompileScripts:
+      - name: Build and embed imgcompress CLI
+        script: |
+          "${SRCROOT}/scripts/embed_cli.sh"
+        basedOnDependencyAnalysis: false
+
+  FinderMenu:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: FinderMenu
+        excludes: ["*.entitlements"]
+      - path: Shared
+    info:
+      path: FinderMenu/Info.plist
+      properties:
+        CFBundleDisplayName: ImageCompress Finder Menu
+        CFBundlePackageType: XPC!
+        LSMinimumSystemVersion: "15.0"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.FinderSync
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FinderSync
+    entitlements:
+      path: FinderMenu/FinderMenu.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.application-groups: ["3D9SMH4RWM.com.nickvance.imagecompress"]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nickvance.imagecompress.FinderMenu
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "5.0"
+        SKIP_INSTALL: YES
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+      configs:
+        Debug:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Development"
+          ENABLE_HARDENED_RUNTIME: NO
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Developer ID Application: Nicholas Vance (3D9SMH4RWM)"
+          ENABLE_HARDENED_RUNTIME: YES
+          OTHER_CODE_SIGN_FLAGS: "--timestamp"
+
+  # Logic tests: the pure engine sources are compiled directly into the bundle
+  # (no TEST_HOST), so tests run without launching the app.
+  ImageCompressTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+      - path: App/Engine
+      - path: Shared
+      - path: App/Views/OptionCatalog.swift
+      - path: App/Views/SimpleMode.swift
+      - path: App/PresetAxes.swift
+      - path: App/AppSettings.swift
+      - path: App/PresetStore.swift
+      - path: App/UndoStore.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nickvance.imagecompress.tests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_STRICT_CONCURRENCY: complete
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+
+schemes:
+  ImageCompress:
+    build:
+      targets:
+        ImageCompress: all
+        ImageCompressTests: [test]
+    test:
+      targets:
+        - ImageCompressTests

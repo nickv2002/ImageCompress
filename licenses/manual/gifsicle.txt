@@ -1,0 +1,12 @@
+gifsicle (bundled as a separate executable, Contents/Helpers/gifsicle on macOS
+and next to imgcompress in the Linux tarballs)
+
+Copyright (C) 1997 and later, Eddie Kohler, ekohler@gmail.com
+License: GNU General Public License, version 2 only (GPL-2.0-only).
+The GPL-2.0 text is in GPL-2.0.txt in this folder.
+
+gifsicle is NOT linked into imgcompress: it is launched as a separate process
+(mere aggregation). Its complete source and build instructions are published
+alongside every ImageCompress release as gifsicle-<version>-src.tar.gz, and
+upstream at https://www.lcdf.org/gifsicle/ and
+https://github.com/kohler/gifsicle .

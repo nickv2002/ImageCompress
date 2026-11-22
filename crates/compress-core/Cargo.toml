@@ -1,0 +1,47 @@
+[package]
+name = "compress-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars = "1"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp", "tiff"] }
+png = "0.18"
+imagequant = "4.4"
+oxipng = { version = "10.2", default-features = false, features = ["zopfli", "parallel"] }
+tempfile = "3"
+trash = "5"
+rayon = "1"
+thiserror = "2"
+walkdir = "2"
+mozjpeg-sys = "2.2.4-beta.1"
+jpegli-sys = { path = "../jpegli-sys" }
+
+jpegxl-rs = { version = "0.16", default-features = false, features = ["vendored"] }
+jpegxl-sys = "0.13"
+libavif-sys = { version = "0.18", default-features = false, features = ["codec-aom", "codec-dav1d"] }
+libwebp-sys = "0.14"
+jxl = { version = "0.8", features = ["brotli"] }
+img-parts = "0.3"
+fast-ssim2 = "0.9.1"
+fast_image_resize = "6.1.0"
+lcms2 = { version = "6.2.0", features = ["static"] }
+# SVG: SVGO port + render check (no text/raster features) + svgz gzip
+oxvg_optimiser = "0.0.9"
+oxvg_ast = { version = "0.0.9", features = ["serialize", "roxmltree"] }
+resvg = { version = "0.50", default-features = false }
+flate2 = "1"
+zopfli = "0.8"
+blake3 = "1"
+libc = "0.2"
+
+[target.'cfg(target_os="macos")'.dependencies]
+objc2-image-io = "0.3"
+objc2-core-graphics = { version = "0.3", features = ["CGImage","CGDataProvider","CGColorSpace","CGContext","CGBitmapContext"] }
+objc2-core-foundation = { version = "0.3", features = ["CFData","CFDictionary","CFString","CFNumber","CFBase"] }
+
+[dev-dependencies]
+tempfile = "3"

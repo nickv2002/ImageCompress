@@ -1,0 +1,9 @@
+[package]
+name = "jpeg-spike"
+version = "0.0.0"
+edition = "2021"
+[workspace]
+[dependencies]
+mozjpeg-sys = "2.2.4-beta.1"
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+jpegli-sys = { path = "jpegli-sys" }

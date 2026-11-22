@@ -1,0 +1,13 @@
+Optional Linux `heic` build feature (off by default; not in the macOS builds,
+which use Apple's ImageIO for HEIC):
+
+This software uses libheif and libde265, licensed under the GNU Lesser General
+Public License, version 3 (LGPL-3.0-only; see LGPL-3.0.txt), and x265, licensed
+under GPL-2.0-or-later (used here under GPL-3.0-or-later; see COPYING). The
+complete corresponding source of these libraries is included in the source
+tarball published with every release, which satisfies the LGPL relinking
+requirement for static linking.
+
+HEVC (H.265) is covered by patents in some jurisdictions; this project grants
+no patent license, and users of the `heic` feature are responsible for any
+licenses required.

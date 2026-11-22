@@ -1,0 +1,8 @@
+[package]
+name = "jpegli-sys"
+version = "0.0.0"
+edition = "2021"
+build = "build.rs"
+links = "jpegli"
+[dependencies]
+mozjpeg-sys = "2.2.4-beta.1"   # reuse its jpeg_*_struct types (both are libjpeg ABI 6.2)

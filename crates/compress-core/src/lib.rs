@@ -1,0 +1,32 @@
+//! compress-core: image compression engine.
+pub mod anim;
+pub mod anim_webp;
+pub mod avif_codec;
+pub mod config;
+pub mod color;
+pub mod convert;
+pub mod discover;
+pub mod extras;
+pub mod events;
+pub mod gif_codec;
+#[cfg(target_os = "macos")]
+pub mod heic_codec;
+pub mod jpeg_codec;
+pub mod jpeg_pipeline;
+pub mod jxl_codec;
+pub mod meta;
+pub mod options;
+pub mod outputs;
+pub mod pipeline;
+pub mod pixels;
+pub mod png_codec;
+pub mod presets;
+pub mod quality_search;
+pub mod resize;
+pub mod svg_codec;
+pub mod undo;
+pub mod webp_codec;
+
+pub use events::JobEvent;
+pub use options::Options;
+pub use pipeline::run;

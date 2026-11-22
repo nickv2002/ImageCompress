@@ -1,0 +1,25 @@
+[package]
+name = "codec-spike"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+jpegxl-rs = { version = "0.16", default-features = false, features = ["vendored"] }
+libavif-sys = { version = "0.18", default-features = false, features = ["codec-aom", "codec-dav1d"] }
+libwebp-sys = "0.14"
+ravif = { version = "0.13", default-features = false, features = ["threading"] }
+rgb = "0.8"
+jxl = "0.8"
+image = { version = "0.25", default-features = false, features = ["png","jpeg"] }
+anyhow = "1"
+[target.'cfg(target_os="macos")'.dependencies]
+objc2-image-io = "0.3"
+objc2-core-graphics = { version = "0.3", features = ["CGImage","CGDataProvider","CGColorSpace","CGContext","CGBitmapContext"] }
+objc2-core-foundation = { version = "0.3", features = ["CFData","CFDictionary","CFString","CFNumber","CFBase"] }
+
+[patch.crates-io]
+# libaom-sys 0.18.0 crates.io tarball omits vendor/examples/ but libaom 3.15 CMake still references it unless ENABLE_APPS=0
+libaom-sys = { path = "/private/tmp/claude-502/spike-b-patches/libaom-sys" }

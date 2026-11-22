@@ -1,0 +1,7 @@
+This software is based in part on the work of the Independent JPEG Group.
+
+ImageCompress statically links mozjpeg (libjpeg-turbo derived), whose code is
+covered by the IJG license, the Modified (3-clause) BSD license and the zlib
+license. The names of the IJG authors may not be used to endorse or promote
+products derived from this software without prior written permission. The
+full license texts are reproduced in THIRD_PARTY_LICENSES.html.

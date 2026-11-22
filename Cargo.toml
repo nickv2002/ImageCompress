@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = ["crates/compress-core", "crates/imgcompress", "crates/jpegli-sys"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+# SVG stack: speed is irrelevant (ms per file), size is not. Keeps the binary growth small.
+[profile.release.package.oxvg_optimiser]
+opt-level = "z"
+[profile.release.package.oxvg_ast]
+opt-level = "z"
+[profile.release.package.oxvg_collections]
+opt-level = "z"
+[profile.release.package.oxvg_path]
+opt-level = "z"
+[profile.release.package.oxvg_serialize]
+opt-level = "z"
+[profile.release.package.oxvg_parse]
+opt-level = "z"
+[profile.release.package.lightningcss]
+opt-level = "z"
+[profile.release.package.cssparser]
+opt-level = "z"
+[profile.release.package.parcel_selectors]
+opt-level = "z"
+[profile.release.package.resvg]
+opt-level = "z"
+[profile.release.package.usvg]
+opt-level = "z"
+[profile.release.package.tiny-skia]
+opt-level = "z"
+[profile.release.package.tiny-skia-path]
+opt-level = "z"

@@ -1,0 +1,16 @@
+.git
+.venv
+build
+dist
+target
+**/target
+__pycache__
+fixtures-local
+fixtures
+legacy
+spike
+macos
+.context
+.claude
+.DS_Store
+get-static-conversion-libs

@@ -1,0 +1,11 @@
+Patent grants shipped with the bundled codecs
+=============================================
+
+AV1 (libaom, dav1d, libavif): Alliance for Open Media Patent License 1.0, see
+AOM-Patent-License-1.0.txt. dav1d and libwebp / libjxl / jpegli carry their own
+PATENTS files, collected under vendored/ in this folder.
+
+WebP (libwebp), JPEG XL (libjxl) and jpegli: Google "Additional IP Rights
+Grant (Patents)" files (PATENTS), collected under vendored/.
+
+This project grants no patent license of its own.

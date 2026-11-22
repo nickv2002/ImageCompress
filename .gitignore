@@ -155,3 +155,12 @@ compressed-img
 source-img
 compresshistory
 compressHistory
+
+# local real-photo fixtures
+fixtures-local/
+crates/jpegli-sys/vendor/
+.claude/worktrees/
+
+# Local-only
+.context/
+scripts/release.local.env

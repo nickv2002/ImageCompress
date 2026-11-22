@@ -1,0 +1,23 @@
+[package]
+name = "imgcompress"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+compress-core = { path = "../compress-core" }
+clap = { version = "4", features = ["derive"] }
+serde_json = "1"
+schemars = "1"
+uuid = { version = "1", features = ["v4"] }
+serde = { version = "1", features = ["derive"] }
+clap_complete = "4"
+clap_mangen = "0.2"
+blake3 = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+ctrlc = { version = "3", features = ["termination"] }
+libwebp-sys = { version = "0.14", default-features = false }
+libavif-sys = { version = "0.18", default-features = false }
+jpegxl-sys = "0.13"
+tempfile = "3"
+libc = "0.2"
