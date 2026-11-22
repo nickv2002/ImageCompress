@@ -13,7 +13,7 @@
 #   --native       only the host architecture (no QEMU emulation; much faster)
 #   --no-notices   skip the licenses bundle (needs cargo-deny/cargo-about, which
 #                  Linux build hosts usually lack); the tarball then has no licenses/
-# Env: ARCHES="amd64 arm64" overrides the architecture list.
+# Env: ARCHES="amd64 arm64" overrides the architecture list; CARGO_BUILD_JOBS the rustc parallelism.
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -34,6 +34,11 @@ done
 [[ -n "$version" ]] || { echo "usage: build_linux.sh [--native] [--no-notices] <version>" >&2; exit 2; }
 
 docker info >/dev/null 2>&1 || { echo "error: docker is not running" >&2; exit 1; }
+# About one rustc job per 2 GB of the Docker VM (fat LTO is memory hungry), at least 1. Env CARGO_BUILD_JOBS wins.
+vm_bytes=$(docker info --format '{{.MemTotal}}' 2>/dev/null || echo 0)
+cargo_jobs=${CARGO_BUILD_JOBS:-$(( vm_bytes / 2147483648 ))}
+(( cargo_jobs >= 1 )) || cargo_jobs=1
+echo "==> docker VM $(( vm_bytes / 1048576 )) MB: ${cargo_jobs} cargo jobs"
 
 set -a
 # shellcheck source=scripts/versions.env
@@ -73,6 +78,7 @@ for arch in $arches; do
     --platform "linux/${arch}" \
     -f docker/linux-build.Dockerfile \
     --target artifacts \
+    --build-arg CARGO_BUILD_JOBS="$cargo_jobs" \
     --build-arg GIFSICLE_VERSION="$GIFSICLE_VERSION" \
     --build-arg GIFSICLE_URL="$GIFSICLE_URL" \
     --build-arg GIFSICLE_SHA256="$GIFSICLE_SHA256" \

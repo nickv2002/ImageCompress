@@ -9,13 +9,36 @@ The engine is a single Rust library (`compress-core`) with every codec embedded,
 
 ## Install
 
-Download the latest release from the [GitHub releases page](https://github.com/nickv2002/ImageCompress/releases):
+**macOS app** (includes the `imgcompress` command; updates itself):
+
+```bash
+brew tap nickv2002/tap
+brew trust --cask nickv2002/tap/imagecompress
+brew install --cask imagecompress
+```
+
+**CLI only**, on macOS or Linux: `brew trust --formula nickv2002/tap/imgcompress && brew install nickv2002/tap/imgcompress`.
+
+**Debian, Ubuntu, Fedora and other Linux** (updates with `apt upgrade` / `dnf upgrade`; packages hosted by
+[Cloudsmith](https://cloudsmith.com)):
+
+```bash
+# Debian / Ubuntu
+curl -1sLf 'https://dl.cloudsmith.io/public/nickv2002/imagecompress/setup.deb.sh' | sudo -E bash
+sudo apt install imgcompress
+# Fedora / RHEL / openSUSE
+curl -1sLf 'https://dl.cloudsmith.io/public/nickv2002/imagecompress/setup.rpm.sh' | sudo -E bash
+sudo dnf install imgcompress
+```
+
+Or download from the [GitHub releases page](https://github.com/nickv2002/ImageCompress/releases):
 
 | Asset | Contents |
 |---|---|
 | `ImageCompress-<version>.zip` | Notarized macOS app (includes the CLI) |
 | `imgcompress-<version>-macos-universal.tar.gz` | Notarized CLI for scripts and Homebrew |
 | `imgcompress-<version>-linux-x86_64.tar.gz`, `...-linux-aarch64.tar.gz` | Fully static Linux CLI |
+| `imgcompress_<version>_amd64.deb`, `..._arm64.deb`, `imgcompress-<version>-1.x86_64.rpm`, `...aarch64.rpm` | The same static CLI as Linux packages |
 | `imgcompress-<version>-sources.tar.gz` | Complete Corresponding Source (GPL) |
 | `gifsicle-<version>-src.tar.gz` | Source of the bundled gifsicle |
 
@@ -69,7 +92,7 @@ scripts/build_linux.sh <version>   # static musl tarballs via docker/linux-build
 make release-quiet  # full signed + notarized release pipeline (maintainer only)
 ```
 
-Install the license tools with `cargo install --locked cargo-deny cargo-about --features cli`. Releases are cut with `scripts/release.sh` (see `.claude/skills/release-imagecompress/SKILL.md`): license gate, version bump in `macos/project.yml` and `Cargo.toml`, notarization through 1Password's `op`, Linux builds, source tarball, Sparkle appcast, GitHub release.
+Install the license tools with `cargo install --locked cargo-deny cargo-about --features cli`. Releases are cut with `scripts/release.sh` (see `.claude/skills/release-imagecompress/SKILL.md`): license gate, version bump in `macos/project.yml` and `Cargo.toml`, notarization through 1Password's `op`, Linux tarballs and .deb/.rpm packages (nfpm in Docker), source tarball, Sparkle appcast (`docs/appcast.xml`, served by GitHub Pages), GitHub release, the Homebrew tap (`scripts/update_tap.sh`, templates in `packaging/homebrew/`) and the Cloudsmith apt/rpm repository (`scripts/publish_linux_packages.sh`; skipped without `CLOUDSMITH_API_KEY` or `CLOUDSMITH_OP_REF`; local settings such as the 1Password references go in the gitignored `scripts/release.local.env`).
 
 ## Legacy Python tool
 

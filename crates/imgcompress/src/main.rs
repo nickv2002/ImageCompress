@@ -484,9 +484,12 @@ fn cmd_tools(check: bool, json: bool) -> R {
 fn cmd_licenses() -> R {
     println!("imgcompress {} is distributed under the GNU GPL v3 or later (it links libimagequant, GPLv3).", env!("CARGO_PKG_VERSION"));
     println!("The repository's own source is CC0; binaries are GPLv3. gifsicle (GPLv2) runs as a separate helper process.");
-    let exe = std::env::current_exe().ok();
+    let exe = std::env::current_exe().and_then(|p| p.canonicalize()).ok();
     let dir = exe.as_deref().and_then(Path::parent);
-    let cands = dir.map(|d| vec![d.join("../Resources/licenses"), d.join("licenses"), d.join("../share/doc/imgcompress/licenses"), d.join("../../licenses")]).unwrap_or_default();
+    // App bundle, tarball / Homebrew libexec, /usr/lib/imgcompress (deb/rpm), source tree.
+    let cands = dir
+        .map(|d| vec![d.join("../Resources/licenses"), d.join("licenses"), d.join("../share/doc/imgcompress/licenses"), d.join("../../share/doc/imgcompress/licenses"), d.join("../../licenses")])
+        .unwrap_or_default();
     match cands.iter().find(|p| p.is_dir()) {
         Some(p) => println!("Third-party license texts: {}", p.canonicalize().unwrap_or(p.clone()).display()),
         None => println!("Third-party license texts: not found next to this binary (see the licenses/ folder of the source tree)."),

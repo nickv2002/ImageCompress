@@ -130,7 +130,7 @@ struct GeneralSettings: View {
                                 inherited: schemaStore.schema.defaults, edited: $settings.base)
                 }
             } header: { Text("Which files are processed") } footer: {
-                Text("Applies to the app, the Finder menu and the command line tool.")
+                Text("Applies to the app and the Finder menu. The command line tool uses its own defaults plus any preset you give it.")
             }
             Section {
                 Toggle("Ask before moving originals to the Trash", isOn: $settings.confirmTrash)
@@ -381,7 +381,7 @@ struct ToolsSettings: View {
                 }
                 Button("Install Command Line Tool…") { Task { await CLIInstaller.run() } }
             } footer: {
-                Text("The command line tool shares your presets and defaults, so scripts behave like the app.")
+                Text("The command line tool shares your presets, so scripts can run the same presets as the app.")
             }
             Section("Updates") {
                 Toggle("Check for updates automatically", isOn: Binding(get: { Updater.shared.automaticChecks }, set: { Updater.shared.automaticChecks = $0 }))

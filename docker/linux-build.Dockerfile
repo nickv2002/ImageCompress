@@ -41,6 +41,10 @@ RUN ./configure --disable-gifview --disable-gifdiff LDFLAGS=-static \
 # ---- build: imgcompress ------------------------------------------------------
 FROM toolchain AS build
 ARG TARGETARCH
+# Parallel rustc jobs. Each fat-LTO crate (lightningcss, the codecs) can take over 1 GB, so a full -j$(nproc)
+# gets killed on Docker Desktop's default 8 GB VM. build_linux.sh sets it from the VM's memory.
+ARG CARGO_BUILD_JOBS=4
+ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
 WORKDIR /src
 COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \

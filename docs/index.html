@@ -1,0 +1,101 @@
+---
+title: ImageCompress
+description: Smaller images that look the same. Compress and convert PNG, JPEG, WebP, GIF, AVIF, JPEG XL and HEIC on your Mac, from the Finder or the command line.
+---
+<section class="hero">
+  <img class="icon" src="{{ site.baseurl }}/assets/icon.png" alt="ImageCompress app icon" width="128" height="128">
+  <h1>Smaller images.<br>Same pictures.</h1>
+  <p class="tag">ImageCompress shrinks PNG, JPEG, WebP, GIF, AVIF, JPEG XL and HEIC files, or converts between them,
+    from a native Mac app, a right-click in Finder, or the command line.</p>
+  <div class="cta">
+    <a class="button" href="https://github.com/nickv2002/ImageCompress/releases/latest/download/ImageCompress.zip">Download for Mac</a>
+    <a class="button secondary" href="#install">Homebrew and Linux</a>
+  </div>
+  <p class="req">Free and open source · macOS 15 or later · Apple silicon and Intel</p>
+</section>
+
+<div class="shot">
+  <img src="{{ site.baseurl }}/assets/screenshot.png" alt="The ImageCompress window with a list of compressed images and their savings" width="1000" height="520">
+</div>
+
+<section class="section">
+  <h2>Pick a format and a quality. That's it.</h2>
+  <p class="sub">Two controls in the toolbar cover almost everything: keep each file's format or convert to a modern one,
+    and choose how much you are willing to change.</p>
+  <div class="matrix-wrap">
+    <table class="matrix">
+      <tr><th>Quality</th><th>What it means</th></tr>
+      <tr><td><strong>Lossless</strong></td><td>Every pixel stays exactly the same. Smallest safe savings.</td></tr>
+      <tr><td><strong>Visually lossless</strong></td><td>Technically lossy, but you would not see a difference. JPEG, WebP, AVIF and JPEG XL
+        files are measured with SSIMULACRA2, a perceptual metric, and each gets the lowest quality setting that still
+        looks the same.</td></tr>
+      <tr><td><strong>Smaller</strong></td><td>A little loss that is hard to spot, for a big size reduction.</td></tr>
+    </table>
+  </div>
+  <p class="sub" style="margin-top:16px">Formats: preserve the original, or convert to JPEG XL, AVIF, HEIC, WebP, JPEG or PNG.
+    <a href="{{ site.baseurl }}/formats/">Which one should I use?</a></p>
+</section>
+
+<section class="section">
+  <h2>Built like a Mac app</h2>
+  <p class="sub">Native SwiftUI, with the conventions you expect.</p>
+  <div class="grid">
+    <div class="card"><h3>Drag, drop, done</h3><p>Drop files or whole folders on the window or the Dock icon. Turn on
+      auto-start and they compress as soon as they land.</p></div>
+    <div class="card"><h3>Right-click in Finder</h3><p>A Finder menu and toolbar button run your chosen presets on the
+      selection without opening a window. Also in the Services menu.</p></div>
+    <div class="card"><h3>Before and after</h3><p>Press Space to compare the original and the result side by side, with the
+      exact saving.</p></div>
+    <div class="card"><h3>Undo for a day</h3><p>Replaced originals are kept for 24 hours, so one click puts a file back.
+      Undo refuses if the file changed since.</p></div>
+    <div class="card"><h3>Never bigger</h3><p>A result is only kept when it is smaller than the original. Files are
+      replaced atomically, and existing files are never overwritten unless you ask.</p></div>
+    <div class="card"><h3>Your metadata, your call</h3><p>Keep the colour profile, keep everything, or keep EXIF without
+      GPS location. Dates are preserved.</p></div>
+    <div class="card"><h3>Presets you can share</h3><p>Each preset is a small JSON file. Edit it by hand, send it to a
+      friend, or use it from scripts.</p></div>
+    <div class="card"><h3>Everything built in</h3><p>Every encoder is part of the app: jpegli, mozjpeg, oxipng,
+      libimagequant, libjxl, libavif, libwebp and gifsicle. No Homebrew or Python needed.</p></div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>The same engine on the command line</h2>
+  <p class="sub"><code>imgcompress</code> runs on macOS and Linux, shares presets with the app, and is safe to re-run.</p>
+<pre><code># Compress every image under a folder, in place
+imgcompress run ~/Pictures
+
+# Convert to AVIF with a preset, keeping the originals next to the results
+imgcompress run --preset avif-visually-lossless --destination alongside photos/
+
+# Use a preset file someone sent you
+imgcompress run --preset ~/Downloads/web-thumbnails.json site/images/</code></pre>
+  <p class="sub" style="margin-top:12px"><a href="{{ site.baseurl }}/cli/">Command line reference</a></p>
+</section>
+
+<section class="section" id="install">
+  <h2>Install</h2>
+  <p class="sub">The Mac app updates itself. Homebrew, apt and dnf keep the command line tool current.</p>
+  <div class="install">
+    <div class="card"><h3>Mac app</h3><p>Includes the <code>imgcompress</code> command.</p>
+<pre><code>brew tap nickv2002/tap
+brew trust --cask nickv2002/tap/imagecompress
+brew install --cask imagecompress</code></pre>
+      <p style="margin-top:10px">Or <a href="https://github.com/nickv2002/ImageCompress/releases/latest/download/ImageCompress.zip">download the app</a>
+        and move it to Applications.</p></div>
+    <div class="card"><h3>Debian, Ubuntu</h3><p>Static build, no dependencies.</p>
+<pre><code>curl -1sLf https://dl.cloudsmith.io/public/\
+nickv2002/imagecompress/setup.deb.sh | sudo -E bash
+sudo apt install imgcompress</code></pre></div>
+    <div class="card"><h3>Fedora, RHEL, openSUSE</h3><p>Static build, no dependencies.</p>
+<pre><code>curl -1sLf https://dl.cloudsmith.io/public/\
+nickv2002/imagecompress/setup.rpm.sh | sudo -E bash
+sudo dnf install imgcompress</code></pre></div>
+    <div class="card"><h3>Command line only</h3><p>macOS or Linux, with Homebrew.</p>
+<pre><code>brew tap nickv2002/tap
+brew trust --formula nickv2002/tap/imgcompress
+brew install imgcompress</code></pre>
+      <p style="margin-top:10px">Tarballs for every platform are on the
+        <a href="https://github.com/nickv2002/ImageCompress/releases">releases page</a>.</p></div>
+  </div>
+</section>

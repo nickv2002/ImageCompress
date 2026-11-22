@@ -3,9 +3,11 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-/// Locate gifsicle: next to the executable, ../Helpers (app bundle), then PATH / Homebrew.
+/// Locate gifsicle: next to the executable, ../Helpers (app bundle), then PATH / Homebrew. The executable's path
+/// is resolved first, so a symlink (Install Command Line Tool, a Homebrew or package `bin/` link) still finds the
+/// bundled copy.
 pub fn find_gifsicle() -> Option<PathBuf> {
-    if let Ok(exe) = std::env::current_exe() {
+    if let Ok(exe) = std::env::current_exe().and_then(|p| p.canonicalize()) {
         if let Some(dir) = exe.parent() {
             for c in [dir.join("gifsicle"), dir.join("../Helpers/gifsicle")] {
                 if c.is_file() {

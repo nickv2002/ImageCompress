@@ -61,6 +61,16 @@ struct ImageCompressApp: App {
             CommandGroup(after: .toolbar) {
                 Toggle("Show Options", isOn: $showInspector).keyboardShortcut("i", modifiers: [.command, .option])
             }
+            CommandGroup(replacing: .help) {
+                Button("ImageCompress Help") { NSWorkspace.shared.open(Links.help) }
+                    .keyboardShortcut("?", modifiers: .command)
+                Button("Command Line Reference") { NSWorkspace.shared.open(Links.cli) }
+                Divider()
+                Button("Release Notes") { NSWorkspace.shared.open(Links.releases) }
+                Button("Report an Issue…") { NSWorkspace.shared.open(Links.issues) }
+                Divider()
+                Button("Acknowledgements") { NSWorkspace.shared.open(Links.acknowledgements) }
+            }
             CommandMenu("Process") {
                 Button("Recent Compressions & Undo…") { store.showUndoHistory = true }
                     .keyboardShortcut("z", modifiers: [.command, .option])

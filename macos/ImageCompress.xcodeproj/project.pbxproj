@@ -12,6 +12,7 @@
 		17E89EFAE140DA53EA498389 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796EAE1577123B8B9D80590B /* AppGroup.swift */; };
 		1EC79C3E97A3418796E2EF75 /* SimpleMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFBFFD331297506F6FAE8DB /* SimpleMode.swift */; };
 		218FDF6DFFA22B4C5986EFBC /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37FD4CF5F1BC16426E4F8458 /* AppSettings.swift */; };
+		22879868E06E74F9DF5AA2BA /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5262C8A68FA1B92E54D76E5 /* Links.swift */; };
 		267F5B63203EFAA6541FFB08 /* CompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DF830791AB6283E922D756 /* CompareView.swift */; };
 		2B27BED03C4837AEC084790D /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44CD64AAD4A71F40B9ABA97C /* Feedback.swift */; };
 		2C4AB46544D2E89782DEB8B5 /* Presets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945FD6157BD8BF9048CAED4F /* Presets.swift */; };
@@ -115,6 +116,7 @@
 		D644D34C648EC314D500DA04 /* Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
 		D655FC4BE2C4FFDE07DD1208 /* OptionsForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionsForm.swift; sourceTree = "<group>"; };
 		DEFBFFD331297506F6FAE8DB /* SimpleMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleMode.swift; sourceTree = "<group>"; };
+		E5262C8A68FA1B92E54D76E5 /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
 		EBBB65E7EB127F4D2146D6D2 /* EngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineTests.swift; sourceTree = "<group>"; };
 		EE2BBA584400B5CFDC08F4A5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		FCFA39EF5515E9C44DAEA4F9 /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
@@ -161,6 +163,7 @@
 				78169E895FE9E7F636248D97 /* ImageCompressApp.swift */,
 				D56C6D446720EE156B441ABB /* Info.plist */,
 				3C05DAF501E78064FAFA4B9E /* JobStore.swift */,
+				E5262C8A68FA1B92E54D76E5 /* Links.swift */,
 				129FFF21788B28A80FCEFCFE /* PresetAxes.swift */,
 				1C38240CE546CFF5BE73E256 /* PresetStore.swift */,
 				B97A9386EBE40B41305E925F /* SchemaStore.swift */,
@@ -398,6 +401,7 @@
 				78F990E732525503C755198C /* JSONValue.swift in Sources */,
 				878B98CD271B50449DA868EB /* JobEvent.swift in Sources */,
 				57B81587284F5F88AF317663 /* JobStore.swift in Sources */,
+				22879868E06E74F9DF5AA2BA /* Links.swift in Sources */,
 				1540DB5C219C84C4ADA2A414 /* OptionCatalog.swift in Sources */,
 				C53A7520E4AB54C95169AD7A /* Options.swift in Sources */,
 				827DED72BF1F632D8031103E /* OptionsForm.swift in Sources */,

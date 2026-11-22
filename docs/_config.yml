@@ -1,0 +1,16 @@
+# GitHub Pages (Deploy from a branch: main, /docs). Jekyll renders the Markdown pages with _layouts/default.html;
+# appcast.xml has no front matter, so it is served byte for byte as the Sparkle update feed.
+title: ImageCompress
+description: Compress and convert images on your Mac, from the Finder or the command line.
+url: https://nickv2002.github.io
+baseurl: /ImageCompress
+repo: https://github.com/nickv2002/ImageCompress
+markdown: kramdown
+kramdown:
+  input: GFM
+  auto_ids: true
+exclude:
+  - BUILDING.md
+defaults:
+  - scope: { path: "" }
+    values: { layout: default }

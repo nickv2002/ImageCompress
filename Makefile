@@ -1,9 +1,10 @@
 export PATH := /opt/homebrew/opt/rustup/bin:$(PATH)
+SHELL := /bin/bash
 SCHEME := ImageCompress
 DERIVED := build/DerivedData
 XB := xcodebuild -project macos/ImageCompress.xcodeproj -scheme $(SCHEME) -derivedDataPath $(DERIVED)
 
-.PHONY: generate cli build test run licenses linux source-tarball universal check-universal parity
+.PHONY: generate cli build test run licenses linux source-tarball universal check-universal parity release release-quiet
 
 generate:
 	cd macos && xcodegen generate
@@ -39,3 +40,12 @@ source-tarball:
 
 parity:
 	scripts/parity.py
+
+# Full release (see .claude/skills/release-imagecompress/SKILL.md).
+release:
+	scripts/release.sh
+
+# The same, printing only the ==> progress lines; the full output goes to build/release.log.
+release-quiet:
+	@mkdir -p build
+	@set -o pipefail; scripts/release.sh 2>&1 | tee build/release.log | grep --line-buffered -E '^(==>|error|warning|    warning)' || { echo "release failed; tail of build/release.log:"; tail -20 build/release.log; exit 1; }

@@ -12,7 +12,7 @@ length="${4:?}"
 summary_file="${5:-}"
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-appcast="${repo_root}/appcast.xml"
+appcast="${repo_root}/docs/appcast.xml"
 changelog="${repo_root}/CHANGELOG.md"
 
 pub_date=$(date -u +"%a, %d %b %Y %H:%M:%S +0000")

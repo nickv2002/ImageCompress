@@ -1,8 +1,10 @@
 #!/bin/bash
 # Cuts a release: license gate, version bump (macos/project.yml + Cargo.toml),
 # builds + signs + notarizes the Mac app and CLI, builds the Linux tarballs and
-# the GPL Corresponding Source tarball, generates a changelog, tags, pushes,
-# publishes a GitHub Release, and installs the build into /Applications.
+# the .deb/.rpm packages and the GPL Corresponding Source tarball, generates a
+# changelog, tags, pushes, publishes a GitHub Release, updates the Homebrew tap,
+# uploads the Linux packages to Cloudsmith (if configured), and installs the
+# build into /Applications.
 # The only command the owner needs to run.
 set -euo pipefail
 
@@ -67,6 +69,8 @@ scripts/notarize.sh "$version"
 
 echo "==> building Linux tarballs (docker)"
 scripts/build_linux.sh "$version"
+echo "==> building Linux .deb/.rpm packages (docker)"
+scripts/build_linux_packages.sh "$version"
 
 scripts/changelog.sh "$version" "$prev_tag"
 
@@ -89,7 +93,7 @@ download_url="https://github.com/${repo_slug}/releases/download/v${version}/${zi
 scripts/update_appcast.sh "$version" "$download_url" "$signature" "$file_size" "$release_summary_file"
 
 echo "==> committing version bump + changelog + appcast"
-git add macos/project.yml macos/ImageCompress.xcodeproj Cargo.toml Cargo.lock CHANGELOG.md appcast.xml
+git add macos/project.yml macos/ImageCompress.xcodeproj Cargo.toml Cargo.lock CHANGELOG.md docs/appcast.xml
 git commit -m "Release ${version}"
 
 echo "==> tagging ${tag}"
@@ -112,9 +116,12 @@ if [[ -s "$release_summary_file" ]]; then
 else
   cp build/release-notes.md "$release_body_file"
 fi
-assets=("$zip_path" "dist/imgcompress-${version}-macos-universal.tar.gz" "dist/imgcompress-${version}-sources.tar.gz")
+# A copy without the version in its name, so the website can link to
+# releases/latest/download/ImageCompress.zip. Sparkle and Homebrew use the versioned one.
+cp "$zip_path" dist/ImageCompress.zip
+assets=("$zip_path" dist/ImageCompress.zip "dist/imgcompress-${version}-macos-universal.tar.gz" "dist/imgcompress-${version}-sources.tar.gz")
 shopt -s nullglob
-assets+=(dist/imgcompress-"${version}"-linux-*.tar.gz dist/gifsicle-*-src.tar.gz)
+assets+=(dist/imgcompress-"${version}"-linux-*.tar.gz dist/imgcompress_"${version}"_*.deb dist/imgcompress-"${version}"-*.rpm dist/gifsicle-*-src.tar.gz)
 shopt -u nullglob
 for f in "${assets[@]}"; do
   [[ -f "$f" ]] || { echo "error: release asset missing: $f" >&2; exit 1; }
@@ -122,6 +129,12 @@ done
 gh release create "$tag" "${assets[@]}" \
   --repo "$repo_slug" \
   --title "${version}" --notes-file "$release_body_file"
+
+echo "==> updating the Homebrew tap"
+scripts/update_tap.sh "$version" --push
+
+echo "==> publishing Linux packages"
+scripts/publish_linux_packages.sh "$version"
 
 scripts/install_local.sh
 

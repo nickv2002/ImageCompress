@@ -43,7 +43,7 @@ targets:
         LSMinimumSystemVersion: "15.0"
         LSApplicationCategoryType: public.app-category.graphics-design
         # Sparkle. The EdDSA key is the one `sign_update` uses from the login keychain (shared with Transmission Remote).
-        SUFeedURL: https://raw.githubusercontent.com/nickv2002/ImageCompress/main/appcast.xml
+        SUFeedURL: https://nickv2002.github.io/ImageCompress/appcast.xml
         SUPublicEDKey: "+ONkpmgvNWrF3vZIpoBPehwCK9SH4FgKELrAkXpvUgQ="
         SUEnableAutomaticChecks: true
         NSDesktopFolderUsageDescription: ImageCompress reads and compresses images in folders you choose.

@@ -124,7 +124,7 @@
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/nickv2002/ImageCompress/main/appcast.xml</string>
+	<string>https://nickv2002.github.io/ImageCompress/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>+ONkpmgvNWrF3vZIpoBPehwCK9SH4FgKELrAkXpvUgQ=</string>
 </dict>

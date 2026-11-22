@@ -1,0 +1,56 @@
+# .deb and .rpm packages of the static Linux CLI, built by scripts/build_linux_packages.sh from the
+# staged tarball contents (build/linux/stage/imgcompress-<version>-linux-<arch>/; the script fills in ${STAGE}).
+# The binaries are static, so the packages have no dependencies.
+#
+# imgcompress and its private gifsicle live in /usr/lib/imgcompress, so the distro's own gifsicle package
+# is never replaced; /usr/bin/imgcompress is a link that imgcompress resolves to find gifsicle.
+name: imgcompress
+arch: ${PKG_ARCH}
+platform: linux
+version: ${VERSION}
+version_schema: none
+maintainer: Nick Vance <704392+nickv2002@users.noreply.github.com>
+description: |
+  Compress and convert images (PNG, JPEG, WebP, GIF, AVIF, JPEG XL, HEIC).
+  One static binary with every codec built in; gifsicle is bundled for GIFs.
+vendor: ImageCompress
+homepage: https://nickv2002.github.io/ImageCompress/
+license: GPL-3.0-or-later
+section: graphics
+
+contents:
+  # Owned by the package so rpm removes it on uninstall (dpkg removes empty directories anyway).
+  - dst: /usr/lib/imgcompress
+    type: dir
+    file_info: { mode: 0755 }
+  - src: ${STAGE}/imgcompress
+    dst: /usr/lib/imgcompress/imgcompress
+    file_info: { mode: 0755 }
+  - src: ${STAGE}/gifsicle
+    dst: /usr/lib/imgcompress/gifsicle
+    file_info: { mode: 0755 }
+  - src: /usr/lib/imgcompress/imgcompress
+    dst: /usr/bin/imgcompress
+    type: symlink
+  - src: ${STAGE}/completions/imgcompress.bash
+    dst: /usr/share/bash-completion/completions/imgcompress
+  - src: ${STAGE}/completions/imgcompress.zsh
+    dst: /usr/share/zsh/vendor-completions/_imgcompress
+    packager: deb
+  - src: ${STAGE}/completions/imgcompress.zsh
+    dst: /usr/share/zsh/site-functions/_imgcompress
+    packager: rpm
+  - src: ${STAGE}/completions/imgcompress.fish
+    dst: /usr/share/fish/vendor_completions.d/imgcompress.fish
+  - src: ${STAGE}/man/imgcompress.1
+    dst: /usr/share/man/man1/imgcompress.1
+  # GPL notices, third-party licenses and where to get the Corresponding Source.
+  - src: ${STAGE}/licenses
+    dst: /usr/share/doc/imgcompress/licenses
+    type: tree
+
+deb:
+  fields:
+    Bugs: https://github.com/nickv2002/ImageCompress/issues
+rpm:
+  group: Applications/Multimedia
