@@ -19,5 +19,17 @@
         length="29180773"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>2026.11.23.1</title>
+      <sparkle:version>2026.11.23.1</sparkle:version>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <pubDate>Mon, 23 Nov 2026 19:59:22 +0000</pubDate>
+      <description><![CDATA[<p>ImageCompress 2026.11.23.1 stops offering the update you already installed, and imgcompress --version now shows the release number.</p><ul><li>Show the release version in imgcompress --version, and fix build warnings</li><li>Give the app its real version number, so Sparkle stops offering the installed release</li><li>Draft the release summary with claude -p directly instead of the cldp shell alias</li><li>Ask for 1Password approval at the start of a release, and retry timed-out prompts</li></ul>]]></description>
+      <enclosure
+        url="https://github.com/nickv2002/ImageCompress/releases/download/v2026.11.23.1/ImageCompress-2026.11.23.1.zip"
+        sparkle:edSignature="Pd9C5hP5tn8pFEgK2VyUg4yhYPIU9M8mPMrVbrlihe7T5pObU07uAuwgExdrtUUs6/fb5WL3XxVRTBkxsD+vAw=="
+        length="29180743"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
