@@ -40,6 +40,9 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: ImageCompress
+        # From the build settings that release.sh bumps (XcodeGen otherwise writes 1.0 / 1).
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: "15.0"
         LSApplicationCategoryType: public.app-category.graphics-design
         # Sparkle. The EdDSA key is the one `sign_update` uses from the login keychain (shared with Transmission Remote).
@@ -109,6 +112,9 @@ targets:
       path: FinderMenu/Info.plist
       properties:
         CFBundleDisplayName: ImageCompress Finder Menu
+        # From the build settings that release.sh bumps (XcodeGen otherwise writes 1.0 / 1).
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundlePackageType: XPC!
         LSMinimumSystemVersion: "15.0"
         NSExtension:

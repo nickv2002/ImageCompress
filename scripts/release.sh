@@ -65,6 +65,14 @@ PYEOF
 cargo update --workspace --offline
 
 scripts/build_release.sh
+# Sparkle compares CFBundleVersion with the appcast; a stale value would offer this release forever.
+for plist in build/export/ImageCompress.app/Contents/Info.plist \
+    build/export/ImageCompress.app/Contents/PlugIns/*.appex/Contents/Info.plist; do
+  for key in CFBundleShortVersionString CFBundleVersion; do
+    got=$(/usr/libexec/PlistBuddy -c "Print :${key}" "$plist")
+    [[ "$got" == "$version" ]] || { echo "error: ${key} is '${got}', not ${version}, in ${plist}" >&2; exit 1; }
+  done
+done
 scripts/notarize.sh "$version"
 
 echo "==> building Linux tarballs (docker)"
