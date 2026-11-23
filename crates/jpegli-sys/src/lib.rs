@@ -1,6 +1,5 @@
 //! Raw jpegli bindings. Types are shared with mozjpeg-sys (libjpeg ABI 6.2).
 pub use mozjpeg_sys::*;
-use std::os::raw::{c_int, c_ulong, c_uint};
 extern "C-unwind" {
     pub fn jpegli_std_error(err: &mut jpeg_error_mgr) -> &mut jpeg_error_mgr;
     pub fn jpegli_CreateCompress(cinfo: *mut jpeg_compress_struct, version: c_int, structsize: usize);

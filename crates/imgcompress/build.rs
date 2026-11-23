@@ -15,4 +15,19 @@ fn main() {
         }
     }
     println!("cargo:rustc-env=IMGCOMPRESS_DEP_VERSIONS={}", out.join(","));
+
+    // Releases are CalVer YYYY.MM.DD.N, which Cargo must spell YYYY.M.D-N (SemVer); show the release spelling.
+    let v = std::env::var("CARGO_PKG_VERSION").unwrap_or_default();
+    println!("cargo:rustc-env=IMGCOMPRESS_VERSION={}", release_version(&v));
+}
+
+fn release_version(cargo: &str) -> String {
+    let (date, n) = cargo.split_once('-').unwrap_or((cargo, ""));
+    let parts: Vec<&str> = date.split('.').collect();
+    match (parts.as_slice(), n.parse::<u32>()) {
+        ([y, m, d], Ok(n)) if y.len() == 4 && m.parse::<u32>().is_ok() && d.parse::<u32>().is_ok() => {
+            format!("{y}.{:02}.{:02}.{n}", m.parse::<u32>().unwrap(), d.parse::<u32>().unwrap())
+        }
+        _ => cargo.to_string(),
+    }
 }

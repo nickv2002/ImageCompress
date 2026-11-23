@@ -1,6 +1,7 @@
 //! CLI flags for: perceptual quality search, metadata extras, resize, animation.
 //! Kept in their own file; `RunArgs` flattens `ExtraArgs` and `build()` calls `apply_extras`.
 use clap::Args;
+#[cfg(test)]
 use compress_core::options::Options;
 
 #[derive(Args, Default, Debug, Clone)]

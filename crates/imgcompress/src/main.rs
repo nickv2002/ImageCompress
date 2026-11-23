@@ -28,7 +28,7 @@ fn usage<E: ToString>(e: E) -> Fail { Fail::Usage(e.to_string()) }
 fn failed<E: ToString>(e: E) -> Fail { Fail::Failed(e.to_string()) }
 
 #[derive(Parser)]
-#[command(name = "imgcompress", version, about = "Compress and convert images", arg_required_else_help = true)]
+#[command(name = "imgcompress", version = env!("IMGCOMPRESS_VERSION"), about = "Compress and convert images", arg_required_else_help = true)]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,
@@ -482,7 +482,7 @@ fn cmd_tools(check: bool, json: bool) -> R {
 }
 
 fn cmd_licenses() -> R {
-    println!("imgcompress {} is distributed under the GNU GPL v3 or later (it links libimagequant, GPLv3).", env!("CARGO_PKG_VERSION"));
+    println!("imgcompress {} is distributed under the GNU GPL v3 or later (it links libimagequant, GPLv3).", env!("IMGCOMPRESS_VERSION"));
     println!("The repository's own source is CC0; binaries are GPLv3. gifsicle (GPLv2) runs as a separate helper process.");
     let exe = std::env::current_exe().and_then(|p| p.canonicalize()).ok();
     let dir = exe.as_deref().and_then(Path::parent);

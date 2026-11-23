@@ -1,7 +1,6 @@
 class Imgcompress < Formula
   desc "Compress and convert PNG, JPEG, WebP, GIF, AVIF, JPEG XL and HEIC images"
   homepage "https://nickv2002.github.io/ImageCompress/"
-  version "@VERSION@"
   license "GPL-3.0-or-later"
 
   livecheck do
@@ -12,21 +11,21 @@ class Imgcompress < Formula
   # One universal tarball serves both Mac architectures.
   on_macos do
     on_arm do
-      url "https://github.com/nickv2002/ImageCompress/releases/download/v#{version}/imgcompress-#{version}-macos-universal.tar.gz"
+      url "https://github.com/nickv2002/ImageCompress/releases/download/v@VERSION@/imgcompress-@VERSION@-macos-universal.tar.gz"
       sha256 "@SHA256_MACOS@"
     end
     on_intel do
-      url "https://github.com/nickv2002/ImageCompress/releases/download/v#{version}/imgcompress-#{version}-macos-universal.tar.gz"
+      url "https://github.com/nickv2002/ImageCompress/releases/download/v@VERSION@/imgcompress-@VERSION@-macos-universal.tar.gz"
       sha256 "@SHA256_MACOS@"
     end
   end
   on_linux do
     on_intel do
-      url "https://github.com/nickv2002/ImageCompress/releases/download/v#{version}/imgcompress-#{version}-linux-x86_64.tar.gz"
+      url "https://github.com/nickv2002/ImageCompress/releases/download/v@VERSION@/imgcompress-@VERSION@-linux-x86_64.tar.gz"
       sha256 "@SHA256_LINUX_X86_64@"
     end
     on_arm do
-      url "https://github.com/nickv2002/ImageCompress/releases/download/v#{version}/imgcompress-#{version}-linux-aarch64.tar.gz"
+      url "https://github.com/nickv2002/ImageCompress/releases/download/v@VERSION@/imgcompress-@VERSION@-linux-aarch64.tar.gz"
       sha256 "@SHA256_LINUX_AARCH64@"
     end
   end

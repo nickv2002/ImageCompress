@@ -157,7 +157,11 @@ if [[ $verify -eq 1 ]]; then
   docker build -q -f docker/linux-build.Dockerfile --target toolchain -t imgcompress-linux-toolchain . >/dev/null
   # Build on the container's own filesystem: rustc mmap on a macOS bind mount
   # dies with SIGBUS. The source is mounted read-only and copied in first.
-  docker run --rm --network none -e CARGO_HOME=/tmp/cargo-home \
+  # About one rustc job per 2 GB of the Docker VM (fat LTO is memory hungry), as in build_linux.sh.
+  vm_bytes=$(docker info --format '{{.MemTotal}}' 2>/dev/null || echo 0)
+  cargo_jobs=${CARGO_BUILD_JOBS:-$(( vm_bytes / 2147483648 ))}
+  (( cargo_jobs >= 1 )) || cargo_jobs=1
+  docker run --rm --network none -e CARGO_HOME=/tmp/cargo-home -e CARGO_BUILD_JOBS="$cargo_jobs" \
     -v "$verify_dir/$name":/src-ro:ro imgcompress-linux-toolchain \
     sh -c 'cp -a /src-ro /work && cd /work && triple=$(rustc -vV | sed -n "s/^host: //p") && cargo build --release --offline --locked -p imgcompress --target "$triple" && "./target/$triple/release/imgcompress" --version'
   rm -rf "$verify_dir"
