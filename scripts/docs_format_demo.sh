@@ -218,7 +218,7 @@ def kb(n):
 
 names = {"jpeg": "JPEG", "webp": "WebP", "avif": "AVIF", "jxl": "JPEG XL", "heic": "HEIC", "png": "PNG"}
 formats = [
-    ("jpeg", "Photos that need to open anywhere, with fast encoding and decoding.", "Everywhere."),
+    ("jpeg", "Photos that need to open anywhere, with fast encoding and decoding. Encoded here with jpegli.", "Everywhere."),
     ("webp", "Smaller files than JPEG for photos and graphics, with transparency and animation.", "All current browsers."),
     ("avif", "Small files at good quality, especially for photos at low and medium quality.", "All current browsers."),
     ("jxl", "High quality at small sizes, and lossless recompression of existing JPEGs.", 'Chrome 155+, Firefox 158+, Opera and Safari (still pictures only: no animation or progressive loading); not Edge yet. <a href="https://caniuse.com/jpegxl">Current support</a>.'),

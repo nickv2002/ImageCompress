@@ -8,7 +8,7 @@
   {
    "id": "jpeg",
    "name": "JPEG",
-   "good_at": "Photos that need to open anywhere, with fast encoding and decoding.",
+   "good_at": "Photos that need to open anywhere, with fast encoding and decoding. Encoded here with jpegli.",
    "shows_in": "Everywhere.",
    "breaks": "Square 8×8 blocks and flat patches of colour."
   },

@@ -15,6 +15,7 @@
   sections:
     - { title: Formats it can handle, id: formats-it-can-handle }
     - { title: How Visually lossless works, id: how-visually-lossless-and-smaller-work }
+    - { title: JPEG encoders, id: jpeg-encoders }
     - { title: Metadata, id: metadata }
     - { title: Which apps open which format, id: which-apps-open-which-format }
 - title: Format comparison

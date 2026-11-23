@@ -75,6 +75,34 @@ Other formats work a little differently:
 - **AVIF** has no exact lossless mode here. Lossless uses the highest quality setting, 100.
 - **JPEG** is lossless only for JPEG files, which are repacked without decoding. Other images converted to JPEG at Lossless are skipped, because a JPEG made from them would lose detail.
 
+## JPEG encoders
+
+ImageCompress writes JPEG with **jpegli** by default. jpegli is Google's JPEG encoder, from the JPEG XL project
+(libjxl). It makes ordinary JPEG files that every JPEG decoder opens. Google's [announcement](https://opensource.googleblog.com/2024/04/introducing-jpegli-new-jpeg-coding-library.html)
+says it uses adaptive quantization to reduce noise and improve image quality, and claims about 35% better
+compression at high quality settings in its own tests. It can also work with 10 or more bits per component to avoid
+banding in slow gradients, but Google says that needs application support.
+
+**mozjpeg** is the other encoder, and the long-standing reference. Choose it with `--jpeg-encoder mozjpeg` in
+the command line, or with Encoder in the JPEG section of the options panel.
+
+We measured both on the four sample photos from the [format comparison]({{ site.baseurl }}/compare/), at Visually
+lossless (score 88). jpegli gave the smaller file every time:
+
+| Photo | jpegli | mozjpeg | Smaller by |
+| --- | --- | --- | --- |
+| Landscape | 92.3 KB | 100.5 KB | 8% |
+| Portrait | 65.6 KB | 75.6 KB | 13% |
+| City | 68.7 KB | 77.7 KB | 12% |
+| Graphic | 31.6 KB | 33.0 KB | 4% |
+
+These are single crops, so treat the figures as a guide, not a promise. At the same fixed quality number (85) the
+two encoders do not give the same picture: jpegli's files were larger but scored higher, so compare at a score, as
+Visually lossless does.
+
+Lossless JPEG repacks are a separate path. They do not use either encoder to re-encode the picture: the
+image data is kept and only repacked.
+
 ## Lossless JPEG to JPEG XL
 
 When you convert a JPEG to JPEG XL at Lossless quality, ImageCompress does not decode the picture. It repacks
