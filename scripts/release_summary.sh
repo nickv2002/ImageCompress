@@ -22,7 +22,8 @@ cldp_args="${RELEASE_SUMMARY_ARGS:--p --model claude-haiku-5-5}"
 cldp_timeout=180
 
 end_ref="${RELEASE_SUMMARY_END:-HEAD}"
-range="$end_ref"
+# No previous tag (the first release): only the commits since the rewrite, not the old Python script's history.
+range="${end_ref}~4..${end_ref}"
 if [[ -n "$prev_tag" ]]; then
   range="${prev_tag}..${end_ref}"
 fi
