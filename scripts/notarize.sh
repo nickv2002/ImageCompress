@@ -68,6 +68,8 @@ done
 codesign --verify --deep --strict --verbose=2 "$app_path"
 
 echo "==> fetching App Store Connect API key from 1Password (${op_item})"
+# 1Password is about to ask for approval, and the prompt times out: get the owner's attention.
+command -v afplay >/dev/null 2>&1 && { afplay /System/Library/Sounds/Glass.aiff >/dev/null 2>&1 & }
 key_filename=$(op item get "$op_item_name" --vault "$op_vault" --account "$op_account" --format json \
   | /usr/bin/python3 -c 'import json, sys; print(json.load(sys.stdin)["files"][0]["name"])')
 key_id=$(echo "$key_filename" | sed -E 's/^AuthKey_([A-Za-z0-9]+)\.p8$/\1/')

@@ -84,13 +84,19 @@ brew install --cask imagecompress</code></pre>
       <p style="margin-top:10px">Or <a href="https://github.com/nickv2002/ImageCompress/releases/latest/download/ImageCompress.zip">download the app</a>
         and move it to Applications.</p></div>
     <div class="card"><h3>Debian, Ubuntu</h3><p>Static build, no dependencies.</p>
-<pre><code>curl -1sLf https://dl.cloudsmith.io/public/\
-nickv2002/imagecompress/setup.deb.sh | sudo -E bash
-sudo apt install imgcompress</code></pre></div>
+<pre><code>sudo install -d -m 0755 /etc/apt/keyrings
+sudo curl -fsSLo /etc/apt/keyrings/nickv2002.asc \
+  https://nickv2002.github.io/packages/nickv2002.asc
+echo "deb [signed-by=/etc/apt/keyrings/nickv2002.asc] \
+https://nickv2002.github.io/packages/deb stable main" \
+  | sudo tee /etc/apt/sources.list.d/nickv2002.list
+sudo apt update && sudo apt install imgcompress</code></pre></div>
     <div class="card"><h3>Fedora, RHEL, openSUSE</h3><p>Static build, no dependencies.</p>
-<pre><code>curl -1sLf https://dl.cloudsmith.io/public/\
-nickv2002/imagecompress/setup.rpm.sh | sudo -E bash
-sudo dnf install imgcompress</code></pre></div>
+<pre><code>sudo curl -fsSLo /etc/yum.repos.d/nickv2002.repo \
+  https://nickv2002.github.io/packages/rpm/nickv2002.repo
+sudo dnf install imgcompress</code></pre>
+      <p style="margin-top:10px">openSUSE: <code>sudo zypper addrepo</code> the same <code>.repo</code> URL.
+        <a href="https://nickv2002.github.io/packages/">More on the repository</a>.</p></div>
     <div class="card"><h3>Command line only</h3><p>macOS or Linux, with Homebrew.</p>
 <pre><code>brew tap nickv2002/tap
 brew trust --formula nickv2002/tap/imgcompress

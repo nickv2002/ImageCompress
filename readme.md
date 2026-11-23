@@ -19,17 +19,28 @@ brew install --cask imagecompress
 
 **CLI only**, on macOS or Linux: `brew trust --formula nickv2002/tap/imgcompress && brew install nickv2002/tap/imgcompress`.
 
-**Debian, Ubuntu, Fedora and other Linux** (updates with `apt upgrade` / `dnf upgrade`; packages hosted by
-[Cloudsmith](https://cloudsmith.com)):
+**Debian, Ubuntu, Fedora and openSUSE**, from the signed package repository at [nickv2002.github.io/packages](https://nickv2002.github.io/packages/)
+(updates with `apt upgrade` / `dnf upgrade` / `zypper update`; the binary is static, so there are no dependencies):
 
 ```bash
 # Debian / Ubuntu
-curl -1sLf 'https://dl.cloudsmith.io/public/nickv2002/imagecompress/setup.deb.sh' | sudo -E bash
-sudo apt install imgcompress
-# Fedora / RHEL / openSUSE
-curl -1sLf 'https://dl.cloudsmith.io/public/nickv2002/imagecompress/setup.rpm.sh' | sudo -E bash
+sudo install -d -m 0755 /etc/apt/keyrings
+sudo curl -fsSLo /etc/apt/keyrings/nickv2002.asc https://nickv2002.github.io/packages/nickv2002.asc
+echo "deb [signed-by=/etc/apt/keyrings/nickv2002.asc] https://nickv2002.github.io/packages/deb stable main" \
+  | sudo tee /etc/apt/sources.list.d/nickv2002.list
+sudo apt update && sudo apt install imgcompress
+
+# Fedora / RHEL / Rocky / Alma
+sudo curl -fsSLo /etc/yum.repos.d/nickv2002.repo https://nickv2002.github.io/packages/rpm/nickv2002.repo
 sudo dnf install imgcompress
+
+# openSUSE
+sudo zypper addrepo https://nickv2002.github.io/packages/rpm/nickv2002.repo
+sudo zypper install imgcompress
 ```
+
+To build it yourself, download `imgcompress-<version>-sources.tar.gz` from a release; `BUILD_FROM_SOURCE.txt` inside
+has the `cargo` steps.
 
 Or download from the [GitHub releases page](https://github.com/nickv2002/ImageCompress/releases):
 
@@ -92,7 +103,7 @@ scripts/build_linux.sh <version>   # static musl tarballs via docker/linux-build
 make release-quiet  # full signed + notarized release pipeline (maintainer only)
 ```
 
-Install the license tools with `cargo install --locked cargo-deny cargo-about --features cli`. Releases are cut with `scripts/release.sh` (see `.claude/skills/release-imagecompress/SKILL.md`): license gate, version bump in `macos/project.yml` and `Cargo.toml`, notarization through 1Password's `op`, Linux tarballs and .deb/.rpm packages (nfpm in Docker), source tarball, Sparkle appcast (`docs/appcast.xml`, served by GitHub Pages), GitHub release, the Homebrew tap (`scripts/update_tap.sh`, templates in `packaging/homebrew/`) and the Cloudsmith apt/rpm repository (`scripts/publish_linux_packages.sh`; skipped without `CLOUDSMITH_API_KEY` or `CLOUDSMITH_OP_REF`; local settings such as the 1Password references go in the gitignored `scripts/release.local.env`).
+Install the license tools with `cargo install --locked cargo-deny cargo-about --features cli`. Releases are cut with `scripts/release.sh` (see `.claude/skills/release-imagecompress/SKILL.md`): license gate, version bump in `macos/project.yml` and `Cargo.toml`, notarization through 1Password's `op`, Linux tarballs and .deb/.rpm packages (nfpm in Docker), source tarball, Sparkle appcast (`docs/appcast.xml`, served by GitHub Pages), GitHub release, the Homebrew tap (`scripts/update_tap.sh`, templates in `packaging/homebrew/`) and the self-hosted apt/dnf repository (`scripts/sign_linux_packages.sh` and `scripts/publish_linux_packages.sh`, which index, sign and force-push the GitHub Pages site of `nickv2002/packages`; the signing key was made once by `scripts/make_repo_key.sh` and lives in 1Password; local settings such as the 1Password references go in the gitignored `scripts/release.local.env`).
 
 ## Legacy Python tool
 

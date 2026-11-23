@@ -56,7 +56,3 @@ ImageCompress is built on these projects, among others:
 AV1 (libaom, dav1d), WebP and JPEG XL come with their royalty-free patent grants, which are included with the notices.
 An optional Linux `heic` build feature (x265, libde265) may require HEVC patent licenses in some countries. It is off by default
 and not part of the macOS builds, which use Apple's ImageIO. This project grants no patent license.
-
-## Thanks
-
-Linux package hosting is generously provided by [Cloudsmith](https://cloudsmith.com).

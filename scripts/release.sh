@@ -3,7 +3,7 @@
 # builds + signs + notarizes the Mac app and CLI, builds the Linux tarballs and
 # the .deb/.rpm packages and the GPL Corresponding Source tarball, generates a
 # changelog, tags, pushes, publishes a GitHub Release, updates the Homebrew tap,
-# uploads the Linux packages to Cloudsmith (if configured), and installs the
+# publishes the Linux packages to the apt/dnf repository (nickv2002/packages), and installs the
 # build into /Applications.
 # The only command the owner needs to run.
 set -euo pipefail
@@ -71,6 +71,8 @@ echo "==> building Linux tarballs (docker)"
 scripts/build_linux.sh "$version"
 echo "==> building Linux .deb/.rpm packages (docker)"
 scripts/build_linux_packages.sh "$version"
+echo "==> signing the .rpm packages"
+scripts/sign_linux_packages.sh "$version"
 
 scripts/changelog.sh "$version" "$prev_tag"
 
@@ -133,8 +135,11 @@ gh release create "$tag" "${assets[@]}" \
 echo "==> updating the Homebrew tap"
 scripts/update_tap.sh "$version" --push
 
-echo "==> publishing Linux packages"
-scripts/publish_linux_packages.sh "$version"
+echo "==> publishing Linux packages to the apt/dnf repository"
+# The GitHub release is already out, so a failure here must not abort; rerun the script by hand.
+if ! scripts/publish_linux_packages.sh "$version"; then
+  echo "==> WARNING: Linux packages not published; rerun: scripts/publish_linux_packages.sh ${version}"
+fi
 
 scripts/install_local.sh
 

@@ -90,22 +90,34 @@ See the [command line reference]({{ site.baseurl }}/cli/). The app and the comma
 
 ## Install on Linux
 
-Only the command line tool is available on Linux. Packages are hosted by [Cloudsmith](https://cloudsmith.com)
-and update with your normal package manager.
+Only the command line tool is available on Linux. Add the signed package repository once, and your normal
+system updates keep `imgcompress` current. The binary is static, so there are no dependencies.
 
 ```bash
 # Debian / Ubuntu
-curl -1sLf 'https://dl.cloudsmith.io/public/nickv2002/imagecompress/setup.deb.sh' | sudo -E bash
-sudo apt install imgcompress
-# Fedora / RHEL / openSUSE
-curl -1sLf 'https://dl.cloudsmith.io/public/nickv2002/imagecompress/setup.rpm.sh' | sudo -E bash
+sudo install -d -m 0755 /etc/apt/keyrings
+sudo curl -fsSLo /etc/apt/keyrings/nickv2002.asc https://nickv2002.github.io/packages/nickv2002.asc
+echo "deb [signed-by=/etc/apt/keyrings/nickv2002.asc] https://nickv2002.github.io/packages/deb stable main" \
+  | sudo tee /etc/apt/sources.list.d/nickv2002.list
+sudo apt update && sudo apt install imgcompress
+
+# Fedora / RHEL / Rocky / Alma
+sudo curl -fsSLo /etc/yum.repos.d/nickv2002.repo https://nickv2002.github.io/packages/rpm/nickv2002.repo
 sudo dnf install imgcompress
+
+# openSUSE
+sudo zypper addrepo https://nickv2002.github.io/packages/rpm/nickv2002.repo
+sudo zypper install imgcompress
 ```
+
+The signing key's fingerprint is `01F9 3355 749B 96C1 1D12  B14D 63E5 419C 7998 DC58`
+([repository page](https://nickv2002.github.io/packages/)).
 
 You can also download fully static tarballs (`imgcompress-<version>-linux-x86_64.tar.gz` and
 `imgcompress-<version>-linux-aarch64.tar.gz`) from the
 [releases page](https://github.com/nickv2002/ImageCompress/releases).
-Homebrew on Linux works too, with the formula above.
+Homebrew on Linux works too, with the formula above. To build it yourself, download
+`imgcompress-<version>-sources.tar.gz` from a release; `BUILD_FROM_SOURCE.txt` inside has the `cargo` steps.
 
 ## Updates
 
