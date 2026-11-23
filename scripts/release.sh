@@ -29,6 +29,15 @@ for tool in cargo cargo-deny cargo-about xcodegen sign_update gh op docker; do
   command -v "$tool" >/dev/null 2>&1 || { echo "error: required tool not found: $tool" >&2; exit 1; }
 done
 
+# Ask for 1Password approval now, while the owner is at the keyboard, instead of only when the build reaches
+# notarization minutes later and the prompt times out unseen.
+# shellcheck disable=SC1091
+[ -f scripts/release.local.env ] && . scripts/release.local.env
+. scripts/op_retry.sh
+echo "==> 1Password: approve the prompt now"
+op_retry vault get ${OP_ACCOUNT:+--account "$OP_ACCOUNT"} "${OP_VAULT:-Private}" >/dev/null \
+  || { echo "error: 1Password did not unlock" >&2; exit 1; }
+
 version=$(scripts/next_version.sh)
 cargo_version=$(scripts/next_version.sh --cargo "$version")
 tag="v${version}"
