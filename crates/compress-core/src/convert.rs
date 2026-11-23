@@ -281,8 +281,21 @@ pub fn encode_fixed(d: &Decoded, target: Fmt, o: &Options, stage: &dyn Fn(&str))
     }
 }
 
+/// Why `src` cannot become a lossless JPEG, when it cannot. JPEG's only lossless mode is a reversible
+/// repack of an existing JPEG; any other input would have to be re-encoded lossily, so it is skipped
+/// instead of being written as a lossy file under a lossless setting. (The quality search picks its
+/// own quality, so `target_quality` is not a lossless request.)
+pub fn lossless_jpeg_unavailable(src: Fmt, target: Fmt, o: &Options) -> Option<String> {
+    (target == Fmt::Jpeg && src != Fmt::Jpeg && o.jpeg_quality.is_none() && o.target_quality.is_none()).then(|| {
+        format!("JPEG has no lossless mode for .{} input; choose a JPEG quality, or a lossless format (PNG, WebP or JPEG XL)", src.ext())
+    })
+}
+
 /// Convert / recompress `data` (of format `src`) into `target` (which may equal `src` for webp/avif/jxl/heic).
 pub fn convert(data: &[u8], src: Fmt, target: Fmt, o: &Options, stage: &dyn Fn(&str)) -> Result<Conv, String> {
+    if let Some(r) = lossless_jpeg_unavailable(src, target, o) {
+        return Ok(Conv::Skip(r));
+    }
     // Reversible JPEG -> JXL transcode (no decode, byte-exact roundtrip verified).
     if src == Fmt::Jpeg && target == Fmt::Jxl && o.jxl_jpeg_transcode && o.jxl_quality.is_none() && !crate::extras::pixel_changes_requested(data, src, o) {
         stage("jxl-transcode");

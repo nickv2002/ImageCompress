@@ -83,7 +83,8 @@ Save it as `web-photos.json` in the Presets folder. Its id is then `web-photos`.
 - `show_in_finder` puts the preset in the Finder menu.
 - `options` uses the same names as the command line flags (without `--`). Run `imgcompress options schema` to see them all.
   A name that is not an option is an error, and that file is skipped.
-- A value of `null` switches an option off, for example `"jpeg-quality": null` means lossless JPEG.
+- A value of `null` switches an option off, for example `"jpeg-quality": null` means lossless JPEG
+  (a repack of JPEG files; other images converted to JPEG at lossless are skipped).
 
 Files that cannot be read are skipped, so one typo never breaks the rest. Two presets cannot share a name.
 Presets made by the app also have a `toolbar` entry (favorite, format and quality). The app uses it; you can leave it out of files you write by hand.

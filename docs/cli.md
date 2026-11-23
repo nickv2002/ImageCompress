@@ -119,7 +119,7 @@ JPEG:
 | Option | Meaning |
 | --- | --- |
 | `--jpeg-encoder jpegli\|mozjpeg` | The encoder. |
-| `--jpeg-quality 1-100\|lossless` | Lossless keeps the picture data and only repacks it. |
+| `--jpeg-quality 1-100\|lossless` | Lossless keeps the picture data and only repacks it, so it works only on JPEG files. Converting another format to JPEG at lossless skips that file; choose a quality, or a lossless format (PNG, WebP or JPEG XL). |
 | `--jpeg-progressive`, `--no-jpeg-progressive` | Progressive files. |
 | `--jpeg-subsampling auto\|444\|422\|420` | Colour detail. |
 

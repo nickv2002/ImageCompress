@@ -212,6 +212,9 @@ struct AxisSet: Equatable, Sendable {
         if quality == "lossless", ["avif", "heic", "webp"].contains(format) {
             return base + " Lossless is often larger than a JPEG, so those files may be skipped; try Visually lossless."
         }
+        if quality == "lossless", format == "jpeg" {
+            return base + " Only JPEG files can stay lossless; other images are skipped. Try Visually lossless."
+        }
         return base
     }
 }

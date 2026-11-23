@@ -73,6 +73,7 @@ Other formats work a little differently:
 - **PNG** has no quality slider. Visually lossless and Smaller shrink the colour palette within a range (80 to 95 and 70 to 90). Lossless only repacks the data.
 - **HEIC** does not use the search. It uses fixed qualities: 100 for Lossless, 90 for Visually lossless and 50 for Smaller.
 - **AVIF** has no exact lossless mode here. Lossless uses the highest quality setting, 100.
+- **JPEG** is lossless only for JPEG files, which are repacked without decoding. Other images converted to JPEG at Lossless are skipped, because a JPEG made from them would lose detail.
 
 ## Lossless JPEG to JPEG XL
 

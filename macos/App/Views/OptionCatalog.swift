@@ -53,7 +53,7 @@ enum OptionCatalog {
         ]),
         PanelSpec(id: "jpeg", title: "JPEG", symbol: "photo", specs: [
             .init(key: "jpeg-encoder", title: "Encoder", hint: "jpegli: smaller at equal quality. mozjpeg: the long-standing reference.", control: .choice),
-            .init(key: "jpeg-quality", title: "Quality", hint: "Higher is larger and closer to the source. Lossless only re-packs the data.", control: .optionalInt(1...100, nullLabel: "Lossless", whenOn: 85)),
+            .init(key: "jpeg-quality", title: "Quality", hint: "Higher is larger and closer to the source. Lossless only re-packs JPEG files; other images converted to JPEG are skipped.", control: .optionalInt(1...100, nullLabel: "Lossless", whenOn: 85)),
             .init(key: "jpeg-progressive", title: "Progressive", hint: "Usually a little smaller; images load in passes.", control: .toggle),
             .init(key: "jpeg-subsampling", title: "Chroma subsampling", hint: "4:2:0 is smallest; 4:4:4 keeps sharp colour edges.", control: .choice),
             .init(key: "jpeg-strategy", title: "Strategy", hint: "Lossless re-pack, re-encode, or whichever is smaller.", control: .choice),

@@ -112,7 +112,7 @@ pub struct Options {
     pub metadata: Metadata,
     // jpeg
     pub jpeg_encoder: JpegEncoder,
-    /// 1-100; None = lossless (coefficient copy).
+    /// 1-100; None = lossless (coefficient copy; JPEG input only, other inputs are skipped).
     pub jpeg_quality: Option<u8>,
     pub jpeg_progressive: bool,
     pub jpeg_subsampling: Subsampling,

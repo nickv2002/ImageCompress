@@ -146,11 +146,53 @@ fn format_change_alongside_keeps_original_by_default() {
 #[test]
 fn png_to_jpeg_and_back_to_png() {
     let src = fixture("png/rgba_photo.png");
-    let (jpg, jp) = convert_one(&src, &opts(Format::Jpeg), "jpg");
+    let (jpg, jp) = convert_one(&src, &Options { jpeg_quality: Some(85), ..opts(Format::Jpeg) }, "jpg");
     check_dims(&jpg, Fmt::Jpeg, &src, Fmt::Png);
     let o = opts(Format::Png);
     let (png, _) = convert_one(&jp, &o, "png");
     check_dims(&png, Fmt::Png, &src, Fmt::Png);
+}
+
+/// Runs one file and returns its events.
+fn events_for(src: &Path, o: &Options) -> (PathBuf, Vec<compress_core::JobEvent>) {
+    let d = tempfile::tempdir().unwrap().keep();
+    let p = d.join(src.file_name().unwrap());
+    std::fs::copy(src, &p).unwrap();
+    let ev = std::sync::Mutex::new(vec![]);
+    run(std::slice::from_ref(&p), o, &AtomicBool::new(false), &|e| ev.lock().unwrap().push(e));
+    (p, ev.into_inner().unwrap())
+}
+
+#[test]
+fn lossless_jpeg_from_a_png_is_skipped_not_written_lossy() {
+    let src = fixture("png/rgba_photo.png");
+    let o = Options { jpeg_quality: None, ..opts(Format::Jpeg) };
+    let (p, ev) = events_for(&src, &o);
+    let reason = ev.iter().find_map(|e| match e {
+        compress_core::JobEvent::Skipped { reason, .. } => Some(reason.clone()),
+        compress_core::JobEvent::Finished { encoder, .. } => panic!("wrote a {encoder} JPEG under a lossless setting"),
+        _ => None,
+    });
+    let reason = reason.expect("a skip");
+    assert!(reason.starts_with("JPEG has no lossless mode for .png input"), "{reason}");
+    assert!(!p.with_extension("jpg").exists());
+    assert_eq!(std::fs::read(&p).unwrap(), std::fs::read(&src).unwrap(), "original untouched");
+    // a numeric quality or the quality search still converts
+    convert_one(&src, &Options { jpeg_quality: Some(80), ..o.clone() }, "jpg");
+    convert_one(&src, &Options { target_quality: Some(70.0), ..o }, "jpg");
+}
+
+#[test]
+fn lossless_jpeg_to_jpeg_still_repacks() {
+    let src = fixture("jpeg/baseline.jpg");
+    let o = Options { jpeg_quality: None, ..opts(Format::Jpeg) };
+    let (_, ev) = events_for(&src, &o);
+    let enc = ev.iter().find_map(|e| match e {
+        compress_core::JobEvent::Finished { encoder, .. } => Some(encoder.clone()),
+        compress_core::JobEvent::Skipped { reason, .. } => Some(format!("skipped: {reason}")),
+        _ => None,
+    });
+    assert_eq!(enc.as_deref(), Some("jpegtran-lossless"));
 }
 
 #[cfg(target_os = "macos")]

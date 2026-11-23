@@ -10,10 +10,14 @@ fn quality(q: Option<u8>) -> String {
 }
 
 fn encoder(t: Fmt, o: &Options) -> String {
+    // the per-image quality search replaces the fixed quality for the formats it supports
+    let search = o.target_quality.filter(|_| compress_core::quality_search::supports(t)).map(|v| format!("target-quality {v}"));
+    let quality_or_search = |q: Option<u8>| search.clone().unwrap_or_else(|| quality(q));
     match t {
-        Fmt::Jpeg => match o.jpeg_quality {
-            Some(q) => format!("{:?} q{q}", o.jpeg_encoder).to_lowercase(),
-            None => "jpegtran lossless".into(),
+        Fmt::Jpeg => match (&search, o.jpeg_quality) {
+            (Some(s), _) => format!("{:?} {s}", o.jpeg_encoder).to_lowercase(),
+            (None, Some(q)) => format!("{:?} q{q}", o.jpeg_encoder).to_lowercase(),
+            (None, None) => "jpegtran lossless".into(),
         },
         Fmt::Png => {
             let z = o.png_zopfli.map(|n| format!(" + zopfli {n}")).unwrap_or_default();
@@ -23,10 +27,10 @@ fn encoder(t: Fmt, o: &Options) -> String {
             }
         }
         Fmt::Gif => format!("gifsicle -O{}{}", o.gif_optimize_level, o.gif_lossy.map(|l| format!(" --lossy={l}")).unwrap_or_default()),
-        Fmt::Webp => format!("webp {} method {}", quality(o.webp_quality), o.webp_method),
-        Fmt::Avif => format!("avif q{} speed {} {}-bit", o.avif_quality, o.avif_speed, o.avif_depth),
+        Fmt::Webp => format!("webp {} method {}", quality_or_search(o.webp_quality), o.webp_method),
+        Fmt::Avif => format!("avif {} speed {} {}-bit", search.clone().unwrap_or_else(|| format!("q{}", o.avif_quality)), o.avif_speed, o.avif_depth),
         Fmt::Heic => format!("heic q{} {}-bit", o.heic_quality, o.heic_depth),
-        Fmt::Jxl => format!("jxl {} effort {}", quality(o.jxl_quality), o.jxl_effort),
+        Fmt::Jxl => format!("jxl {} effort {}", quality_or_search(o.jxl_quality), o.jxl_effort),
         _ => "n/a".into(),
     }
 }
@@ -46,6 +50,9 @@ pub fn describe(path: &std::path::Path, o: &Options) -> (String, String, String)
     let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
     if size < o.min_size {
         return (ext, t.ext().into(), "skip: below min size".into());
+    }
+    if let Some(r) = compress_core::convert::lossless_jpeg_unavailable(s, t, o) {
+        return (ext, t.ext().into(), format!("skip: {r}"));
     }
     (ext, t.ext().into(), encoder(t, o))
 }
@@ -73,5 +80,35 @@ pub fn print(files: &[PathBuf], o: &Options, as_json: bool) {
     }
     if !as_json {
         eprintln!("dry run: {} file(s); destination {}, originals {:?}, nothing was changed", files.len(), o.destination, o.originals);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use compress_core::options::Format;
+
+    fn fixture(rel: &str) -> PathBuf {
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures").join(rel)
+    }
+
+    #[test]
+    fn lossless_jpeg_from_other_formats_is_planned_as_a_skip() {
+        let png = fixture("png/rgba_photo.png");
+        let o = Options { format: Format::Jpeg, jpeg_quality: None, ..Default::default() };
+        let (_, to, how) = describe(&png, &o);
+        assert_eq!(to, "jpg");
+        assert!(how.starts_with("skip: JPEG has no lossless mode for .png input"), "{how}");
+        let (_, _, how) = describe(&png, &Options { jpeg_quality: Some(80), ..o.clone() });
+        assert_eq!(how, "jpegli q80");
+        let (_, _, how) = describe(&png, &Options { target_quality: Some(88.0), ..o.clone() });
+        assert_eq!(how, "jpegli target-quality 88");
+        // a JPEG still repacks losslessly
+        let (_, _, how) = describe(&fixture("jpeg/baseline.jpg"), &o);
+        assert_eq!(how, "jpegtran lossless");
+        // keep leaves a PNG a PNG
+        let (_, to, how) = describe(&png, &Options { format: Format::Keep, ..o });
+        assert_eq!(to, "png");
+        assert!(how.starts_with("oxipng"), "{how}");
     }
 }

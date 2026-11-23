@@ -46,6 +46,7 @@ pub struct OptFlags {
     // ---- jpeg
     #[arg(long, value_parser = ["jpegli", "mozjpeg"])]
     jpeg_encoder: Option<String>,
+    /// 1-100 or "lossless" (a reversible repack, so JPEG input only: other images are skipped)
     #[arg(long, value_name = "1-100|lossless")]
     jpeg_quality: Option<String>,
     #[arg(long, overrides_with = "no_jpeg_progressive")]
