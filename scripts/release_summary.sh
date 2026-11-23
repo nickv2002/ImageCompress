@@ -4,22 +4,22 @@
 #
 # Usage: scripts/release_summary.sh <version> <prev-tag> <out-file>
 #
-# Tries the owner's `cldp` (personal Claude profile, print mode) to draft the
-# summary from the commits since <prev-tag>. Fails open: if cldp is missing or
+# Asks Claude (`claude -p`, Haiku, no tools needed) to draft the summary from
+# the commits since <prev-tag>. Fails open: if claude is missing or
 # errors, it prompts on a TTY for a summary (blank line = skip). Without a TTY
 # it skips. A skip leaves <out-file> absent and exits 0.
 #
 # Env overrides:
-#   RELEASE_SUMMARY_SKIP=1   skip the cldp attempt (go straight to the prompt)
-#   RELEASE_SUMMARY_ARGS     args passed to cldp (default: -p --model haiku)
+#   RELEASE_SUMMARY_SKIP=1   skip the Claude attempt (go straight to the prompt)
+#   RELEASE_SUMMARY_ARGS     args passed to claude (default: -p --model claude-haiku-5-5)
 set -euo pipefail
 
 version="${1:?usage: release_summary.sh <version> <prev-tag> <out-file>}"
 prev_tag="${2:-}"
 out_file="${3:?usage: release_summary.sh <version> <prev-tag> <out-file>}"
 
-cldp_args="${RELEASE_SUMMARY_ARGS:--p --model claude-haiku-5-5}"
-cldp_timeout=180
+claude_args="${RELEASE_SUMMARY_ARGS:--p --model claude-haiku-5-5}"
+claude_timeout=180
 
 end_ref="${RELEASE_SUMMARY_END:-HEAD}"
 # No previous tag (the first release): only the commits since the rewrite, not the old Python script's history.
@@ -39,22 +39,12 @@ Output only a JSON object with one key, "summary", whose value is a single sente
 EOF
 )
 
-# Ask cldp via a login interactive shell, since the cldp alias lives in
-# ~/.bash_profile. Markers isolate the reply from the profile-switch chatter
-# and shell-integration escape codes that also land on stdout.
-try_cldp() {
-  local raw
-  raw=$(printf '%s' "$prompt" | perl -e 'alarm shift; exec @ARGV' "$cldp_timeout" \
-    bash -lic "printf '\n<<<BEGIN>>>\n'; cldp ${cldp_args}; rc=\$?; printf '\n<<<END rc=%s>>>\n' \"\$rc\"" \
-    2>/dev/null || true)
-  local body rc
-  # The alias prints its own profile-switch notices after BEGIN; drop them.
-  body=$(printf '%s\n' "$raw" | sed -n '/<<<BEGIN>>>/,/<<<END/p' | sed '1d;$d' \
-    | grep -v -e '^Switched to profile ' -e '^All claude commands in this shell' || true)
-  rc=$(printf '%s\n' "$raw" | sed -n 's/.*<<<END rc=\([0-9]*\)>>>.*/\1/p')
-  if [[ "$rc" != "0" ]]; then
-    return 1
-  fi
+try_claude() {
+  command -v claude >/dev/null 2>&1 || return 1
+  local body
+  # shellcheck disable=SC2086
+  body=$(printf '%s' "$prompt" | perl -e 'alarm shift; exec @ARGV' "$claude_timeout" \
+    claude ${claude_args} 2>/dev/null) || return 1
   # The reply is a JSON object: {"summary": "..."}. Take the "summary" string
   # from the first JSON object in the body; anything unparseable fails open.
   local summary
@@ -76,8 +66,8 @@ print(" ".join(value.split()))
 summary=""
 source_label=""
 if [[ "${RELEASE_SUMMARY_SKIP:-0}" != "1" ]]; then
-  if summary=$(try_cldp); then
-    source_label="cldp"
+  if summary=$(try_claude); then
+    source_label="claude"
   else
     summary=""
   fi
@@ -85,7 +75,7 @@ fi
 
 if [[ -z "$summary" ]]; then
   if [[ -t 0 ]]; then
-    echo "==> cldp summary unavailable; enter a one-line release summary (blank to skip):"
+    echo "==> Claude summary unavailable; enter a one-line release summary (blank to skip):"
     read -r -p "> " summary || summary=""
     if [[ -n "$summary" ]]; then
       source_label="manual"
