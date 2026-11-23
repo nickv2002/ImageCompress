@@ -54,6 +54,13 @@ pub fn describe(path: &std::path::Path, o: &Options) -> (String, String, String)
     if let Some(r) = compress_core::convert::lossless_jpeg_unavailable(s, t, o) {
         return (ext, t.ext().into(), format!("skip: {r}"));
     }
+    if s == Fmt::Jpeg && t == Fmt::Jpeg && o.jpeg_quality.is_none() && o.target_quality.is_none()
+        && std::fs::read(path).is_ok_and(|d| compress_core::extras::pixel_changes_requested(&d, s, o))
+    {
+        // a lossless repack can't resize or change colours, so the pipeline re-encodes at the default quality
+        let q = Options { jpeg_quality: Some(compress_core::convert::DEFAULT_JPEG_QUALITY), ..o.clone() };
+        return (ext, t.ext().into(), format!("{}, re-encoded because the pixels change (resize or sRGB)", encoder(t, &q)));
+    }
     if t == Fmt::Jpeg && s != Fmt::Jpeg && o.jpeg_quality.is_none() {
         // another format becoming JPEG with the quality left at its default: encoded at the default quality
         let q = Options { jpeg_quality: Some(compress_core::convert::DEFAULT_JPEG_QUALITY), ..o.clone() };
@@ -115,6 +122,9 @@ mod tests {
         // a JPEG still repacks losslessly
         let (_, _, how) = describe(&fixture("jpeg/baseline.jpg"), &o);
         assert_eq!(how, "jpegtran lossless");
+        // unless its pixels have to change: then the plan names the re-encode the run does
+        let (_, _, how) = describe(&fixture("jpeg/baseline.jpg"), &Options { max_dimension: Some(16), ..o.clone() });
+        assert_eq!(how, "jpegli q85, re-encoded because the pixels change (resize or sRGB)");
         // keep leaves a PNG a PNG
         let (_, to, how) = describe(&png, &Options { format: Format::Keep, ..o });
         assert_eq!(to, "png");
