@@ -7,5 +7,17 @@
     <link>https://nickv2002.github.io/ImageCompress/</link>
     <description>ImageCompress macOS app update feed</description>
     <language>en</language>
+    <item>
+      <title>2026.11.22.1</title>
+      <sparkle:version>2026.11.22.1</sparkle:version>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <pubDate>Mon, 23 Nov 2026 03:51:26 +0000</pubDate>
+      <description><![CDATA[<ul><li>First release: the native Mac app with its Finder extension, the `imgcompress` command line tool for macOS and Linux, and Homebrew, apt and dnf packages.</li></ul>]]></description>
+      <enclosure
+        url="https://github.com/nickv2002/ImageCompress/releases/download/v2026.11.22.1/ImageCompress-2026.11.22.1.zip"
+        sparkle:edSignature="PNpKyG6i0DN6qmXnuWBHFMIzlXy4T12l7JtIOCpU1sgkCihdhqQ+J+ZbUW/yWwRRMxK+yebQm1dM7imsxmNhBA=="
+        length="29180773"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
