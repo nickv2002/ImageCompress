@@ -186,11 +186,11 @@ pre code { background: none; padding: 0; }
 .pane .missing[hidden] { display: none; }
 .pane-a .missing { left: 0; }
 .pane-b .missing { right: 0; }
-.tag { position: absolute; top: 8px; max-width: calc(50% - 20px); font-size: 12px; line-height: 1.35; padding: 4px 8px; border-radius: 6px;
+.viewer .tag { position: absolute; top: 8px; max-width: calc(50% - 20px); font-size: 12px; line-height: 1.35; padding: 4px 8px; border-radius: 6px;
   background: rgba(0,0,0,.62); color: #fff; pointer-events: none; }
-.tag:empty { display: none; }
-.tag-a { left: 8px; }
-.tag-b { right: 8px; text-align: right; }
+.viewer .tag:empty { display: none; }
+.viewer .tag-a { left: 8px; }
+.viewer .tag-b { right: 8px; text-align: right; }
 /* The divider's hit area is 44px wide; the visible line is its 2px centre. */
 .divider { position: absolute; top: 0; bottom: 0; width: 44px; margin-left: -22px; cursor: ew-resize; outline-offset: -2px; }
 .divider::before { content: ""; position: absolute; top: 0; bottom: 0; left: 21px; width: 2px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.35); }

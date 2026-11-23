@@ -52,6 +52,9 @@ description: Smaller images that look the same. Compress and convert PNG, JPEG, 
       Undo refuses if the file changed since. <a href="{{ site.baseurl }}/undo/">How undo works</a></p></div>
     <div class="card">{% include pills.html on="both" %}<h3>Never bigger</h3><p>A result is only kept when it is smaller than the original. Files are
       replaced atomically, and existing files are never overwritten unless you ask.</p></div>
+    <div class="card">{% include pills.html on="both" %}<h3>Smaller JPEGs than mozjpeg</h3><p>JPEGs are made with Google's jpegli by default.
+      At the same visual quality its files came out 4–13% smaller than mozjpeg's in our tests, and they open
+      everywhere a JPEG does. <a href="{{ site.baseurl }}/formats/#jpeg-encoders">JPEG encoders</a></p></div>
     <div class="card">{% include pills.html on="both" %}<h3>Your metadata, your call</h3><p>Keep the colour profile, keep everything, or keep EXIF without
       GPS location. Dates are preserved.</p></div>
     <div class="card">{% include pills.html on="both" %}<h3>Presets you can share</h3><p>Each preset is a small JSON file. Edit it by hand, send it to a
