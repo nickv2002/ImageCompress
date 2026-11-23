@@ -221,7 +221,7 @@ formats = [
     ("jpeg", "Photos that need to open anywhere, with fast encoding and decoding.", "Everywhere."),
     ("webp", "Smaller files than JPEG for photos and graphics, with transparency and animation.", "All current browsers."),
     ("avif", "Small files at good quality, especially for photos at low and medium quality.", "All current browsers."),
-    ("jxl", "High quality at small sizes, and lossless recompression of existing JPEGs.", "Safari. Other browsers are adding it."),
+    ("jxl", "High quality at small sizes, and lossless recompression of existing JPEGs.", 'Chrome 155+, Firefox 158+, Opera and Safari (partly); not Edge yet. <a href="https://caniuse.com/jpegxl">Current support</a>.'),
     ("heic", "Small photos on Apple devices, the format the iPhone camera saves.", "Safari on Apple devices, and Apple Photos."),
     ("png", "Screenshots, logos and anything that must stay pixel-exact, with transparency.", "Everywhere."),
 ]
