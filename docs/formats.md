@@ -111,7 +111,7 @@ In the app these options are in the options panel (⌥⌘I) and in Settings. In 
 
 Most apps open JPEG, PNG and GIF. WebP and AVIF are supported by current browsers and by many apps. HEIC opens
 in Apple apps such as Preview and Photos, but support elsewhere is patchy. JPEG XL now shows in Chrome, Firefox
-and Opera, and partly in Safari, but not yet in Edge; [Can I use](https://caniuse.com/jpegxl) has the current list. If you publish images on the web, check the formats you need in the browsers you care about, or keep
+and Opera, and in Safari without animation or progressive loading, but not yet in Edge; [Can I use](https://caniuse.com/jpegxl) has the current list. If you publish images on the web, check the formats you need in the browsers you care about, or keep
 JPEG, PNG or WebP.
 
 If you are unsure, use Preserve with Smaller. Your files keep their format and every app still opens them.

@@ -30,7 +30,7 @@
    "id": "jxl",
    "name": "JPEG XL",
    "good_at": "High quality at small sizes, and lossless recompression of existing JPEGs.",
-   "shows_in": "Chrome 155+, Firefox 158+, Opera and Safari (partly); not Edge yet. <a href=\"https://caniuse.com/jpegxl\">Current support</a>.",
+   "shows_in": "Chrome 155+, Firefox 158+, Opera and Safari (still pictures only: no animation or progressive loading); not Edge yet. <a href=\"https://caniuse.com/jpegxl\">Current support</a>.",
    "breaks": "Softer, with faint block edges; keeps more texture than AVIF."
   },
   {
