@@ -4,7 +4,7 @@
 # lossless PNG, encodes it with imgcompress in JPEG, WebP, AVIF, JPEG XL and HEIC at four levels (Visually lossless =
 # SSIMULACRA2 88, Smaller = 70, fixed quality 50 and 25), scores each result against the crop, and also encodes the whole
 # 2400px sample at the same settings for the "whole photo" sizes. An optional docs/assets/samples/graphic.png is added the
-# same way, plus a lossless PNG result.
+# same way. Every input also gets a lossless PNG result, which is the same at every level.
 #
 # Usage: scripts/docs_format_demo.sh      (rewrites docs/assets/demo/ and docs/_data/format_demo.json; sizes in KB = 1000 bytes)
 # Env:   IMGCOMPRESS=<path to the binary>  (default: imgcompress on PATH, else the installed app's)
@@ -195,7 +195,7 @@ print("\t".join([c["title"], f'Photo: {c["author"]}, {c["license"].split()[0]}',
 PY
   )
   IFS=$'\t' read -r title credit orig <<< "$info"
-  process "$name" "$title" "$credit" "$samples/$name.jpg" "${orig:-$samples/$name.jpg}" "${lossy[@]}"
+  process "$name" "$title" "$credit" "$samples/$name.jpg" "${orig:-$samples/$name.jpg}" "${lossy[@]}" png:lossless
 done
 
 # Optional graphic
@@ -223,6 +223,8 @@ formats = [
     ("heic", "Small photos on Apple devices, the format the iPhone camera saves.", "Safari on Apple devices, and Apple Photos."),
     ("png", "Screenshots, logos and anything that must stay pixel-exact, with transparency.", "Everywhere."),
 ]
+# How each format fails at Quality 25 (written from the portrait strip on the page; check after changing encoders).
+breaks = {"jpeg": "Square 8×8 blocks and flat patches of colour.", "webp": "Fine detail smears into streaks and soft blocks.", "avif": "Texture is smoothed away into soft blobs, but the file is tiny.", "jxl": "Softer, with faint block edges; keeps more texture than AVIF.", "heic": "Keeps the most texture here, for the largest file.", "png": "Lossless: nothing breaks, but the file is far larger."}
 levels = [("vl", "Visually lossless"), ("smaller", "Smaller"), ("q50", "Quality 50"), ("q25", "Quality 25")]
 
 results = {}
@@ -249,7 +251,7 @@ for line in open(photos_tsv):
                    "results": rs})
 
 doc = {"version": version, "crop": {"w": 480, "h": 320},
-       "formats": [{"id": i, "name": names[i], "good_at": g, "shows_in": s} for i, g, s in formats],
+       "formats": [{"id": i, "name": names[i], "good_at": g, "shows_in": s, "breaks": breaks[i]} for i, g, s in formats],
        "levels": [{"id": i, "name": n} for i, n in levels],
        "photos": photos}
 with open(dest, "w") as f:

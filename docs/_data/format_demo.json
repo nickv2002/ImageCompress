@@ -9,37 +9,43 @@
    "id": "jpeg",
    "name": "JPEG",
    "good_at": "Photos that need to open anywhere, with fast encoding and decoding.",
-   "shows_in": "Everywhere."
+   "shows_in": "Everywhere.",
+   "breaks": "Square 8×8 blocks and flat patches of colour."
   },
   {
    "id": "webp",
    "name": "WebP",
    "good_at": "Smaller files than JPEG for photos and graphics, with transparency and animation.",
-   "shows_in": "All current browsers."
+   "shows_in": "All current browsers.",
+   "breaks": "Fine detail smears into streaks and soft blocks."
   },
   {
    "id": "avif",
    "name": "AVIF",
    "good_at": "Small files at good quality, especially for photos at low and medium quality.",
-   "shows_in": "All current browsers."
+   "shows_in": "All current browsers.",
+   "breaks": "Texture is smoothed away into soft blobs, but the file is tiny."
   },
   {
    "id": "jxl",
    "name": "JPEG XL",
    "good_at": "High quality at small sizes, and lossless recompression of existing JPEGs.",
-   "shows_in": "Safari. Other browsers are adding it."
+   "shows_in": "Safari. Other browsers are adding it.",
+   "breaks": "Softer, with faint block edges; keeps more texture than AVIF."
   },
   {
    "id": "heic",
    "name": "HEIC",
    "good_at": "Small photos on Apple devices, the format the iPhone camera saves.",
-   "shows_in": "Safari on Apple devices, and Apple Photos."
+   "shows_in": "Safari on Apple devices, and Apple Photos.",
+   "breaks": "Keeps the most texture here, for the largest file."
   },
   {
    "id": "png",
    "name": "PNG",
    "good_at": "Screenshots, logos and anything that must stay pixel-exact, with transparency.",
-   "shows_in": "Everywhere."
+   "shows_in": "Everywhere.",
+   "breaks": "Lossless: nothing breaks, but the file is far larger."
   }
  ],
  "levels": [
@@ -295,6 +301,18 @@
      "saved": 90,
      "score": 59.1,
      "full_kb": 323
+    },
+    {
+     "format": "png",
+     "format_name": "PNG",
+     "level": "vl",
+     "src": "landscape/png-lossless.png",
+     "bytes": 314104,
+     "kb": 314,
+     "saved": 11,
+     "score": 100.0,
+     "full_kb": 4694,
+     "label": "Lossless"
     }
    ]
   },
@@ -532,6 +550,18 @@
      "saved": 91,
      "score": 64.3,
      "full_kb": 149
+    },
+    {
+     "format": "png",
+     "format_name": "PNG",
+     "level": "vl",
+     "src": "portrait/png-lossless.png",
+     "bytes": 259883,
+     "kb": 260,
+     "saved": 9,
+     "score": 100.0,
+     "full_kb": 1877,
+     "label": "Lossless"
     }
    ]
   },
@@ -769,6 +799,18 @@
      "saved": 92,
      "score": 56.5,
      "full_kb": 182
+    },
+    {
+     "format": "png",
+     "format_name": "PNG",
+     "level": "vl",
+     "src": "city/png-lossless.png",
+     "bytes": 220380,
+     "kb": 220,
+     "saved": 12,
+     "score": 100.0,
+     "full_kb": 2939,
+     "label": "Lossless"
     }
    ]
   },
