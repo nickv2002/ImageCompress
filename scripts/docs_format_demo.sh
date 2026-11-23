@@ -1,10 +1,11 @@
 #!/bin/bash
 # Builds the data and files behind the docs "Format comparison" page (docs/compare.md): for each sample photo it cuts a
 # 480x320 detail crop (the busiest spot, taken from the full-size original when build/samples-orig has it), saves it as a
-# lossless PNG, encodes it with imgcompress in JPEG, WebP, AVIF, JPEG XL and HEIC at four levels (Visually lossless =
-# SSIMULACRA2 88, Smaller = 70, fixed quality 50 and 25), scores each result against the crop, and also encodes the whole
+# lossless PNG, encodes it with imgcompress in JPEG, WebP, AVIF, JPEG XL and HEIC at four lossy levels (Visually lossless =
+# SSIMULACRA2 88, Smaller = 70, fixed quality 50 and 25) plus Lossless for the formats that have a true lossless mode
+# (PNG, WebP, JPEG XL; JPEG's "lossless" is a JPEG-to-JPEG transcode, and AVIF and HEIC have none here), scores each result against the crop, and also encodes the whole
 # 2400px sample at the same settings for the "whole photo" sizes. An optional docs/assets/samples/graphic.png is added the
-# same way. Every input also gets a lossless PNG result, which is the same at every level.
+# same way.
 #
 # Usage: scripts/docs_format_demo.sh      (rewrites docs/assets/demo/ and docs/_data/format_demo.json; sizes in KB = 1000 bytes)
 # Env:   IMGCOMPRESS=<path to the binary>  (default: imgcompress on PATH, else the installed app's)
@@ -184,6 +185,7 @@ process() {  # process <id> <title> <credit> <full-image> <crop-source> <formats
 
 lossy=()
 for f in jpeg webp avif jxl heic; do for l in vl smaller q50 q25; do lossy+=("$f:$l"); done; done
+lossless=(png:lossless webp:lossless jxl:lossless)
 
 # Photos
 for name in landscape portrait city; do
@@ -195,12 +197,12 @@ print("\t".join([c["title"], f'Photo: {c["author"]}, {c["license"].split()[0]}',
 PY
   )
   IFS=$'\t' read -r title credit orig <<< "$info"
-  process "$name" "$title" "$credit" "$samples/$name.jpg" "${orig:-$samples/$name.jpg}" "${lossy[@]}" png:lossless
+  process "$name" "$title" "$credit" "$samples/$name.jpg" "${orig:-$samples/$name.jpg}" "${lossy[@]}" "${lossless[@]}"
 done
 
 # Optional graphic
 if [[ -f $samples/graphic.png ]]; then
-  process graphic "App screenshot (PNG)" "Screenshot: ImageCompress" "$samples/graphic.png" "$samples/graphic.png" "${lossy[@]}" png:lossless
+  process graphic "App screenshot (PNG)" "Screenshot: ImageCompress" "$samples/graphic.png" "$samples/graphic.png" "${lossy[@]}" "${lossless[@]}"
 else
   echo "(no $samples/graphic.png, skipping the graphic)"
 fi
@@ -225,7 +227,7 @@ formats = [
 ]
 # How each format fails at Quality 25 (written from the portrait strip on the page; check after changing encoders).
 breaks = {"jpeg": "Square 8×8 blocks and flat patches of colour.", "webp": "Fine detail smears into streaks and soft blocks.", "avif": "Texture is smoothed away into soft blobs, but the file is tiny.", "jxl": "Softer, with faint block edges; keeps more texture than AVIF.", "heic": "Keeps the most texture here, for the largest file.", "png": "Lossless: nothing breaks, but the file is far larger."}
-levels = [("vl", "Visually lossless"), ("smaller", "Smaller"), ("q50", "Quality 50"), ("q25", "Quality 25")]
+levels = [("lossless", "Lossless"), ("vl", "Visually lossless"), ("smaller", "Smaller"), ("q50", "Quality 50"), ("q25", "Quality 25")]
 
 results = {}
 for line in open(results_tsv):
@@ -238,12 +240,10 @@ for line in open(photos_tsv):
     origbytes = int(origbytes)
     rs = []
     for fmt, lvl, src, b, score, fullb in results.get(pid, []):
-        r = {"format": fmt, "format_name": names[fmt], "level": "vl" if lvl == "lossless" else lvl, "src": src,
+        r = {"format": fmt, "format_name": names[fmt], "level": lvl, "src": src,
              "bytes": b, "kb": kb(b), "saved": round((1 - b / origbytes) * 100)}
         r["score"] = float(score) if score != "n/a" else None
         r["full_kb"] = kb(int(fullb)) if fullb else None
-        if lvl == "lossless":
-            r["label"] = "Lossless"
         rs.append(r)
     photos.append({"id": pid, "title": title, "credit": credit,
                    "full": {"w": int(w), "h": int(h), "kb": kb(int(fullbytes))},

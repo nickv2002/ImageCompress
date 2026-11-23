@@ -50,6 +50,10 @@
  ],
  "levels": [
   {
+   "id": "lossless",
+   "name": "Lossless"
+  },
+  {
    "id": "vl",
    "name": "Visually lossless"
   },
@@ -305,14 +309,35 @@
     {
      "format": "png",
      "format_name": "PNG",
-     "level": "vl",
+     "level": "lossless",
      "src": "landscape/png-lossless.png",
      "bytes": 314104,
      "kb": 314,
      "saved": 11,
      "score": 100.0,
-     "full_kb": 4694,
-     "label": "Lossless"
+     "full_kb": 4694
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "lossless",
+     "src": "landscape/webp-lossless.webp",
+     "bytes": 226618,
+     "kb": 227,
+     "saved": 36,
+     "score": 100.0,
+     "full_kb": 3348
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "lossless",
+     "src": "landscape/jxl-lossless.jxl",
+     "bytes": 201340,
+     "kb": 201,
+     "saved": 43,
+     "score": 100.0,
+     "full_kb": 982
     }
    ]
   },
@@ -554,14 +579,35 @@
     {
      "format": "png",
      "format_name": "PNG",
-     "level": "vl",
+     "level": "lossless",
      "src": "portrait/png-lossless.png",
      "bytes": 259883,
      "kb": 260,
      "saved": 9,
      "score": 100.0,
-     "full_kb": 1877,
-     "label": "Lossless"
+     "full_kb": 1877
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "lossless",
+     "src": "portrait/webp-lossless.webp",
+     "bytes": 187788,
+     "kb": 188,
+     "saved": 34,
+     "score": 100.0,
+     "full_kb": 1249
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "lossless",
+     "src": "portrait/jxl-lossless.jxl",
+     "bytes": 167503,
+     "kb": 168,
+     "saved": 42,
+     "score": 100.0,
+     "full_kb": 445
     }
    ]
   },
@@ -803,14 +849,35 @@
     {
      "format": "png",
      "format_name": "PNG",
-     "level": "vl",
+     "level": "lossless",
      "src": "city/png-lossless.png",
      "bytes": 220380,
      "kb": 220,
      "saved": 12,
      "score": 100.0,
-     "full_kb": 2939,
-     "label": "Lossless"
+     "full_kb": 2939
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "lossless",
+     "src": "city/webp-lossless.webp",
+     "bytes": 173798,
+     "kb": 174,
+     "saved": 31,
+     "score": 100.0,
+     "full_kb": 2157
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "lossless",
+     "src": "city/jxl-lossless.jxl",
+     "bytes": 158578,
+     "kb": 159,
+     "saved": 37,
+     "score": 100.0,
+     "full_kb": 669
     }
    ]
   },
@@ -1052,14 +1119,35 @@
     {
      "format": "png",
      "format_name": "PNG",
-     "level": "vl",
+     "level": "lossless",
      "src": "graphic/png-lossless.png",
      "bytes": 23801,
      "kb": 24,
      "saved": 33,
      "score": 100.0,
-     "full_kb": 226,
-     "label": "Lossless"
+     "full_kb": 226
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "lossless",
+     "src": "graphic/webp-lossless.webp",
+     "bytes": 9802,
+     "kb": 9.8,
+     "saved": 72,
+     "score": 100.0,
+     "full_kb": 101
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "lossless",
+     "src": "graphic/jxl-lossless.jxl",
+     "bytes": 9705,
+     "kb": 9.7,
+     "saved": 73,
+     "score": 100.0,
+     "full_kb": 163
     }
    ]
   }

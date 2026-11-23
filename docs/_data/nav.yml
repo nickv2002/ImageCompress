@@ -21,9 +21,9 @@
   url: /compare/
   platforms: [mac, cli]
   sections:
-    - { title: The formats, id: the-formats }
     - { title: Compare side by side, id: compare-side-by-side }
-    - { title: All results, id: all-results }
+    - { title: Where each format breaks down, id: where-each-format-breaks-down }
+    - { title: Size against quality, id: size-against-quality }
 - title: Presets
   url: /presets/
   platforms: [mac, cli]
