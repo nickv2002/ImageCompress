@@ -86,7 +86,7 @@ banding in slow gradients, but Google says that needs application support.
 **mozjpeg** is the other encoder, and the long-standing reference. Choose it with `--jpeg-encoder mozjpeg` in
 the command line, or with Encoder in the JPEG section of the options panel.
 
-We measured both on the four sample photos from the [format comparison]({{ site.baseurl }}/compare/), at Visually
+We measured both on the four sample images from the [format comparison]({{ site.baseurl }}/compare/), at Visually
 lossless (score 88). jpegli gave the smaller file every time:
 
 | Photo | jpegli | mozjpeg | Smaller by |

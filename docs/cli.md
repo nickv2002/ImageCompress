@@ -118,7 +118,7 @@ JPEG:
 
 | Option | Meaning |
 | --- | --- |
-| `--jpeg-encoder jpegli\|mozjpeg` | The encoder. jpegli is the default and usually gives a smaller file at the same quality. mozjpeg is the long-standing alternative, for when you want its output. |
+| `--jpeg-encoder jpegli\|mozjpeg` | The encoder. jpegli is the default and usually gives a smaller file at the same visual quality (see [JPEG encoders]({{ site.baseurl }}/formats/#jpeg-encoders)). mozjpeg is the long-standing alternative. |
 | `--jpeg-quality 1-100\|lossless` | Lossless keeps the picture data and only repacks it, so it works only on JPEG files. Asking for lossless when converting another format to JPEG skips that file; choose a quality, or a lossless format (PNG, WebP or JPEG XL). With no JPEG quality given, other formats become JPEG at quality 85. |
 | `--jpeg-progressive`, `--no-jpeg-progressive` | Progressive files. |
 | `--jpeg-subsampling auto\|444\|422\|420` | Colour detail. |
