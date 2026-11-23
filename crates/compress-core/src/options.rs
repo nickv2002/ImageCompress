@@ -112,8 +112,14 @@ pub struct Options {
     pub metadata: Metadata,
     // jpeg
     pub jpeg_encoder: JpegEncoder,
-    /// 1-100; None = lossless (coefficient copy; JPEG input only, other inputs are skipped).
+    /// 1-100; None = lossless (coefficient copy). Lossless works on JPEG input only: other images converted to
+    /// JPEG are encoded at `DEFAULT_JPEG_QUALITY`, or skipped when lossless was asked for (`jpeg_lossless_requested`).
     pub jpeg_quality: Option<u8>,
+    /// Set by `presets::resolve` when a layer (preset, options file, flag) sets `jpeg-quality` to null on purpose,
+    /// as opposed to leaving the default. Not an option of its own.
+    #[serde(skip)]
+    #[schemars(skip)]
+    pub jpeg_lossless_requested: bool,
     pub jpeg_progressive: bool,
     pub jpeg_subsampling: Subsampling,
     // png
@@ -209,6 +215,7 @@ impl Default for Options {
             metadata: Metadata::Icc,
             jpeg_encoder: JpegEncoder::Jpegli,
             jpeg_quality: None,
+            jpeg_lossless_requested: false,
             jpeg_progressive: true,
             jpeg_subsampling: Subsampling::Auto,
             png_quantize: None,

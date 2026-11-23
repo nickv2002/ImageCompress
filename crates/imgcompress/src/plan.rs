@@ -54,6 +54,11 @@ pub fn describe(path: &std::path::Path, o: &Options) -> (String, String, String)
     if let Some(r) = compress_core::convert::lossless_jpeg_unavailable(s, t, o) {
         return (ext, t.ext().into(), format!("skip: {r}"));
     }
+    if t == Fmt::Jpeg && s != Fmt::Jpeg && o.jpeg_quality.is_none() {
+        // another format becoming JPEG with the quality left at its default: encoded at the default quality
+        let q = Options { jpeg_quality: Some(compress_core::convert::DEFAULT_JPEG_QUALITY), ..o.clone() };
+        return (ext, t.ext().into(), encoder(t, &q));
+    }
     (ext, t.ext().into(), encoder(t, o))
 }
 
@@ -95,10 +100,14 @@ mod tests {
     #[test]
     fn lossless_jpeg_from_other_formats_is_planned_as_a_skip() {
         let png = fixture("png/rgba_photo.png");
-        let o = Options { format: Format::Jpeg, jpeg_quality: None, ..Default::default() };
+        // asked for lossless (a preset, options file or flag set jpeg-quality to null): skipped
+        let o = Options { format: Format::Jpeg, jpeg_quality: None, jpeg_lossless_requested: true, ..Default::default() };
         let (_, to, how) = describe(&png, &o);
         assert_eq!(to, "jpg");
         assert!(how.starts_with("skip: JPEG has no lossless mode for .png input"), "{how}");
+        // quality left at its default: encoded at the default quality, as before
+        let (_, _, how) = describe(&png, &Options { jpeg_lossless_requested: false, ..o.clone() });
+        assert_eq!(how, "jpegli q85");
         let (_, _, how) = describe(&png, &Options { jpeg_quality: Some(80), ..o.clone() });
         assert_eq!(how, "jpegli q80");
         let (_, _, how) = describe(&png, &Options { target_quality: Some(88.0), ..o.clone() });

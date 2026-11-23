@@ -202,7 +202,7 @@ pub fn encode_fixed(d: &Decoded, target: Fmt, o: &Options, stage: &dyn Fn(&str))
     match target {
         Fmt::Jpeg => {
             let rgb = flatten_rgb(im);
-            let q = o.jpeg_quality.unwrap_or(85);
+            let q = o.jpeg_quality.unwrap_or(DEFAULT_JPEG_QUALITY);
             let pick = |auto: jpeg_codec::Subsampling| match o.jpeg_subsampling {
                 crate::options::Subsampling::Auto => auto,
                 crate::options::Subsampling::S444 => jpeg_codec::Subsampling::S444,
@@ -281,12 +281,16 @@ pub fn encode_fixed(d: &Decoded, target: Fmt, o: &Options, stage: &dyn Fn(&str))
     }
 }
 
-/// Why `src` cannot become a lossless JPEG, when it cannot. JPEG's only lossless mode is a reversible
-/// repack of an existing JPEG; any other input would have to be re-encoded lossily, so it is skipped
-/// instead of being written as a lossy file under a lossless setting. (The quality search picks its
-/// own quality, so `target_quality` is not a lossless request.)
+/// The quality used when another format becomes JPEG and no JPEG quality was given.
+pub const DEFAULT_JPEG_QUALITY: u8 = 85;
+
+/// Why `src` cannot become a lossless JPEG, when lossless was asked for. JPEG's only lossless mode is a
+/// reversible repack of an existing JPEG; any other input would have to be re-encoded lossily, so it is
+/// skipped instead of being written as a lossy file under a lossless setting. Leaving the JPEG quality at
+/// its default is not a request: those files get `DEFAULT_JPEG_QUALITY`. (The quality search picks its
+/// own quality, so `target_quality` is not a lossless request either.)
 pub fn lossless_jpeg_unavailable(src: Fmt, target: Fmt, o: &Options) -> Option<String> {
-    (target == Fmt::Jpeg && src != Fmt::Jpeg && o.jpeg_quality.is_none() && o.target_quality.is_none()).then(|| {
+    (target == Fmt::Jpeg && src != Fmt::Jpeg && o.jpeg_quality.is_none() && o.jpeg_lossless_requested && o.target_quality.is_none()).then(|| {
         format!("JPEG has no lossless mode for .{} input; choose a JPEG quality, or a lossless format (PNG, WebP or JPEG XL)", src.ext())
     })
 }

@@ -325,7 +325,10 @@ pub fn resolve(layers: &[&Partial]) -> Result<Options, String> {
     for l in layers {
         merge(&mut m, l);
     }
-    serde_json::from_value(Value::Object(m)).map_err(|e| e.to_string())
+    let mut o: Options = serde_json::from_value(Value::Object(m)).map_err(|e| e.to_string())?;
+    // A null jpeg-quality in a layer is a request for lossless; the default null is not (see convert::encode_fixed).
+    o.jpeg_lossless_requested = layers.iter().rev().find_map(|l| l.get("jpeg-quality")).is_some_and(Value::is_null);
+    Ok(o)
 }
 
 /// Only the fields of `o` that differ from `Options::default()`.

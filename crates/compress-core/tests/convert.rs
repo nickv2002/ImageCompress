@@ -166,7 +166,7 @@ fn events_for(src: &Path, o: &Options) -> (PathBuf, Vec<compress_core::JobEvent>
 #[test]
 fn lossless_jpeg_from_a_png_is_skipped_not_written_lossy() {
     let src = fixture("png/rgba_photo.png");
-    let o = Options { jpeg_quality: None, ..opts(Format::Jpeg) };
+    let o = Options { jpeg_quality: None, jpeg_lossless_requested: true, ..opts(Format::Jpeg) };
     let (p, ev) = events_for(&src, &o);
     let reason = ev.iter().find_map(|e| match e {
         compress_core::JobEvent::Skipped { reason, .. } => Some(reason.clone()),
@@ -179,7 +179,29 @@ fn lossless_jpeg_from_a_png_is_skipped_not_written_lossy() {
     assert_eq!(std::fs::read(&p).unwrap(), std::fs::read(&src).unwrap(), "original untouched");
     // a numeric quality or the quality search still converts
     convert_one(&src, &Options { jpeg_quality: Some(80), ..o.clone() }, "jpg");
-    convert_one(&src, &Options { target_quality: Some(70.0), ..o }, "jpg");
+    convert_one(&src, &Options { target_quality: Some(70.0), ..o.clone() }, "jpg");
+    // the quality left at its default (no lossless request) converts at the default quality, as before
+    convert_one(&src, &Options { jpeg_lossless_requested: false, ..o }, "jpg");
+}
+
+#[test]
+fn only_an_explicit_null_jpeg_quality_requests_lossless() {
+    use compress_core::presets::resolve;
+    use serde_json::json;
+    let obj = |v: serde_json::Value| v.as_object().unwrap().clone();
+    let jpeg = obj(json!({"format": "jpeg"}));
+    assert!(!resolve(&[&jpeg]).unwrap().jpeg_lossless_requested, "default null is not a request");
+    let lossless = obj(json!({"format": "jpeg", "jpeg-quality": null}));
+    assert!(resolve(&[&lossless]).unwrap().jpeg_lossless_requested);
+    // a later layer's number wins over an earlier null, and a later null over an earlier number
+    let q80 = obj(json!({"jpeg-quality": 80}));
+    assert!(!resolve(&[&lossless, &q80]).unwrap().jpeg_lossless_requested);
+    let null = obj(json!({"jpeg-quality": null}));
+    assert!(resolve(&[&q80, &null]).unwrap().jpeg_lossless_requested);
+    // the built-in JPEG · Lossless preset asks for it
+    let b = compress_core::presets::builtin();
+    let p = b.presets.iter().find(|p| p.id == "jpeg-lossless").unwrap();
+    assert!(resolve(&[&p.options]).unwrap().jpeg_lossless_requested);
 }
 
 #[test]
