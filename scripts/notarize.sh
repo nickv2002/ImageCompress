@@ -60,7 +60,9 @@ for item in "${nested[@]}"; do
     exit 1
   fi
   codesign --verify --strict --verbose=2 "$item"
-  if ! codesign -dv --verbose=4 "$item" 2>&1 | grep -q 'flags=.*runtime'; then
+  # Captured first: with pipefail, `grep -q` exiting early would SIGPIPE codesign and fail the check.
+  sig_info=$(codesign -dv --verbose=4 "$item" 2>&1)
+  if ! grep -q 'flags=.*runtime' <<<"$sig_info"; then
     echo "error: hardened runtime flag missing on $item" >&2
     exit 1
   fi
@@ -68,19 +70,21 @@ done
 codesign --verify --deep --strict --verbose=2 "$app_path"
 
 echo "==> fetching App Store Connect API key from 1Password (${op_item})"
-# 1Password is about to ask for approval, and the prompt times out: get the owner's attention.
-command -v afplay >/dev/null 2>&1 && { afplay /System/Library/Sounds/Glass.aiff >/dev/null 2>&1 & }
+# If 1Password is still waiting for approval after a minute, get the owner's attention.
+( sleep 60; command -v afplay >/dev/null 2>&1 && afplay /System/Library/Sounds/Glass.aiff ) >/dev/null 2>&1 &
+op_nag=$!
 key_filename=$(op item get "$op_item_name" --vault "$op_vault" --account "$op_account" --format json \
   | /usr/bin/python3 -c 'import json, sys; print(json.load(sys.stdin)["files"][0]["name"])')
 key_id=$(echo "$key_filename" | sed -E 's/^AuthKey_([A-Za-z0-9]+)\.p8$/\1/')
 issuer_id=$(op read "${op_item}/issuer id" --account "$op_account")
 
 secret_dir=$(mktemp -d)
-trap 'rm -rf "$secret_dir"' EXIT
+trap 'rm -rf "$secret_dir"; kill "$op_nag" 2>/dev/null || true' EXIT
 chmod 700 "$secret_dir"
 key_path="${secret_dir}/${key_filename}"
 op read "${op_item}/${key_filename}" --account "$op_account" --out-file "$key_path" >/dev/null
 chmod 600 "$key_path"
+kill "$op_nag" 2>/dev/null || true
 
 echo "==> zipping for submission"
 rm -f "$submit_zip"
@@ -104,7 +108,7 @@ rm -f "$dist_zip"
 # Plain unzip / Archive Utility extract them as real files inside the bundle, which
 # breaks the code-signature seal ("app is damaged"); only ditto hid them.
 ditto -c -k --keepParent --norsrc --noextattr --noqtn --noacl "$app_path" "$dist_zip"
-if unzip -l "$dist_zip" | grep -q '/\._'; then
+if grep -q '/\._' <<<"$(unzip -l "$dist_zip")"; then
   echo "error: $dist_zip contains AppleDouble (._*) entries" >&2
   exit 1
 fi
@@ -129,7 +133,7 @@ fi
 cli_tar="$dist_dir/${cli_name}.tar.gz"
 rm -f "$cli_tar"
 COPYFILE_DISABLE=1 tar --no-xattrs -C "$cli_stage" -czf "$cli_tar" "$cli_name"
-if tar -tzf "$cli_tar" | grep -q '/\._'; then
+if grep -q '/\._' <<<"$(tar -tzf "$cli_tar")"; then
   echo "error: $cli_tar contains AppleDouble (._*) entries" >&2
   exit 1
 fi

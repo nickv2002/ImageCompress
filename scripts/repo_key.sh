@@ -15,9 +15,14 @@ repo_private_key() {
   if [[ -n "${REPO_KEY_FILE:-}" ]]; then
     cat "$REPO_KEY_FILE"
   else
-    # 1Password is about to ask for approval, and the prompt times out: get the owner's attention.
-    command -v afplay >/dev/null 2>&1 && { afplay /System/Library/Sounds/Glass.aiff >/dev/null 2>&1 & }
+    # If 1Password is still waiting for approval after a minute, get the owner's attention.
+    local nag
+    ( sleep 60; command -v afplay >/dev/null 2>&1 && afplay /System/Library/Sounds/Glass.aiff ) >/dev/null 2>&1 &
+    nag=$!
     op read ${OP_ACCOUNT:+--account "$OP_ACCOUNT"} "op://${OP_VAULT:-Private}/${REPO_KEY_ITEM}/private key"
+    local rc=$?
+    kill "$nag" 2>/dev/null || true
+    return $rc
   fi
 }
 
