@@ -1,0 +1,8 @@
+{%- comment -%}
+A screenshot. Usage: {% include shot.html src="main-window" w=1600 h=1000 alt="…" caption="…" %}
+Images live in assets/shots/ as AVIF, made by scripts/docs_screenshots.sh (run through imgcompress itself).
+{%- endcomment -%}
+<figure class="shot-fig{% if include.class %} {{ include.class }}{% endif %}">
+  <img src="{{ site.baseurl }}/assets/shots/{{ include.src }}.avif" width="{{ include.w }}" height="{{ include.h }}" alt="{{ include.alt }}"{% unless include.eager %} loading="lazy"{% endunless %} decoding="async">
+  {%- if include.caption %}<figcaption>{{ include.caption }}</figcaption>{% endif %}
+</figure>

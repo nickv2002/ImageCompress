@@ -51,6 +51,17 @@ ImageCompress is built on these projects, among others:
 - **musl libc, LLVM libunwind and the Rust standard library**: in the static Linux builds.
 - On macOS, HEIC uses Apple's ImageIO.
 
+## Sample photos
+
+The photos in the screenshots and on the [Format comparison]({{ site.baseurl }}/compare/) page come from Wikimedia Commons.
+All are CC0, so they are free to use. The copies here are resized. Thanks to their photographers:
+
+- **Landscape of Granada Province, Andalusia, Spain** by Jebulon, CC0 1.0. [Source](https://commons.wikimedia.org/wiki/File:Landscape_of_Granada_Province,_Andalusia,_Spain.jpg)
+- **Portrait of a Carpathian Lynx** by Wilfredor, CC0 1.0. [Source](https://commons.wikimedia.org/wiki/File:Portrait_of_a_Carpathian_Lynx.jpg)
+- **Courtyard Zappeion Athens, Greece** by Jebulon, CC0 1.0. [Source](https://commons.wikimedia.org/wiki/File:Courtyard_Zappeion_Athens,_Greece.jpg)
+- **Colorful Bell Peppers** by Gabriel Ghnassia, CC0 1.0. [Source](https://commons.wikimedia.org/wiki/File:Colorful_Bell_Peppers_(Unsplash).jpg)
+- **Colorful lollipops at a Rio de Janeiro market, Brazil** by Wilfredor, CC0 1.0. [Source](https://commons.wikimedia.org/wiki/File:Colorful_lollipops_at_a_Rio_de_Janeiro_market,_Brazil.jpg)
+
 ## Patents
 
 AV1 (libaom, dav1d), WebP and JPEG XL come with their royalty-free patent grants, which are included with the notices.

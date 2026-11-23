@@ -1,0 +1,1025 @@
+{
+ "version": "2026.11.23.1",
+ "crop": {
+  "w": 480,
+  "h": 320
+ },
+ "formats": [
+  {
+   "id": "jpeg",
+   "name": "JPEG",
+   "good_at": "Photos that need to open anywhere, with fast encoding and decoding.",
+   "shows_in": "Everywhere."
+  },
+  {
+   "id": "webp",
+   "name": "WebP",
+   "good_at": "Smaller files than JPEG for photos and graphics, with transparency and animation.",
+   "shows_in": "All current browsers."
+  },
+  {
+   "id": "avif",
+   "name": "AVIF",
+   "good_at": "Small files at good quality, especially for photos at low and medium quality.",
+   "shows_in": "All current browsers."
+  },
+  {
+   "id": "jxl",
+   "name": "JPEG XL",
+   "good_at": "High quality at small sizes, and lossless recompression of existing JPEGs.",
+   "shows_in": "Safari. Other browsers are adding it."
+  },
+  {
+   "id": "heic",
+   "name": "HEIC",
+   "good_at": "Small photos on Apple devices, the format the iPhone camera saves.",
+   "shows_in": "Safari on Apple devices, and Apple Photos."
+  },
+  {
+   "id": "png",
+   "name": "PNG",
+   "good_at": "Screenshots, logos and anything that must stay pixel-exact, with transparency.",
+   "shows_in": "Everywhere."
+  }
+ ],
+ "levels": [
+  {
+   "id": "vl",
+   "name": "Visually lossless"
+  },
+  {
+   "id": "smaller",
+   "name": "Smaller"
+  },
+  {
+   "id": "q50",
+   "name": "Quality 50"
+  },
+  {
+   "id": "q25",
+   "name": "Quality 25"
+  }
+ ],
+ "photos": [
+  {
+   "id": "landscape",
+   "title": "Landscape of Granada Province, Andalusia, Spain",
+   "credit": "Photo: Jebulon, CC0",
+   "full": {
+    "w": 2400,
+    "h": 1623,
+    "kb": 1093
+   },
+   "original": {
+    "src": "landscape/original.png",
+    "bytes": 352454,
+    "kb": 352
+   },
+   "results": [
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "vl",
+     "src": "landscape/jpeg-vl.jpg",
+     "bytes": 94540,
+     "kb": 95,
+     "saved": 73,
+     "score": 88.2,
+     "full_kb": 1018
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "smaller",
+     "src": "landscape/jpeg-smaller.jpg",
+     "bytes": 43755,
+     "kb": 44,
+     "saved": 88,
+     "score": 70.3,
+     "full_kb": 476
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "q50",
+     "src": "landscape/jpeg-q50.jpg",
+     "bytes": 35696,
+     "kb": 36,
+     "saved": 90,
+     "score": 64.1,
+     "full_kb": 402
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "q25",
+     "src": "landscape/jpeg-q25.jpg",
+     "bytes": 25456,
+     "kb": 25,
+     "saved": 93,
+     "score": 51.9,
+     "full_kb": 286
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "vl",
+     "src": "landscape/webp-vl.webp",
+     "bytes": 95558,
+     "kb": 96,
+     "saved": 73,
+     "score": 88.9,
+     "full_kb": 1631
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "smaller",
+     "src": "landscape/webp-smaller.webp",
+     "bytes": 44396,
+     "kb": 44,
+     "saved": 87,
+     "score": 70.7,
+     "full_kb": 531
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "q50",
+     "src": "landscape/webp-q50.webp",
+     "bytes": 45980,
+     "kb": 46,
+     "saved": 87,
+     "score": 71.9,
+     "full_kb": 394
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "q25",
+     "src": "landscape/webp-q25.webp",
+     "bytes": 33058,
+     "kb": 33,
+     "saved": 91,
+     "score": 59.9,
+     "full_kb": 243
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "vl",
+     "src": "landscape/avif-vl.avif",
+     "bytes": 81045,
+     "kb": 81,
+     "saved": 77,
+     "score": 88.6,
+     "full_kb": 968
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "smaller",
+     "src": "landscape/avif-smaller.avif",
+     "bytes": 37699,
+     "kb": 38,
+     "saved": 89,
+     "score": 70.8,
+     "full_kb": 400
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "q50",
+     "src": "landscape/avif-q50.avif",
+     "bytes": 29193,
+     "kb": 29,
+     "saved": 92,
+     "score": 62.8,
+     "full_kb": 314
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "q25",
+     "src": "landscape/avif-q25.avif",
+     "bytes": 9468,
+     "kb": 9.5,
+     "saved": 97,
+     "score": 15.3,
+     "full_kb": 92
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "vl",
+     "src": "landscape/jxl-vl.jxl",
+     "bytes": 86098,
+     "kb": 86,
+     "saved": 76,
+     "score": 89.0,
+     "full_kb": 940
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "smaller",
+     "src": "landscape/jxl-smaller.jxl",
+     "bytes": 40309,
+     "kb": 40,
+     "saved": 89,
+     "score": 70.3,
+     "full_kb": 420
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "q50",
+     "src": "landscape/jxl-q50.jxl",
+     "bytes": 24160,
+     "kb": 24,
+     "saved": 93,
+     "score": 53.5,
+     "full_kb": 238
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "q25",
+     "src": "landscape/jxl-q25.jxl",
+     "bytes": 16833,
+     "kb": 17,
+     "saved": 95,
+     "score": 38.7,
+     "full_kb": 170
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "vl",
+     "src": "landscape/heic-vl.heic",
+     "bytes": 117358,
+     "kb": 117,
+     "saved": 67,
+     "score": 88.6,
+     "full_kb": 1460
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "smaller",
+     "src": "landscape/heic-smaller.heic",
+     "bytes": 53812,
+     "kb": 54,
+     "saved": 85,
+     "score": 70.2,
+     "full_kb": 614
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "q50",
+     "src": "landscape/heic-q50.heic",
+     "bytes": 57991,
+     "kb": 58,
+     "saved": 84,
+     "score": 72.7,
+     "full_kb": 669
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "q25",
+     "src": "landscape/heic-q25.heic",
+     "bytes": 33747,
+     "kb": 34,
+     "saved": 90,
+     "score": 59.1,
+     "full_kb": 323
+    }
+   ]
+  },
+  {
+   "id": "portrait",
+   "title": "Portrait of a Carpathian Lynx",
+   "credit": "Photo: Wilfredor, CC0",
+   "full": {
+    "w": 2400,
+    "h": 1691,
+    "kb": 516
+   },
+   "original": {
+    "src": "portrait/original.png",
+    "bytes": 286470,
+    "kb": 286
+   },
+   "results": [
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "vl",
+     "src": "portrait/jpeg-vl.jpg",
+     "bytes": 67181,
+     "kb": 67,
+     "saved": 77,
+     "score": 88.1,
+     "full_kb": 432
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "smaller",
+     "src": "portrait/jpeg-smaller.jpg",
+     "bytes": 29822,
+     "kb": 30,
+     "saved": 90,
+     "score": 70.5,
+     "full_kb": 237
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "q50",
+     "src": "portrait/jpeg-q50.jpg",
+     "bytes": 26786,
+     "kb": 27,
+     "saved": 91,
+     "score": 67.2,
+     "full_kb": 225
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "q25",
+     "src": "portrait/jpeg-q25.jpg",
+     "bytes": 18534,
+     "kb": 19,
+     "saved": 94,
+     "score": 53.3,
+     "full_kb": 168
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "vl",
+     "src": "portrait/webp-vl.webp",
+     "bytes": 66376,
+     "kb": 66,
+     "saved": 77,
+     "score": 88.3,
+     "full_kb": 748
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "smaller",
+     "src": "portrait/webp-smaller.webp",
+     "bytes": 32440,
+     "kb": 32,
+     "saved": 89,
+     "score": 70.6,
+     "full_kb": 255
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "q50",
+     "src": "portrait/webp-q50.webp",
+     "bytes": 33546,
+     "kb": 34,
+     "saved": 88,
+     "score": 72.0,
+     "full_kb": 171
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "q25",
+     "src": "portrait/webp-q25.webp",
+     "bytes": 22966,
+     "kb": 23,
+     "saved": 92,
+     "score": 56.8,
+     "full_kb": 109
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "vl",
+     "src": "portrait/avif-vl.avif",
+     "bytes": 58727,
+     "kb": 59,
+     "saved": 79,
+     "score": 88.1,
+     "full_kb": 360
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "smaller",
+     "src": "portrait/avif-smaller.avif",
+     "bytes": 25114,
+     "kb": 25,
+     "saved": 91,
+     "score": 70.6,
+     "full_kb": 146
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "q50",
+     "src": "portrait/avif-q50.avif",
+     "bytes": 21116,
+     "kb": 21,
+     "saved": 93,
+     "score": 65.8,
+     "full_kb": 138
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "q25",
+     "src": "portrait/avif-q25.avif",
+     "bytes": 5957,
+     "kb": 6.0,
+     "saved": 98,
+     "score": 18.8,
+     "full_kb": 45
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "vl",
+     "src": "portrait/jxl-vl.jxl",
+     "bytes": 58246,
+     "kb": 58,
+     "saved": 80,
+     "score": 88.4,
+     "full_kb": 346
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "smaller",
+     "src": "portrait/jxl-smaller.jxl",
+     "bytes": 26657,
+     "kb": 27,
+     "saved": 91,
+     "score": 70.5,
+     "full_kb": 131
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "q50",
+     "src": "portrait/jxl-q50.jxl",
+     "bytes": 15130,
+     "kb": 15,
+     "saved": 95,
+     "score": 54.4,
+     "full_kb": 117
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "q25",
+     "src": "portrait/jxl-q25.jxl",
+     "bytes": 10304,
+     "kb": 10,
+     "saved": 96,
+     "score": 40.2,
+     "full_kb": 85
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "vl",
+     "src": "portrait/heic-vl.heic",
+     "bytes": 79333,
+     "kb": 79,
+     "saved": 72,
+     "score": 88.3,
+     "full_kb": 521
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "smaller",
+     "src": "portrait/heic-smaller.heic",
+     "bytes": 33108,
+     "kb": 33,
+     "saved": 88,
+     "score": 71.1,
+     "full_kb": 200
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "q50",
+     "src": "portrait/heic-q50.heic",
+     "bytes": 51172,
+     "kb": 51,
+     "saved": 82,
+     "score": 79.2,
+     "full_kb": 314
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "q25",
+     "src": "portrait/heic-q25.heic",
+     "bytes": 24541,
+     "kb": 25,
+     "saved": 91,
+     "score": 64.3,
+     "full_kb": 149
+    }
+   ]
+  },
+  {
+   "id": "city",
+   "title": "Courtyard Zappeion Athens, Greece",
+   "credit": "Photo: Jebulon, CC0",
+   "full": {
+    "w": 2400,
+    "h": 1675,
+    "kb": 767
+   },
+   "original": {
+    "src": "city/original.png",
+    "bytes": 251725,
+    "kb": 252
+   },
+   "results": [
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "vl",
+     "src": "city/jpeg-vl.jpg",
+     "bytes": 70367,
+     "kb": 70,
+     "saved": 72,
+     "score": 88.1,
+     "full_kb": 708
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "smaller",
+     "src": "city/jpeg-smaller.jpg",
+     "bytes": 30071,
+     "kb": 30,
+     "saved": 88,
+     "score": 70.3,
+     "full_kb": 336
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "q50",
+     "src": "city/jpeg-q50.jpg",
+     "bytes": 24067,
+     "kb": 24,
+     "saved": 90,
+     "score": 63.8,
+     "full_kb": 322
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "q25",
+     "src": "city/jpeg-q25.jpg",
+     "bytes": 17368,
+     "kb": 17,
+     "saved": 93,
+     "score": 53.1,
+     "full_kb": 243
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "vl",
+     "src": "city/webp-vl.webp",
+     "bytes": 85720,
+     "kb": 86,
+     "saved": 66,
+     "score": 81.7,
+     "full_kb": 1014
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "smaller",
+     "src": "city/webp-smaller.webp",
+     "bytes": 30866,
+     "kb": 31,
+     "saved": 88,
+     "score": 71.4,
+     "full_kb": 311
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "q50",
+     "src": "city/webp-q50.webp",
+     "bytes": 23714,
+     "kb": 24,
+     "saved": 91,
+     "score": 64.1,
+     "full_kb": 218
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "q25",
+     "src": "city/webp-q25.webp",
+     "bytes": 15288,
+     "kb": 15,
+     "saved": 94,
+     "score": 48.0,
+     "full_kb": 146
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "vl",
+     "src": "city/avif-vl.avif",
+     "bytes": 52568,
+     "kb": 53,
+     "saved": 79,
+     "score": 88.1,
+     "full_kb": 531
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "smaller",
+     "src": "city/avif-smaller.avif",
+     "bytes": 21985,
+     "kb": 22,
+     "saved": 91,
+     "score": 71.1,
+     "full_kb": 191
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "q50",
+     "src": "city/avif-q50.avif",
+     "bytes": 17557,
+     "kb": 18,
+     "saved": 93,
+     "score": 65.3,
+     "full_kb": 191
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "q25",
+     "src": "city/avif-q25.avif",
+     "bytes": 5864,
+     "kb": 5.9,
+     "saved": 98,
+     "score": 25.5,
+     "full_kb": 67
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "vl",
+     "src": "city/jxl-vl.jxl",
+     "bytes": 63115,
+     "kb": 63,
+     "saved": 75,
+     "score": 89.1,
+     "full_kb": 583
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "smaller",
+     "src": "city/jxl-smaller.jxl",
+     "bytes": 26898,
+     "kb": 27,
+     "saved": 89,
+     "score": 70.7,
+     "full_kb": 253
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "q50",
+     "src": "city/jxl-q50.jxl",
+     "bytes": 16092,
+     "kb": 16,
+     "saved": 94,
+     "score": 54.8,
+     "full_kb": 202
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "q25",
+     "src": "city/jxl-q25.jxl",
+     "bytes": 11454,
+     "kb": 11,
+     "saved": 95,
+     "score": 43.5,
+     "full_kb": 148
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "vl",
+     "src": "city/heic-vl.heic",
+     "bytes": 215039,
+     "kb": 215,
+     "saved": 15,
+     "score": 95.9,
+     "full_kb": 2726
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "smaller",
+     "src": "city/heic-smaller.heic",
+     "bytes": 44415,
+     "kb": 44,
+     "saved": 82,
+     "score": 71.0,
+     "full_kb": 468
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "q50",
+     "src": "city/heic-q50.heic",
+     "bytes": 38465,
+     "kb": 38,
+     "saved": 85,
+     "score": 68.2,
+     "full_kb": 395
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "q25",
+     "src": "city/heic-q25.heic",
+     "bytes": 19224,
+     "kb": 19,
+     "saved": 92,
+     "score": 56.5,
+     "full_kb": 182
+    }
+   ]
+  },
+  {
+   "id": "graphic",
+   "title": "App screenshot (PNG)",
+   "credit": "Screenshot: ImageCompress",
+   "full": {
+    "w": 1640,
+    "h": 1184,
+    "kb": 384
+   },
+   "original": {
+    "src": "graphic/original.png",
+    "bytes": 35417,
+    "kb": 35
+   },
+   "results": [
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "vl",
+     "src": "graphic/jpeg-vl.jpg",
+     "bytes": 32372,
+     "kb": 32,
+     "saved": 9,
+     "score": 88.5,
+     "full_kb": 384
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "smaller",
+     "src": "graphic/jpeg-smaller.jpg",
+     "bytes": 15571,
+     "kb": 16,
+     "saved": 56,
+     "score": 70.1,
+     "full_kb": 384
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "q50",
+     "src": "graphic/jpeg-q50.jpg",
+     "bytes": 16300,
+     "kb": 16,
+     "saved": 54,
+     "score": 71.3,
+     "full_kb": 122
+    },
+    {
+     "format": "jpeg",
+     "format_name": "JPEG",
+     "level": "q25",
+     "src": "graphic/jpeg-q25.jpg",
+     "bytes": 12995,
+     "kb": 13,
+     "saved": 63,
+     "score": 64.3,
+     "full_kb": 97
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "vl",
+     "src": "graphic/webp-vl.webp",
+     "bytes": 9802,
+     "kb": 9.8,
+     "saved": 72,
+     "score": 100.0,
+     "full_kb": 101
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "smaller",
+     "src": "graphic/webp-smaller.webp",
+     "bytes": 8730,
+     "kb": 8.7,
+     "saved": 75,
+     "score": 70.0,
+     "full_kb": 74
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "q50",
+     "src": "graphic/webp-q50.webp",
+     "bytes": 9802,
+     "kb": 9.8,
+     "saved": 72,
+     "score": 100.0,
+     "full_kb": 81
+    },
+    {
+     "format": "webp",
+     "format_name": "WebP",
+     "level": "q25",
+     "src": "graphic/webp-q25.webp",
+     "bytes": 8444,
+     "kb": 8.4,
+     "saved": 76,
+     "score": 69.4,
+     "full_kb": 63
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "vl",
+     "src": "graphic/avif-vl.avif",
+     "bytes": 5967,
+     "kb": 6.0,
+     "saved": 83,
+     "score": 88.8,
+     "full_kb": 58
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "smaller",
+     "src": "graphic/avif-smaller.avif",
+     "bytes": 3776,
+     "kb": 3.8,
+     "saved": 89,
+     "score": 71.3,
+     "full_kb": 33
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "q50",
+     "src": "graphic/avif-q50.avif",
+     "bytes": 5560,
+     "kb": 5.6,
+     "saved": 84,
+     "score": 85.7,
+     "full_kb": 46
+    },
+    {
+     "format": "avif",
+     "format_name": "AVIF",
+     "level": "q25",
+     "src": "graphic/avif-q25.avif",
+     "bytes": 3616,
+     "kb": 3.6,
+     "saved": 90,
+     "score": 68.8,
+     "full_kb": 30
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "vl",
+     "src": "graphic/jxl-vl.jxl",
+     "bytes": 9705,
+     "kb": 9.7,
+     "saved": 73,
+     "score": 100.0,
+     "full_kb": 160
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "smaller",
+     "src": "graphic/jxl-smaller.jxl",
+     "bytes": 7404,
+     "kb": 7.4,
+     "saved": 79,
+     "score": 72.3,
+     "full_kb": 49
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "q50",
+     "src": "graphic/jxl-q50.jxl",
+     "bytes": 9181,
+     "kb": 9.2,
+     "saved": 74,
+     "score": 81.2,
+     "full_kb": 61
+    },
+    {
+     "format": "jxl",
+     "format_name": "JPEG XL",
+     "level": "q25",
+     "src": "graphic/jxl-q25.jxl",
+     "bytes": 7829,
+     "kb": 7.8,
+     "saved": 78,
+     "score": 76.5,
+     "full_kb": 51
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "vl",
+     "src": "graphic/heic-vl.heic",
+     "bytes": 30304,
+     "kb": 30,
+     "saved": 14,
+     "score": 95.0,
+     "full_kb": 246
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "smaller",
+     "src": "graphic/heic-smaller.heic",
+     "bytes": 8999,
+     "kb": 9.0,
+     "saved": 75,
+     "score": 70.2,
+     "full_kb": 70
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "q50",
+     "src": "graphic/heic-q50.heic",
+     "bytes": 16805,
+     "kb": 17,
+     "saved": 53,
+     "score": 81.3,
+     "full_kb": 127
+    },
+    {
+     "format": "heic",
+     "format_name": "HEIC",
+     "level": "q25",
+     "src": "graphic/heic-q25.heic",
+     "bytes": 11294,
+     "kb": 11,
+     "saved": 68,
+     "score": 76.4,
+     "full_kb": 87
+    },
+    {
+     "format": "png",
+     "format_name": "PNG",
+     "level": "vl",
+     "src": "graphic/png-lossless.png",
+     "bytes": 23801,
+     "kb": 24,
+     "saved": 33,
+     "score": 100.0,
+     "full_kb": 226,
+     "label": "Lossless"
+    }
+   ]
+  }
+ ]
+}

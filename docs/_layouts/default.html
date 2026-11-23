@@ -11,29 +11,64 @@
 <body class="{% if page.url == '/' %}home{% else %}doc{% endif %}">
   <header class="top">
     <a class="brand" href="{{ site.baseurl }}/"><img src="{{ site.baseurl }}/assets/icon.png" alt="" width="28" height="28">ImageCompress</a>
-    <nav>
-      <a href="{{ site.baseurl }}/getting-started/">Get started</a>
-      <a href="{{ site.baseurl }}/formats/">Formats</a>
-      <a href="{{ site.baseurl }}/presets/">Presets</a>
-      <a href="{{ site.baseurl }}/cli/">CLI</a>
-      <a href="{{ site.repo }}">GitHub</a>
+    <nav aria-label="Site">
+      {%- assign header = "Get started|/getting-started/,Formats|/formats/,Compare|/compare/,Presets|/presets/,CLI|/cli/,Undo|/undo/" | split: "," -%}
+      {%- for item in header -%}
+        {%- assign parts = item | split: "|" %}
+      <a href="{{ site.baseurl }}{{ parts[1] }}"{% if page.url == parts[1] %} aria-current="page"{% endif %}>{{ parts[0] }}</a>
+      {%- endfor %}
+      <a class="gh" href="{{ site.repo }}" title="Star ImageCompress on GitHub"><svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" d="M8 1.6l1.95 3.95 4.36.63-3.15 3.08.74 4.34L8 11.55l-3.9 2.05.74-4.34L1.7 6.18l4.36-.63z"/></svg>GitHub</a>
     </nav>
   </header>
   {% if page.url == '/' %}
   {{ content }}
   {% else %}
-  <main class="prose">
-    {{ content }}
-  </main>
+  <div class="docs{% if page.wide %} wide{% endif %}">
+    <details class="side" id="side">
+      <summary>Contents</summary>
+      <nav aria-label="Documentation">
+        <ul>
+          {%- for p in site.data.nav %}
+          <li{% if page.url == p.url %} class="current"{% endif %}><a href="{{ site.baseurl }}{{ p.url }}"{% if page.url == p.url %} aria-current="page"{% endif %}>{{ p.title }}</a>
+            {%- if page.url == p.url %}<ul class="toc" id="toc"></ul>{% endif %}</li>
+          {%- endfor %}
+        </ul>
+      </nav>
+    </details>
+    <main class="prose">
+      {{ content }}
+    </main>
+  </div>
+  <script>
+    // Open the sidebar on wide screens, and list this page's sections under its entry.
+    (function () {
+      var side = document.getElementById("side");
+      var wide = window.matchMedia("(min-width: 900px)");
+      function sync() { side.open = wide.matches && !side.parentNode.classList.contains("wide"); }
+      sync();
+      if (wide.addEventListener) wide.addEventListener("change", sync);
+      var toc = document.getElementById("toc");
+      if (!toc) return;
+      document.querySelectorAll(".prose h2[id]").forEach(function (h) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = "#" + h.id;
+        a.textContent = h.textContent;
+        a.addEventListener("click", function () { if (!wide.matches) side.open = false; });
+        li.appendChild(a);
+        toc.appendChild(li);
+      });
+    })();
+  </script>
   {% endif %}
   <footer class="bottom">
     <p>
-      <a href="{{ site.baseurl }}/getting-started/">Get started</a> ·
-      <a href="{{ site.baseurl }}/undo/">Undo and safety</a> ·
-      <a href="{{ site.baseurl }}/privacy/">Privacy</a> ·
-      <a href="{{ site.baseurl }}/acknowledgements/">Acknowledgements</a> ·
+      {%- for p in site.data.nav %}
+      <a href="{{ site.baseurl }}{{ p.url }}">{{ p.title }}</a> ·
+      {%- endfor %}
       <a href="{{ site.repo }}/issues">Report an issue</a>
     </p>
+    <p class="star">If ImageCompress saves you some space, a <a href="{{ site.repo }}">star on GitHub</a> helps other people find it.</p>
     <p class="fine">ImageCompress is free software under the GNU GPL v3 or later.</p>
   </footer>
 </body>

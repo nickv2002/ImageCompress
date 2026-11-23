@@ -6,9 +6,13 @@ permalink: /presets/
 
 # Presets
 
+<p class="applies">Applies to {% include pills.html on="both" %}</p>
+
 <p class="lead">A preset is a saved set of options; the app, the Finder menu and the command line all use the same ones.</p>
 
 ## Built-in presets
+
+{% include shot.html src="settings-presets" w=820 h=592 alt="Settings, Presets pane: a list of presets with stars, and the selected preset's options" caption="Settings → Presets. Starred presets fill the toolbar; each one can be shown in the Finder menu." %}
 
 There are 21 built-in presets: every output format (Preserve, JPEG XL, AVIF, HEIC, WebP, JPEG, PNG) at every
 quality (Lossless, Visually lossless, Smaller). Their names look like "JPEG XL · Smaller" and their ids like
@@ -17,6 +21,7 @@ quality (Lossless, Visually lossless, Smaller). Their names look like "JPEG XL �
 None of them touches your originals beyond replacing the file in place.
 
 ## Favorites and the toolbar
+{: .mac}
 
 The Format and Quality controls in the toolbar run these presets. A preset with a format and quality that is marked
 as a favorite (the star in Settings → Presets) fills those controls.
@@ -27,6 +32,7 @@ You can also make your own presets. In the main window, change options in the in
 In the app, presets build on your defaults in Settings → General. An option a preset does not set takes the default value.
 
 ## Show in Finder menu
+{: .mac}
 
 A preset marked **Show in Finder menu** appears in the Finder right-click submenu
 (see [Get started]({{ site.baseurl }}/getting-started/)). The built-in ones marked this way are:
@@ -102,6 +108,7 @@ Here is a built-in preset as `imgcompress presets export keep-smaller` prints it
 ```
 
 ## Presets on the command line
+{: .cli}
 
 ```bash
 imgcompress presets list                     # ids and names; [finder] marks the Finder menu

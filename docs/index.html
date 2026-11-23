@@ -15,10 +15,10 @@ description: Smaller images that look the same. Compress and convert PNG, JPEG, 
 </section>
 
 <div class="shot">
-  <img src="{{ site.baseurl }}/assets/screenshot.png" alt="The ImageCompress window with a list of compressed images and their savings" width="1000" height="520">
+  <img src="{{ site.baseurl }}/assets/shots/main-window.avif" alt="The ImageCompress window with seven photos compressed, showing each file's size before and after and the total saved" width="960" height="512" fetchpriority="high">
 </div>
 
-<section class="section">
+<section class="section" id="quality">
   <h2>Pick a format and a quality. That's it.</h2>
   <p class="sub">Two controls in the toolbar cover almost everything: keep each file's format or convert to a modern one,
     and choose how much you are willing to change.</p>
@@ -36,30 +36,38 @@ description: Smaller images that look the same. Compress and convert PNG, JPEG, 
     <a href="{{ site.baseurl }}/formats/">Which one should I use?</a></p>
 </section>
 
-<section class="section">
+<section class="section" id="mac-app">
   <h2>Built like a Mac app</h2>
-  <p class="sub">Native SwiftUI, with the conventions you expect.</p>
+  <p class="sub">Native SwiftUI, with the conventions you expect. Each feature is marked
+    {% include pills.html on="mac" %} for the app, {% include pills.html on="cli" %} for the command line, or both.</p>
   <div class="grid">
-    <div class="card"><h3>Drag, drop, done</h3><p>Drop files or whole folders on the window or the Dock icon. Turn on
+    <div class="card">{% include pills.html on="mac" %}<h3>Drag, drop, done</h3><p>Drop files or whole folders on the window or the Dock icon. Turn on
       auto-start and they compress as soon as they land.</p></div>
-    <div class="card"><h3>Right-click in Finder</h3><p>A Finder menu and toolbar button run your chosen presets on the
+    <div class="card">{% include pills.html on="mac" %}<h3>Right-click in Finder</h3><p>A Finder menu and toolbar button run your chosen presets on the
       selection without opening a window. Also in the Services menu.</p></div>
-    <div class="card"><h3>Before and after</h3><p>Press Space to compare the original and the result side by side, with the
+    <div class="card">{% include pills.html on="mac" %}<h3>Before and after</h3><p>Press Space to compare the original and the result side by side, with the
       exact saving.</p></div>
-    <div class="card"><h3>Undo for a day</h3><p>Replaced originals are kept for 24 hours, so one click puts a file back.
-      Undo refuses if the file changed since.</p></div>
-    <div class="card"><h3>Never bigger</h3><p>A result is only kept when it is smaller than the original. Files are
+    <div class="card">{% include pills.html on="both" %}<h3>Undo</h3><p>The app keeps replaced originals for 24 hours, so one click puts a file back.
+      On the command line, <code>--backup-dir</code> keeps them and <code>imgcompress undo</code> restores them.
+      Undo refuses if the file changed since. <a href="{{ site.baseurl }}/undo/">How undo works</a></p></div>
+    <div class="card">{% include pills.html on="both" %}<h3>Never bigger</h3><p>A result is only kept when it is smaller than the original. Files are
       replaced atomically, and existing files are never overwritten unless you ask.</p></div>
-    <div class="card"><h3>Your metadata, your call</h3><p>Keep the colour profile, keep everything, or keep EXIF without
+    <div class="card">{% include pills.html on="both" %}<h3>Your metadata, your call</h3><p>Keep the colour profile, keep everything, or keep EXIF without
       GPS location. Dates are preserved.</p></div>
-    <div class="card"><h3>Presets you can share</h3><p>Each preset is a small JSON file. Edit it by hand, send it to a
+    <div class="card">{% include pills.html on="both" %}<h3>Presets you can share</h3><p>Each preset is a small JSON file. Edit it by hand, send it to a
       friend, or use it from scripts.</p></div>
-    <div class="card"><h3>Everything built in</h3><p>Every encoder is part of the app: jpegli, mozjpeg, oxipng,
+    <div class="card">{% include pills.html on="both" %}<h3>Everything built in</h3><p>Every encoder is part of the app: jpegli, mozjpeg, oxipng,
       libimagequant, libjxl, libavif, libwebp and gifsicle. No Homebrew or Python needed.</p></div>
+  </div>
+  <div class="gallery">
+    {% include shot.html src="finder-menu" w=980 h=710 alt="Finder context menu with an ImageCompress submenu listing presets" caption="Right-click in Finder and pick a preset." %}
+    {% include shot.html src="before-after" w=1040 h=560 alt="Before and after view of a lynx photo with a split slider, original 15.4 MB, result 5.7 MB" caption="Space shows the original and the result side by side." %}
+    {% include shot.html src="options-inspector" w=1180 h=560 alt="The main window with the Options inspector open beside the file list" caption="The Options inspector changes settings for the files you add next." %}
+    {% include shot.html src="settings-avif" w=820 h=592 alt="Settings, AVIF defaults: quality, alpha quality, speed and bit depth" caption="Every encoder's defaults are in Settings." %}
   </div>
 </section>
 
-<section class="section">
+<section class="section" id="command-line">
   <h2>The same engine on the command line</h2>
   <p class="sub"><code>imgcompress</code> runs on macOS and Linux, shares presets with the app, and is safe to re-run.</p>
 <pre><code># Compress every image under a folder, in place
@@ -103,5 +111,23 @@ brew trust --formula nickv2002/tap/imgcompress
 brew install imgcompress</code></pre>
       <p style="margin-top:10px">Tarballs for every platform are on the
         <a href="https://github.com/nickv2002/ImageCompress/releases">releases page</a>.</p></div>
+  </div>
+</section>
+
+<section class="section" id="docs">
+  <h2>Docs</h2>
+  <p class="sub">Everything in one place. Each page is marked with the parts of ImageCompress it covers.</p>
+  <div class="docs-index">
+    {%- for p in site.data.nav %}
+    <div class="card">
+      <h3><a href="{{ site.baseurl }}{{ p.url }}">{{ p.title }}</a></h3>
+      {%- assign on = p.platforms | join: "" | replace: "maccli", "both" %}{% include pills.html on=on %}
+      <ul>
+        {%- for sct in p.sections %}
+        <li><a href="{{ site.baseurl }}{{ p.url }}#{{ sct.id }}">{{ sct.title }}</a></li>
+        {%- endfor %}
+      </ul>
+    </div>
+    {%- endfor %}
   </div>
 </section>

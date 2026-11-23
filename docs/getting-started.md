@@ -6,9 +6,12 @@ permalink: /getting-started/
 
 # Get started
 
+<p class="applies">Applies to {% include pills.html on="both" %}</p>
+
 <p class="lead">Install ImageCompress, drop some images on the window and press Compress.</p>
 
 ## Install on macOS
+{: .mac}
 
 ImageCompress needs macOS 15 or later.
 
@@ -27,6 +30,9 @@ unzip it and drag ImageCompress to your Applications folder.
 The app updates itself. See [Updates](#updates).
 
 ## Your first compression
+{: .mac}
+
+{% include shot.html src="drop-zone" w=1040 h=560 alt="The empty ImageCompress window, asking you to drop images or folders" caption="The window before you add anything. Drop files or folders on it, or press ⌘O." %}
 
 1. Open ImageCompress.
 2. Drag images or folders onto the window. You can also use File → Add Files… (⌘O).
@@ -42,6 +48,11 @@ Each Format and Quality pair is a [preset]({{ site.baseurl }}/presets/). Setting
 and make your own presets.
 
 ## Turn on the Finder menu
+{: .mac}
+
+{% include shot.html src="finder-menu" w=980 h=710 alt="Finder context menu with an ImageCompress submenu listing presets" caption="Right-click a selection in Finder and choose a preset from the ImageCompress submenu." %}
+
+{% include shot.html src="settings-finder" w=820 h=592 alt="Settings, Finder pane: extension status Enabled, menu title and what choosing a preset does" caption="Settings → Finder shows whether the extension is on and what a preset in the menu does." %}
 
 The Finder menu is a Finder extension. macOS keeps it off until you turn it on.
 
@@ -66,6 +77,7 @@ The extension also provides a toolbar button. To add it to Finder's toolbar, cho
 - On a Mac managed by your employer or school, extensions can be blocked without any message.
 
 ## Services menu
+{: .mac}
 
 Without the Finder extension, the same actions are in the Services menu (Finder → Services, or right-click →
 Services). They are for images and folders:
@@ -75,6 +87,7 @@ Services). They are for images and folders:
 - **Open in ImageCompress…** adds the files to the window without starting.
 
 ## Command line tool
+{: .cli}
 
 The app includes the `imgcompress` command. To use it in Terminal, choose ImageCompress → **Install Command Line Tool…**.
 This links `/usr/local/bin/imgcompress` to the copy inside the app. The same item is in Settings → Tools.
@@ -89,6 +102,7 @@ brew trust --formula nickv2002/tap/imgcompress && brew install nickv2002/tap/img
 See the [command line reference]({{ site.baseurl }}/cli/). The app and the command share presets (not the app's General defaults), so the same preset gives the same result in both.
 
 ## Install on Linux
+{: .cli}
 
 Only the command line tool is available on Linux. Add the signed package repository once, and your normal
 system updates keep `imgcompress` current. The binary is static, so there are no dependencies.
@@ -120,6 +134,7 @@ Homebrew on Linux works too, with the formula above. To build it yourself, downl
 `imgcompress-<version>-sources.tar.gz` from a release; `BUILD_FROM_SOURCE.txt` inside has the `cargo` steps.
 
 ## Updates
+{: .both}
 
 On macOS the app checks for updates itself (it uses Sparkle). In Settings → Tools → Updates you can turn
 automatic checks off, or click **Check Now**. You can also use ImageCompress → Check for Updates….

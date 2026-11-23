@@ -6,6 +6,8 @@ permalink: /privacy/
 
 # Privacy
 
+<p class="applies">Applies to {% include pills.html on="both" %}</p>
+
 <p class="lead">ImageCompress processes your images entirely on your computer and never uploads them.</p>
 
 ## What stays on your computer
@@ -15,6 +17,7 @@ permalink: /privacy/
 - The command line tool makes no network requests.
 
 ## The one network request
+{: .mac}
 
 The Mac app checks for new versions. It does this with Sparkle, a common updater for Mac apps. It fetches one file,
 the update list at `https://nickv2002.github.io/ImageCompress/appcast.xml`, which is a public page hosted by GitHub Pages.

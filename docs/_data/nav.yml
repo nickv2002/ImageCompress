@@ -1,0 +1,65 @@
+# The docs pages in reading order. The header, the doc-page sidebar and the home page's "Docs" section all read
+# this list. `sections` are the main headings shown on the home page; anchors are kramdown's auto_ids.
+# `platforms` drives the pills: mac, cli, or both.
+- title: Get started
+  url: /getting-started/
+  platforms: [mac, cli]
+  sections:
+    - { title: Install on macOS, id: install-on-macos }
+    - { title: Your first compression, id: your-first-compression }
+    - { title: Turn on the Finder menu, id: turn-on-the-finder-menu }
+    - { title: Install on Linux, id: install-on-linux }
+- title: Formats and quality
+  url: /formats/
+  platforms: [mac, cli]
+  sections:
+    - { title: Formats it can handle, id: formats-it-can-handle }
+    - { title: How Visually lossless works, id: how-visually-lossless-and-smaller-work }
+    - { title: Metadata, id: metadata }
+    - { title: Which apps open which format, id: which-apps-open-which-format }
+- title: Format comparison
+  url: /compare/
+  platforms: [mac, cli]
+  sections:
+    - { title: The formats, id: the-formats }
+    - { title: Compare side by side, id: compare-side-by-side }
+    - { title: All results, id: all-results }
+- title: Presets
+  url: /presets/
+  platforms: [mac, cli]
+  sections:
+    - { title: Built-in presets, id: built-in-presets }
+    - { title: Show in Finder menu, id: show-in-finder-menu }
+    - { title: Edit and share preset files, id: edit-and-share-preset-files }
+    - { title: Presets on the command line, id: presets-on-the-command-line }
+- title: Command line
+  url: /cli/
+  platforms: [cli]
+  sections:
+    - { title: Examples, id: examples }
+    - { title: Commands, id: commands }
+    - { title: Run options, id: run-options }
+    - { title: Exit codes, id: exit-codes }
+- title: Undo and safety
+  url: /undo/
+  platforms: [mac, cli]
+  sections:
+    - { title: App and command line, id: in-the-app-and-on-the-command-line }
+    - { title: Undo in the app, id: undo-in-the-app }
+    - { title: Files are replaced safely, id: files-are-replaced-safely }
+    - { title: What happens to originals, id: what-happens-to-originals }
+- title: Privacy
+  url: /privacy/
+  platforms: [mac, cli]
+  sections:
+    - { title: What stays on your computer, id: what-stays-on-your-computer }
+    - { title: The one network request, id: the-one-network-request }
+    - { title: Processing history, id: processing-history }
+- title: Acknowledgements
+  url: /acknowledgements/
+  platforms: [mac, cli]
+  sections:
+    - { title: License, id: license }
+    - { title: Get the source, id: get-the-source }
+    - { title: Required credits, id: required-credits }
+    - { title: Sample photos, id: sample-photos }

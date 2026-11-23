@@ -6,9 +6,11 @@ permalink: /cli/
 
 # Command line
 
-<p class="lead">The <code>imgcompress</code> command does everything the app does, in Terminal or in scripts, on macOS and Linux.</p>
+<p class="applies">Applies to {% include pills.html on="cli" %}</p>
 
-It uses the same engine and the same [presets]({{ site.baseurl }}/presets/) as the app. For installing it, see
+<p class="lead">The <code>imgcompress</code> command compresses images in Terminal or in scripts, on macOS and Linux.</p>
+
+It uses the same engine, the same [presets]({{ site.baseurl }}/presets/) and the same options as the app. The Finder menu, the Services menu, the Before/After view and the automatic 24-hour undo are only in the Mac app. On the command line you can keep your own backups with `--backup-dir`. See [Undo and safety]({{ site.baseurl }}/undo/#undo-on-the-command-line). For installing it, see
 [Get started]({{ site.baseurl }}/getting-started/). Run `imgcompress --help` or `imgcompress <command> --help` any time.
 
 ## Examples
@@ -47,7 +49,7 @@ imgcompress options schema
 | `tools` | List the encoders and helpers in this build. `--check` exits with 3 if a required one is missing. `--json` prints JSON. |
 | `history` | `history stats` shows how many files are remembered. `history clear` forgets them. See [Privacy]({{ site.baseurl }}/privacy/). |
 | `undo RECORD` | Revert one finished job from its undo record. See [Undo]({{ site.baseurl }}/undo/). |
-| `open` | macOS only. Hand files to the app window. It takes the same options as `run`, plus `--start` to begin at once. |
+| `open` {% include pills.html on="mac" %} | macOS only. Hand files to the app window. It takes the same options as `run`, plus `--start` to begin at once. |
 | `install` | Link this program into a folder on your PATH (`--dir`, default `/usr/local/bin`). |
 | `uninstall` | Remove the link made by `install`. |
 | `licenses` | Print the license notices. See [Acknowledgements]({{ site.baseurl }}/acknowledgements/). |

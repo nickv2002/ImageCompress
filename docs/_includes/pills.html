@@ -1,0 +1,8 @@
+{%- comment -%}
+Platform pills. Usage: {% include pills.html on="mac" %}, on="cli", or on="both".
+Headings use classes instead ({: .mac}, {: .cli}, {: .both}) so their ids stay the same; see site.css.
+{%- endcomment -%}
+<span class="pills">
+{%- if include.on == "mac" or include.on == "both" %}<span class="pill mac" title="In the Mac app">macOS app</span>{% endif -%}
+{%- if include.on == "cli" or include.on == "both" %}<span class="pill cli" title="In the imgcompress command, on macOS and Linux">CLI</span>{% endif -%}
+</span>

@@ -6,9 +6,28 @@ permalink: /undo/
 
 # Undo and safety
 
-<p class="lead">ImageCompress keeps a copy of every original it replaces for a day, so you can put it back.</p>
+<p class="applies">Applies to {% include pills.html on="both" %}</p>
 
-## Undo
+<p class="lead">ImageCompress can put back every original it replaces: automatically for a day in the app, and with a backup folder you choose on the command line.</p>
+
+## In the app and on the command line
+
+| | macOS app | Command line |
+| --- | --- | --- |
+| How copies are kept | Automatically, on by default | Only when you add `--backup-dir DIR` |
+| Where | A temporary folder, `/private/tmp/ImageCompressUndo-<your user id>` | The folder `DIR` you chose |
+| How long | 24 hours | No expiry. You delete the copies yourself. |
+| How much space | Up to 1 GB, oldest first | Whatever the originals take in `DIR` |
+| How to undo | **Process → Recent Compressions & Undo…** (⌥⌘Z) | `imgcompress undo RECORD` |
+| If the file changed | Undo refuses and changes nothing | Undo refuses and changes nothing |
+
+Both check the compressed file against a fingerprint (a blake3 hash) taken when it was written.
+The rest of this page covers the app first, then the command line.
+
+## Undo in the app
+{: .mac}
+
+{% include shot.html src="undo-history" w=560 h=360 alt="The Recent Compressions window listing compressed photos, each with an Undo button" caption="Process → Recent Compressions & Undo… (⌥⌘Z) lists everything that can still be put back." %}
 
 Before the app replaces or removes a file, it keeps a copy of the original.
 
@@ -27,6 +46,25 @@ Undo puts the original back. If the run made a new file next to it, that new fil
 - the original's place is taken by another file.
 
 If you do not want undo copies, turn off **Keep undo copies of replaced originals** in Settings → General.
+
+## Undo on the command line
+{: .cli}
+
+Undo is opt-in on the command line. Add `--backup-dir DIR` and each original that the run replaces or removes is
+copied into `DIR` first. Nothing is removed from `DIR` later, so delete the copies when you no longer need them.
+
+The undo record is not saved as a file for you. With `--json`, each `finished` event carries it in an `undo` field.
+Save the event output, pick out the record of the file you want back, and give that file to `imgcompress undo`:
+
+```bash
+imgcompress run --json --backup-dir ~/ImageCompress-backups photos/holiday.png > run.jsonl
+jq -c 'select(.event == "finished") | .undo' run.jsonl > holiday-undo.json
+imgcompress undo holiday-undo.json
+```
+
+A record covers one file, so a run on many files gives you one record per file. `imgcompress undo` puts the original back
+from the backup folder. It refuses, changes nothing and exits with 1 when the compressed file was edited, moved or deleted
+since the run, or when the saved original is gone. See [Command line]({{ site.baseurl }}/cli/) for the other options.
 
 ## Files are replaced safely
 
@@ -67,6 +105,8 @@ You can find the same choice for the app in the Output and originals section of 
 
 ## What happens to originals
 
+{% include shot.html src="settings-general" w=820 h=592 alt="Settings, General pane: default preset, start compressing on add, keep undo copies, originals and destination" caption="Settings → General holds the app's choices for undo copies, originals and where results go." %}
+
 A preset or run chooses one of three:
 
 - **Keep**: the original stays. This is the default. When the format changes, you end up with both files.
@@ -79,6 +119,7 @@ Settings → General → **Ask before moving originals to the Trash**.
 Undo works for Trash and Delete runs too, as long as the undo copy is still there.
 
 ### Volumes without a Trash
+{: .mac}
 
 Some volumes have no Trash, usually network shares. If a run would move originals to the Trash on such a volume,
 the app says so before it starts. It offers to keep the originals next to the new files for that run instead, because
@@ -89,6 +130,6 @@ otherwise those files would fail.
 - The result is only kept if it is smaller than the original (the `--replace-if smaller` default).
 - A result is decoded again to check it before it replaces anything.
 - File dates are kept by default.
-- Use `--dry-run` on the command line to see what would happen. Nothing is changed. It also prints the output name of each file.
-- On the command line, `--backup-dir DIR` keeps copies of the originals and writes an undo record for each file.
-  `imgcompress undo RECORD` reverts one record.
+- Use `--dry-run` on the command line to see what would happen. Nothing is changed. It also prints the output name of each file. {% include pills.html on="cli" %}
+- `--backup-dir DIR` keeps copies of the originals and gives each finished result an undo record.
+  `imgcompress undo RECORD` reverts one record. See [Undo on the command line](#undo-on-the-command-line). {% include pills.html on="cli" %}

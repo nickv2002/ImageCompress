@@ -1,0 +1,52 @@
+[
+  {
+    "file": "landscape.jpg",
+    "title": "Landscape of Granada Province, Andalusia, Spain",
+    "author": "Jebulon",
+    "license": "CC0 1.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Landscape_of_Granada_Province,_Andalusia,_Spain.jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/44/Landscape_of_Granada_Province%2C_Andalusia%2C_Spain.jpg",
+    "width": 2400,
+    "height": 1623
+  },
+  {
+    "file": "portrait.jpg",
+    "title": "Portrait of a Carpathian Lynx",
+    "author": "Wilfredor",
+    "license": "CC0 1.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Portrait_of_a_Carpathian_Lynx.jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Portrait_of_a_Carpathian_Lynx.jpg",
+    "width": 2400,
+    "height": 1691
+  },
+  {
+    "file": "city.jpg",
+    "title": "Courtyard Zappeion Athens, Greece",
+    "author": "Jebulon",
+    "license": "CC0 1.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Courtyard_Zappeion_Athens,_Greece.jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/44/Courtyard_Zappeion_Athens%2C_Greece.jpg",
+    "width": 2400,
+    "height": 1675
+  },
+  {
+    "file": "texture.jpg",
+    "title": "Colorful Bell Peppers",
+    "author": "Gabriel Ghnassia",
+    "license": "CC0 1.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Colorful_Bell_Peppers_(Unsplash).jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/46/Colorful_Bell_Peppers_%28Unsplash%29.jpg",
+    "width": 2400,
+    "height": 1600
+  },
+  {
+    "file": "colour.jpg",
+    "title": "Colorful lollipops at a Rio de Janeiro market, Brazil",
+    "author": "Wilfredor",
+    "license": "CC0 1.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Colorful_lollipops_at_a_Rio_de_Janeiro_market,_Brazil.jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/37/Colorful_lollipops_at_a_Rio_de_Janeiro_market%2C_Brazil.jpg",
+    "width": 2400,
+    "height": 1600
+  }
+]

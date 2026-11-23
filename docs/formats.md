@@ -6,6 +6,8 @@ permalink: /formats/
 
 # Formats and quality
 
+<p class="applies">Applies to {% include pills.html on="both" %}</p>
+
 <p class="lead">Pick a format and how much loss you accept; ImageCompress works out the rest for each image.</p>
 
 ## Formats it can handle
@@ -34,6 +36,8 @@ and keeps the original if they look different. Files with text are handled more 
 cannot see text. Files over 1 MB are skipped by default. Both limits and the number precision can be changed.
 
 ## Format and Quality
+
+{% include shot.html src="format-menu" w=560 h=215 alt="The Format menu open in the toolbar: Preserve format, or convert to JPEG XL, AVIF, HEIC, WebP, JPEG or PNG" caption="The Format menu and the Quality control in the toolbar." %}
 
 The toolbar has two controls.
 
