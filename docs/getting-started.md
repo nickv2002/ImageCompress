@@ -106,9 +106,13 @@ Services). They are for images and folders:
 ## Command line tool
 {: .cli}
 
-The app includes the `imgcompress` command. To use it in Terminal, choose ImageCompress → **Install Command Line Tool…**.
-This links `/usr/local/bin/imgcompress` to the copy inside the app. The same item is in Settings → Tools.
-If you installed the app with Homebrew, the cask has already put `imgcompress` on your PATH.
+The app includes the `imgcompress` command. If you installed the app with Homebrew, the cask has already put
+`imgcompress` on your PATH and there is nothing to do.
+
+Otherwise choose ImageCompress → **Install Command Line Tool…** (also in Settings → Tools). It first checks whether
+`imgcompress` is already installed, in the Homebrew folders, `/usr/local/bin` or `~/.local/bin`, and if so tells you
+where and which version. If not, it links `/usr/local/bin/imgcompress` to the copy inside the app, asking for your
+administrator password when that folder needs it.
 
 If you prefer Homebrew, the command is also a formula. It works on macOS and Linux:
 
