@@ -403,7 +403,9 @@ struct ToolsSettings: View {
 }
 
 struct FinderSettingsView: View {
-    @State private var enabled = FIFinderSyncController.isExtensionEnabled
+    @State private var enabled = false
+    @State private var others: [URL] = []
+    @State private var working = false
     @State private var settings = FinderSettings.read()
 
     var body: some View {
@@ -413,8 +415,30 @@ struct FinderSettingsView: View {
                     Label(enabled ? "Enabled" : "Not enabled", systemImage: enabled ? "checkmark.circle.fill" : "exclamationmark.circle")
                         .foregroundStyle(enabled ? .green : .orange)
                 }
+                if enabled {
+                    LabeledContent("Menu missing in Finder?") {
+                        Button("Restart Finder") { FinderExtension.restartFinder() }
+                    }
+                } else {
+                    LabeledContent("Finder menu") {
+                        Button(working ? "Turning On…" : "Turn On") {
+                            working = true
+                            Task { await FinderExtension.enable(); await refresh(); working = false }
+                        }.disabled(working)
+                    }
+                }
+                if !others.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label("Other copies of ImageCompress can stop Finder from showing the menu. Delete them, then restart Finder:",
+                              systemImage: "exclamationmark.triangle").foregroundStyle(.orange)
+                        ForEach(others, id: \.self) { url in
+                            Button(url.path) { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+                                .buttonStyle(.link).font(.caption)
+                        }
+                    }
+                }
                 Button("Open Extensions Settings…") { FIFinderSyncController.showExtensionManagementInterface() }
-                Text("Enable “ImageCompress Finder Menu” under Finder Extensions. Managed Macs can block extensions silently.")
+                Text("Turn On does the same as the switch in System Settings → General → Login Items & Extensions, which some versions of macOS 15 do not show. Finder restarts briefly to load the menu. Managed Macs can block extensions silently.")
                     .font(.caption).foregroundStyle(.secondary)
             } header: { Text("Extension") } footer: {
                 Text("The Finder menu runs the presets you mark “Show in Finder menu” in Presets.")
@@ -430,9 +454,16 @@ struct FinderSettingsView: View {
         }
         .formStyle(.grouped)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            enabled = FIFinderSyncController.isExtensionEnabled
+            Task { await refresh() }
         }
+        .task { await refresh() }
     }
 
     private func save() { try? settings.write() }
+
+    private func refresh() async {
+        let s = await FinderExtension.status()
+        enabled = s.enabled
+        others = s.otherCopies
+    }
 }

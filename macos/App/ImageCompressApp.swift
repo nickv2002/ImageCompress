@@ -25,6 +25,8 @@ import UserNotifications
         PresetStore.shared.ensureFile()   // the Finder menu reads it, and it is there to open and edit
         NSApp.servicesProvider = services
         NSUpdateDynamicServices()
+        // After the main window is up, offer (once) to turn on the Finder menu, which macOS leaves off.
+        Task { try? await Task.sleep(for: .seconds(1)); await FinderExtension.offerOnce() }
     }
 
     func applicationWillTerminate(_ notification: Notification) { UndoStore.shared.flush() }

@@ -56,9 +56,17 @@ and make your own presets.
 
 The Finder menu is a Finder extension. macOS keeps it off until you turn it on.
 
-1. Open ImageCompress → Settings → Finder and click **Open Extensions Settings…**.
-   Or open System Settings → General → Login Items & Extensions yourself and look under Extensions for Finder.
-2. Enable **ImageCompress Finder Menu**.
+- **When you first open ImageCompress**, it offers to turn the menu on. Click **Turn On**. Finder restarts
+  for a moment to load it.
+- **Later**, open ImageCompress → Settings → Finder. The pane shows whether the menu is on, and has a
+  **Turn On** button while it is off.
+- **In System Settings**, the switch is under General → Login Items & Extensions, in the Extensions list.
+  Some versions of macOS 15 Sequoia do not show a switch for Finder menus at all; use one of the other ways.
+- **In Terminal**, this does the same and restarts Finder:
+
+  ```bash
+  pluginkit -e use -i com.nickvance.imagecompress.FinderMenu && killall Finder
+  ```
 
 Now right-click images or folders in Finder and choose the **ImageCompress** submenu. Click a preset to compress
 with it right away.
@@ -71,10 +79,19 @@ The extension also provides a toolbar button. To add it to Finder's toolbar, cho
 
 ### If the Finder menu does not appear
 
-- Quit Finder so it reloads its extensions: run `killall Finder` in Terminal. Finder reopens by itself.
-- Keep only one copy of ImageCompress.app on your Mac. Old copies in Downloads or elsewhere can make Finder ignore the extension. Delete the extra copies, then run `killall Finder` again.
-- Check that the extension is switched on in System Settings. The Settings → Finder pane in ImageCompress shows its status.
-- On a Mac managed by your employer or school, extensions can be blocked without any message.
+Open ImageCompress → Settings → Finder first. It checks the two usual causes:
+
+- **The extension is off.** The status says "Not enabled". Click **Turn On**.
+- **There is more than one copy of ImageCompress.app.** Old copies in Downloads, on another disk, or left by a
+  build can make Finder ignore the menu without any message. The pane lists each one; click a path to show it in
+  Finder. Delete the extra copies, then click **Restart Finder**.
+
+If the status says "Enabled" and no other copies are listed, click **Restart Finder**, or run `killall Finder` in
+Terminal. Finder reopens by itself. On a Mac managed by your employer or school, extensions can be blocked without
+any message.
+
+To check from Terminal, `pluginkit -m -A -D -v -i com.nickvance.imagecompress.FinderMenu` lists every copy of the
+extension macOS knows about. A `+` at the start of a line means it is on.
 
 ## Services menu
 {: .mac}

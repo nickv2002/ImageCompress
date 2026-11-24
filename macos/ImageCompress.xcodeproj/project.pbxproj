@@ -53,6 +53,7 @@
 		D7B98ACA80A6F2F9AB816992 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796EAE1577123B8B9D80590B /* AppGroup.swift */; };
 		D93334FC44BDB4EEE4D3E54F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE2BBA584400B5CFDC08F4A5 /* SettingsView.swift */; };
 		DA4030310D4FF0AC2EB78345 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37FD4CF5F1BC16426E4F8458 /* AppSettings.swift */; };
+		DE3229F76F28A20A8179E7F4 /* FinderExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3FE13F3F7DC2E9443393E4 /* FinderExtension.swift */; };
 		E5C9DD14F13A3DFAB390122B /* UndoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B0025EDE2F70045D36D14D /* UndoStore.swift */; };
 		E8368012D0F332010594CDD5 /* ImageCompressApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78169E895FE9E7F636248D97 /* ImageCompressApp.swift */; };
 		EF2C8762908491F7A12E7BAA /* Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1339839E9370E18BC792EAF4 /* Updater.swift */; };
@@ -119,6 +120,7 @@
 		E5262C8A68FA1B92E54D76E5 /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
 		EBBB65E7EB127F4D2146D6D2 /* EngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineTests.swift; sourceTree = "<group>"; };
 		EE2BBA584400B5CFDC08F4A5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		EE3FE13F3F7DC2E9443393E4 /* FinderExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderExtension.swift; sourceTree = "<group>"; };
 		FCFA39EF5515E9C44DAEA4F9 /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -159,6 +161,7 @@
 				66F3611155E68C63C32EC640 /* Assets.xcassets */,
 				BDD3C5F72F44984F2D607AD4 /* CLIInstaller.swift */,
 				44CD64AAD4A71F40B9ABA97C /* Feedback.swift */,
+				EE3FE13F3F7DC2E9443393E4 /* FinderExtension.swift */,
 				03287BC0BDD769337DB539C9 /* ImageCompress.entitlements */,
 				78169E895FE9E7F636248D97 /* ImageCompressApp.swift */,
 				D56C6D446720EE156B441ABB /* Info.plist */,
@@ -397,6 +400,7 @@
 				AB6934173005CF354C429B53 /* ContentView.swift in Sources */,
 				A4DBF2932CF4179E37D13A5B /* EngineRunner.swift in Sources */,
 				2B27BED03C4837AEC084790D /* Feedback.swift in Sources */,
+				DE3229F76F28A20A8179E7F4 /* FinderExtension.swift in Sources */,
 				E8368012D0F332010594CDD5 /* ImageCompressApp.swift in Sources */,
 				78F990E732525503C755198C /* JSONValue.swift in Sources */,
 				878B98CD271B50449DA868EB /* JobEvent.swift in Sources */,
