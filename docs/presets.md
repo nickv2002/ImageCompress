@@ -18,7 +18,10 @@ There are 21 built-in presets: every output format (Preserve, JPEG XL, AVIF, HEI
 quality (Lossless, Visually lossless, Smaller). Their names look like "JPEG XL · Smaller" and their ids like
 `jxl-smaller`. See [Formats and quality]({{ site.baseurl }}/formats/) for what they do.
 
-None of them touches your originals beyond replacing the file in place.
+With the default settings, every built-in preset replaces the file in place, and only when the result is smaller.
+The app keeps each replaced original for 24 hours so you can [undo it]({{ site.baseurl }}/undo/); on the command line,
+add `--backup-dir`. To leave your originals as they are, make your own preset that writes the result next to the
+original or into another folder.
 
 ## Favorites and the toolbar
 {: .mac}

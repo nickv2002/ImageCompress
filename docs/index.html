@@ -36,6 +36,25 @@ description: Smaller images that look the same. Compress and convert PNG, JPEG, 
     <a href="{{ site.baseurl }}/formats/">Which one should I use?</a></p>
 </section>
 
+<section class="section" id="presets">
+  <h2>Make your own presets</h2>
+  <p class="sub">Twenty-one presets are built in, one for every format and quality. When you want something else,
+    save the exact settings you use as your own preset and run it with one click.</p>
+  <div class="grid">
+    <div class="card">{% include pills.html on="both" %}<h3>Any combination</h3><p>A preset can hold any option: format,
+      quality or a target score, a maximum size in pixels, what metadata to keep, where the results go, and every
+      encoder setting.</p></div>
+    <div class="card">{% include pills.html on="both" %}<h3>Everywhere you work</h3><p>Star a preset to put it in the
+      toolbar, show it in the Finder right-click menu, or run it with <code>imgcompress run --preset</code>.</p></div>
+    <div class="card">{% include pills.html on="both" %}<h3>Easy to share</h3><p>Each preset is a small JSON file. Edit it
+      by hand, send it to a colleague, or keep it next to a project's build scripts.</p></div>
+  </div>
+  <div class="gallery" style="grid-template-columns: minmax(0, 820px); justify-content: center">
+    {% include shot.html src="settings-presets" w=820 h=592 alt="Settings, Presets pane: a list of presets with stars, and the selected preset's options" caption="Settings → Presets: star favorites, choose which show in Finder, and edit any option." %}
+  </div>
+  <p class="sub" style="margin-top:16px"><a href="{{ site.baseurl }}/presets/">More about presets</a></p>
+</section>
+
 <section class="section" id="mac-app">
   <h2>Built like a Mac app</h2>
   <p class="sub">Native SwiftUI, with the conventions you expect. Each feature is marked
@@ -57,8 +76,6 @@ description: Smaller images that look the same. Compress and convert PNG, JPEG, 
       everywhere a JPEG does. <a href="{{ site.baseurl }}/formats/#jpeg-encoders">JPEG encoders</a></p></div>
     <div class="card">{% include pills.html on="both" %}<h3>Your metadata, your call</h3><p>Keep the colour profile, keep everything, or keep EXIF without
       GPS location. Dates are preserved.</p></div>
-    <div class="card">{% include pills.html on="both" %}<h3>Presets you can share</h3><p>Each preset is a small JSON file. Edit it by hand, send it to a
-      friend, or use it from scripts.</p></div>
     <div class="card">{% include pills.html on="both" %}<h3>Everything built in</h3><p>Every encoder is part of the app: jpegli (the default for JPEG), mozjpeg, oxipng,
       libimagequant, libjxl, libavif, libwebp and gifsicle. No Homebrew or Python needed.</p></div>
   </div>
