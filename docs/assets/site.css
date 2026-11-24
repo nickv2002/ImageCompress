@@ -77,9 +77,6 @@ pre code { background: none; padding: 0; }
 /* landing page */
 .hero { max-width: 1080px; margin: 0 auto; padding: 48px 16px 24px; text-align: center; }
 .hero img.icon { width: 128px; height: 128px; }
-.hero .badge { display: table; margin: 18px auto 0; padding: 4px 12px; border-radius: 999px; font-size: 14px; font-weight: 600;
-  color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
-.hero .badge:hover { text-decoration: none; background: color-mix(in srgb, var(--accent) 16%, transparent); }
 .hero h1 { font-size: clamp(36px, 6vw, 60px); line-height: 1.05; letter-spacing: -0.03em; margin: 16px 0 12px; }
 .hero p.tag { font-size: clamp(18px, 2.4vw, 22px); color: var(--muted); max-width: 680px; margin: 0 auto 28px; }
 .cta { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
