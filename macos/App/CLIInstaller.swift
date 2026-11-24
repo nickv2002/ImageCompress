@@ -37,29 +37,51 @@ enum CLIInstaller {
 
     static func run() async {
         let found = await existing()
+        guard !found.isEmpty else { return report(await install()) }
         let alert = NSAlert()
         alert.messageText = "Command Line Tool"
-        if let f = found.first {
-            alert.informativeText = describe(found) + "\n\nOpen Terminal and run imgcompress --help to get started."
-            if !found.contains(where: \.isThisApp) && f.path != dest {
-                alert.addButton(withTitle: "OK")
-                alert.addButton(withTitle: "Also Link This App’s Copy…")
-                if alert.runModal() == .alertSecondButtonReturn { report(await install()) }
-                return
-            }
-            alert.runModal()
-            return
-        }
-        report(await install())
+        alert.informativeText = found.count == 1
+            ? "imgcompress is already installed:"
+            : "imgcompress is already installed in more than one place. Terminal uses the first one on your PATH:"
+        alert.accessoryView = details(found)
+        let offerLink = !found.contains(where: \.isThisApp) && !found.contains { $0.path == dest }
+        alert.addButton(withTitle: "OK")
+        if offerLink { alert.addButton(withTitle: "Also Link This App’s Copy…") }
+        if alert.runModal() == .alertSecondButtonReturn { report(await install()) }
     }
 
-    private static func describe(_ found: [Found]) -> String {
-        let lines = found.map { f in
-            let how = f.isThisApp ? "this app’s copy" : (f.path.hasPrefix("/opt/homebrew") || isHomebrew(f.path) ? "from Homebrew" : "another copy")
-            return "\(f.path): \(f.version), \(how)"
+    /// Each install as its path in monospace, then its version and where it comes from.
+    private static func details(_ found: [Found]) -> NSView {
+        let mono = NSFont.monospacedSystemFont(ofSize: NSFont.smallSystemFontSize, weight: .regular)
+        let small = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+        let path = NSMutableParagraphStyle()
+        path.lineBreakMode = .byCharWrapping
+        path.alignment = .left
+        let spaced = NSMutableParagraphStyle()
+        spaced.alignment = .left
+        spaced.paragraphSpacing = 8
+        let text = NSMutableAttributedString()
+        func add(_ s: String, _ font: NSFont, _ style: NSParagraphStyle, _ color: NSColor = .labelColor) {
+            text.append(NSAttributedString(string: s, attributes: [.font: font, .paragraphStyle: style, .foregroundColor: color]))
         }
-        let head = found.count == 1 ? "imgcompress is already installed:" : "imgcompress is already installed in more than one place. The first one on your PATH is used:"
-        return ([head] + lines).joined(separator: "\n")
+        for f in found {
+            add(f.path + "\n", mono, path)
+            add("Version \(f.version) · \(origin(f))\n", small, spaced, .secondaryLabelColor)
+        }
+        add("To get started, run this in Terminal:\n", small, spaced)
+        add("imgcompress --help", mono, path)
+        let label = NSTextField(labelWithAttributedString: text)
+        label.isSelectable = true
+        label.maximumNumberOfLines = 0
+        label.preferredMaxLayoutWidth = 240
+        label.frame.size = label.fittingSize
+        return label
+    }
+
+    private static func origin(_ f: Found) -> String {
+        if f.isThisApp { return "runs the copy inside ImageCompress.app" }
+        if isHomebrew(f.path) { return "installed by Homebrew" }
+        return "a separate copy"
     }
 
     private static func isHomebrew(_ path: String) -> Bool {
