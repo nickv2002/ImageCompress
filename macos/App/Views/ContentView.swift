@@ -294,10 +294,11 @@ struct JobRow: View {
             let tip: String = blocked.map { "Can't undo: \($0.lowercased())" } ?? "Undo: put the original back"
             Button { JobStore.shared.undo(item.id) } label: { Image(systemName: "arrow.uturn.backward.circle") }
                 .buttonStyle(.borderless).disabled(blocked != nil).help(tip)
+                .focusable(false)   // never the target of Space or Return: undo only on a deliberate click
         }
         if item.status == .done {
             Button { NSWorkspace.shared.activateFileViewerSelecting([item.revealURL]) } label: { Image(systemName: "magnifyingglass.circle") }
-                .buttonStyle(.borderless).help("Reveal in Finder")
+                .buttonStyle(.borderless).help("Reveal in Finder").focusable(false)
         }
     }
 

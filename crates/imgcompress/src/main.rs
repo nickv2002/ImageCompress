@@ -44,6 +44,13 @@ enum Cmd {
     Undo { record: PathBuf },
     /// Encode one file with the effective options and report the size
     Preview(PreviewArgs),
+    /// How close a compressed image looks to the original (SSIMULACRA2: 100 = identical, 88 and up = visually lossless)
+    Score {
+        original: PathBuf,
+        compressed: PathBuf,
+        #[arg(long)]
+        json: bool,
+    },
     /// Manage presets (one JSON file each in the Presets folder)
     Presets { #[command(subcommand)] sub: PresetCmd },
     /// Options model
@@ -517,6 +524,15 @@ fn dispatch(cli: Cli) -> R {
         Cmd::Run(a) => cmd_run(a),
         Cmd::Open(a) => cmd_open(a),
         Cmd::Preview(a) => cmd_preview(a),
+        Cmd::Score { original, compressed, json } => {
+            let score = compress_core::quality_search::score_files(&original, &compressed).map_err(failed)?;
+            if json {
+                println!("{}", json!({"original": original, "compressed": compressed, "score": (score * 10.0).round() / 10.0}));
+            } else {
+                println!("{score:.1}");
+            }
+            Ok(0)
+        }
         Cmd::Undo { record } => {
             let u: compress_core::undo::Undo = serde_json::from_str(&std::fs::read_to_string(&record).map_err(failed)?).map_err(failed)?;
             compress_core::undo::undo(&u).map_err(failed)?;

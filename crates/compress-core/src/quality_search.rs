@@ -69,6 +69,26 @@ impl Scorer {
     }
 }
 
+/// SSIMULACRA2 of `cand` against `src`: 100 means identical; about 90 is hard to tell apart even up close,
+/// 70 shows small differences on close inspection, 50 and below is clearly different.
+pub fn score_pair(src: &Rgba, cand: &Rgba) -> CResult<f64> {
+    if (src.w, src.h) != (cand.w, cand.h) {
+        return Err(format!("the images are different sizes ({}×{} and {}×{})", src.w, src.h, cand.w, cand.h));
+    }
+    Scorer::new(src)?.score(cand)
+}
+
+/// Decodes two image files (EXIF orientation applied) and scores the second against the first.
+pub fn score_files(src: &std::path::Path, cand: &std::path::Path) -> CResult<f64> {
+    let load = |p: &std::path::Path| -> CResult<Rgba> {
+        let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("").to_ascii_lowercase();
+        let fmt = convert::Fmt::from_ext(&ext).ok_or_else(|| format!("{}: not a supported image", p.display()))?;
+        let data = std::fs::read(p).map_err(|e| format!("{}: {e}", p.display()))?;
+        Ok(convert::decode_any(&data, fmt).map_err(|e| format!("{}: {e}", p.display()))?.img)
+    };
+    score_pair(&load(src)?, &load(cand)?)
+}
+
 /// GRID x GRID native-resolution tiles sampled across the image, stitched into one small image.
 fn mosaic(im: &Rgba) -> Rgba {
     let tw = TILE.min(im.w);
@@ -292,5 +312,14 @@ mod tests {
         let dec = convert::decode_any(&b, Fmt::Jpeg).unwrap();
         let s = Scorer::new(&d.img).unwrap().score(&dec.img).unwrap();
         assert!(s >= 70.0, "full-res score {s}");
+    }
+
+    #[test]
+    fn score_pair_identical_and_mismatched() {
+        let px: Vec<u8> = (0..64 * 64).flat_map(|i| [(i % 251) as u8, (i * 7 % 256) as u8, (i / 64 * 4) as u8, 255]).collect();
+        let a = Rgba { w: 64, h: 64, px };
+        assert!(score_pair(&a, &a.clone()).unwrap() > 99.0);
+        let b = Rgba { w: 32, h: 64, px: a.px[..32 * 64 * 4].to_vec() };
+        assert!(score_pair(&a, &b).unwrap_err().contains("different sizes"));
     }
 }

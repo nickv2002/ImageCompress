@@ -44,6 +44,7 @@ imgcompress options schema
 | --- | --- |
 | `run` | Compress or convert files and folders. |
 | `preview` | Encode one file with the chosen options, write it to `--out` and report the size. It leaves the input alone. |
+| `score ORIGINAL COMPRESSED` | How close the compressed image looks to the original, as a SSIMULACRA2 score: 100 is identical, 88 and up is visually lossless, about 70 shows small differences up close. `--json` prints JSON. |
 | `presets` | List, show, export, import, delete and reset presets. See [Presets]({{ site.baseurl }}/presets/). |
 | `options schema` | Print every option as a JSON Schema. |
 | `tools` | List the encoders and helpers in this build. `--check` exits with 3 if a required one is missing. `--json` prints JSON. |

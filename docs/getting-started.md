@@ -42,7 +42,10 @@ The app updates itself. See [Updates](#updates).
 By default the app replaces each file with the smaller version. It keeps a copy of every original so you can
 [undo]({{ site.baseurl }}/undo/). A result is only kept if it is smaller than the original.
 
-Select a finished image and press Space or ⌘Y to compare Before and After.
+Select a finished image and press Space or ⌘Y to compare Before and After. The comparison opens at once on the
+original and the result, and rates how different they look, from *Visually lossless* to *Large differences*.
+Use the slider, put the two side by side, or show only the difference. Zoom up to 8× (pinch, ⌘-scroll, or ⌘= and ⌘-)
+to see single pixels, and drag the small map at the top left to move around. Space closes it again.
 
 Each Format and Quality pair is a [preset]({{ site.baseurl }}/presets/). Settings (⌘,) lets you change the defaults
 and make your own presets.
