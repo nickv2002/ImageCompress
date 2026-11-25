@@ -191,7 +191,8 @@ final class JobStore {
     /// anything left queued, e.g. after cancelling the Trash confirmation). Files added mid-run join the next run.
     /// Earlier results that can still be undone are put back to their originals first (see `prepareAgain`).
     func ingest(_ urls: [URL]) {
-        prepareAgain(urls) { [self] urls in
+        // A dragged screenshot thumbnail first moves to where screenshots are saved.
+        prepareAgain(urls.map { ScreenshotDrop.adopt($0) }) { [self] urls in
             add(urls)
             guard settings.autoProcess else { return }
             if isRunning { runAgain = hasQueued } else { process() }

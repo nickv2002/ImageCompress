@@ -21,7 +21,7 @@ struct ContentView: View {
             footer
         }
         .frame(minWidth: 800, minHeight: 380)
-        .dropDestination(for: URL.self) { urls, _ in withAnimation(.snappy) { store.ingest(urls) }; return true } isTargeted: { dropTargeted = $0 }
+        .overlay { FileDropTarget(isTargeted: $dropTargeted) { urls in withAnimation(.snappy) { store.ingest(urls) } } }
         .animation(.snappy, value: dropTargeted)
         .toolbar(id: "main") { toolbarItems }
         .inspector(isPresented: $showInspector) { inspector.inspectorColumnWidth(min: 300, ideal: 380, max: 520) }

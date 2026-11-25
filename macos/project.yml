@@ -160,6 +160,7 @@ targets:
       - path: App/UndoStore.swift
       - path: App/JobStore.swift
       - path: App/Feedback.swift
+      - path: App/ScreenshotDrop.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.nickvance.imagecompress.tests

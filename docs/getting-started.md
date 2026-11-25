@@ -42,6 +42,10 @@ The app updates itself. See [Updates](#updates).
 By default the app replaces each file with the smaller version. It keeps a copy of every original so you can
 [undo]({{ site.baseurl }}/undo/). A result is only kept if it is smaller than the original.
 
+Just took a screenshot? Drag the small thumbnail that appears in the corner of the screen straight onto the
+ImageCompress window or its Dock icon. The compressed screenshot is saved where your screenshots normally go
+(the Desktop, unless you changed it in the Screenshot app's Options menu).
+
 To try other settings on images you already compressed, change the Format or Quality and add them again. You can also
 right-click them and choose **Compress Again from Original**. For 24 hours this starts from the kept original, not
 from the earlier result. See [Changing settings and compressing again]({{ site.baseurl }}/undo/#changing-settings-and-compressing-again).
