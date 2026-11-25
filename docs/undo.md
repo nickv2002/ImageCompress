@@ -58,9 +58,9 @@ There are three ways to do it:
 - **Add the file again.** Drop it on the window, use Add Files…, Open With or the Finder menu. You can add either
   the result (`photo.avif`) or the original, if it is still there (`photo.png`).
 - **Right-click finished images** and choose **Compress Again from Original**.
-- **Click Compress Again** in the bar that appears above the list when you change the format, quality, preset or
-  options while finished images can still be redone. The bar counts only those images. Click × to hide it. It comes back
-  when you change the settings again or the next images finish. Nothing is compressed again unless you ask.
+- **Click Compress Again** in the small bar at the bottom of the list. It appears when you change the format, quality,
+  preset or options while finished images can still be redone, and counts only those images. Click × to hide it. It
+  comes back when you change the settings again or the next images finish. Nothing is compressed again unless you ask.
 
 In each case ImageCompress first does what Undo does: it puts the original back, and an earlier result with a new name
 goes to the Trash. Then it compresses the original with the current settings. The row shows the new result. Its

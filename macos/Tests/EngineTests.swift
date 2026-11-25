@@ -547,7 +547,8 @@ struct UndoStoreTests {
         undo.add(e)
         let urls = await store.restoreOriginals([(file, .fromOriginal(e, source: file.path))], executable: cliBinary)
         #expect(urls.isEmpty)
-        #expect(store.lastError?.contains("p.png") == true)
+        // a notice, carried into the next run (an error would be cleared when the other files start)
+        #expect(store.notice?.contains("p.png") == true)
         #expect(try Data(contentsOf: file) == Data("12345".utf8))
         #expect(FileManager.default.fileExists(atPath: backup.path))
     }

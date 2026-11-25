@@ -61,9 +61,9 @@ final class JobStore {
     let undoStore: UndoStore
     /// A notice that must survive the start of the next run (it is about the files that run compresses).
     private var carryNotice: String?
-    /// The settings that count as "unchanged" for the Compress Again banner: those of the last run (or the
-    /// window's own ones once a Finder hand-off is over), or the ones showing when the banner was dismissed.
-    private var offerBaseline: Options?
+    /// The settings showing when the Compress Again banner was dismissed (or when a Finder hand-off gave the
+    /// window its own settings back): the banner stays hidden until they change or another run finishes.
+    private var offerDismissedAt: Options?
     var progressDone = 0
     var progressTotal = 0
     private var runner: EngineRunner?
@@ -233,7 +233,7 @@ final class JobStore {
                 let start = job.start == true
                 prepareAgain(job.paths.map { URL(fileURLWithPath: $0) }) { [self] urls in
                     add(urls)
-                    if start { if isRunning { runAgain = true } else { process() } }
+                    if start { if isRunning { runAgain = true } else if hasQueued { process() } else { restoreAfterHandoff() } }
                 }
             } else {
                 files.append(u)
@@ -248,7 +248,7 @@ final class JobStore {
         presetName = r.presetName; overrides = r.overrides
         if let c = r.choice { defaults.set(c, forKey: Self.choiceKey) }
         if let l = r.legacy { defaults.set(l, forKey: Self.legacyChoiceKey) }
-        offerBaseline = effectiveOptions   // the window's own settings coming back is no change to point out
+        offerDismissedAt = effectiveOptions   // the window's own settings coming back is no change to point out
     }
 
     func process() {
@@ -263,7 +263,7 @@ final class JobStore {
         case .proceed: break
         }
         let targetIDs = Set(targets.map(\.id))
-        runOptions = effectiveOptions; offerBaseline = runOptions
+        runOptions = effectiveOptions
         let runner = EngineRunner(executable: EngineRunner.bundledExecutable())
         self.runner = runner
         isRunning = true; totals = nil; lastError = nil; notice = carryNotice; carryNotice = nil; stopRequested = false; runOutputs = []; runUndoable = []; undoneInRun = 0
@@ -300,6 +300,7 @@ final class JobStore {
             isRunning = false
             self.runner = nil
             // Inspector changes stay for the next drop (every drop is a run now); only a Finder hand-off is undone.
+            offerDismissedAt = nil   // new results: a dismissed offer may show again
             if !(runAgain && !stopRequested) { restoreAfterHandoff() }
             undoStore.prune()
             registerRunUndo(runUndoable)
@@ -483,8 +484,11 @@ final class JobStore {
             resetRows(undone: undone, source: source)
             out.append(URL(fileURLWithPath: source))
         }
+        // A notice, not lastError: the run that starts next for the other files would clear an error.
         if !failures.isEmpty {
-            lastError = "Could not put the original back, so nothing was compressed or changed for " + failures.joined(separator: "; ")
+            let say = "Could not put the original back, so nothing was compressed or changed for " + failures.joined(separator: "; ")
+            notice = [carryNotice, say].compactMap { $0 }.joined(separator: " ")
+            carryNotice = notice
         }
         return out
     }
@@ -508,7 +512,7 @@ final class JobStore {
         let what = one ? "“\(names[0])” is" : "\(names.count) images are"
         let why = !settings.keepUndo ? "Undo copies are turned off, so no original was kept"
             : one ? "its original copy is no longer available" : "their original copies are no longer available"
-        notice = "\(what) compressed again as it is now: \(why)."
+        notice = [carryNotice, "\(what) compressed again as it is now: \(why)."].compactMap { $0 }.joined(separator: " ")
         carryNotice = notice
     }
 
@@ -537,11 +541,11 @@ final class JobStore {
     }
 
     /// Rows the settings banner offers to compress again: finished with other settings than the current ones,
-    /// and still undoable. Empty during a run, until the settings change, and after the banner was dismissed.
+    /// and still undoable. Empty during a run, and after the banner was dismissed until the settings change.
     var redoOffer: [UUID] {
-        guard !isRunning, let base = offerBaseline else { return [] }
+        guard !isRunning, items.contains(where: { $0.madeWith != nil }) else { return [] }
         let now = effectiveOptions
-        guard now != base else { return [] }
+        guard now != offerDismissedAt else { return [] }
         let live = Set(undoStore.entries.map(\.id))
         return items.filter { r in
             guard let m = r.madeWith, m != now, !r.restored, case .fromOriginal = againPlan(for: r, live: live) else { return false }
@@ -550,7 +554,7 @@ final class JobStore {
     }
 
     /// Hides the banner until the settings change again or another run finishes.
-    func dismissRedoOffer() { offerBaseline = effectiveOptions }
+    func dismissRedoOffer() { offerDismissedAt = effectiveOptions }
 
     func addViaPanel() {
         let panel = NSOpenPanel()

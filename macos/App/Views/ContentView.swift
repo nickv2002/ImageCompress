@@ -16,7 +16,7 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if store.items.isEmpty { DropZone(targeted: dropTargeted) } else { jobList.overlay(alignment: .bottom) { redoBanner } }
+            if store.items.isEmpty { DropZone(targeted: dropTargeted) } else { jobList.safeAreaInset(edge: .bottom, spacing: 0) { redoBanner } }
             Divider()
             footer
         }
@@ -142,9 +142,9 @@ struct ContentView: View {
 
     /// A quiet offer after the settings changed: compress the finished images again from their originals.
     /// Pinned above the footer, never modal, and gone after a dismiss until the settings change again.
-    @ViewBuilder private var redoBanner: some View {
+    private var redoBanner: some View {
         let ids = store.redoOffer
-        if !ids.isEmpty {
+        return VStack(spacing: 0) { if !ids.isEmpty {
             HStack(spacing: 10) {
                 Image(systemName: "arrow.triangle.2.circlepath").foregroundStyle(.secondary).accessibilityHidden(true)
                 Text(ids.count == 1 ? "Settings changed. Compress this image again from its original?"
@@ -167,7 +167,9 @@ struct ContentView: View {
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Settings changed")
-        }
+        } }
+        // the settings change from the toolbar, outside any animation: slide in and out here
+        .animation(.snappy, value: ids.isEmpty)
     }
 
     private func compareSelection() {
