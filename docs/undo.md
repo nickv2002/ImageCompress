@@ -62,6 +62,8 @@ There are three ways to do it:
   preset or options while finished images can still be redone, and counts only those images. Click × to hide it. It
   comes back when you change the settings again or the next images finish. Nothing is compressed again unless you ask.
 
+{% include shot.html src="compress-again" w=960 h=512 alt="The main window with six finished images and a bar at the bottom: Settings changed. Compress these 6 images again from their originals? with a Compress Again button and a close button" caption="After a settings change, the bar offers to compress the finished images again from their originals." %}
+
 In each case ImageCompress first does what Undo does: it puts the original back, and an earlier result with a new name
 goes to the Trash. Then it compresses the original with the current settings. The row shows the new result. Its
 savings are measured against the original. To keep the earlier result as well, rename or move it first. After that
