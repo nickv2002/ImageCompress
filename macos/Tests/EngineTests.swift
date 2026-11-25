@@ -439,6 +439,119 @@ struct UndoStoreTests {
         #expect(second.entries.map(\.name) == ["k"])
     }
 
+    // MARK: Adding a file again: which undo entry it maps to
+
+    private func info(output: String, restore: [(String, String)]) -> UndoInfo {
+        UndoInfo(output: output, outSize: 5, outHash: "h", restore: restore.map { .init(path: $0.0, backup: $0.1) })
+    }
+    private func keyed(_ es: [UndoEntry]) -> [UndoStore.Keyed] { es.map { .init(entry: $0, output: $0.undo.output, source: $0.sourcePath) } }
+
+    @Test func inPlaceResultMapsToItsEntry() {
+        let e = UndoEntry(name: "p.png", inBytes: 10, outBytes: 5, undo: info(output: "/x/p.png", restore: [("/x/p.png", "/b/1/p.png")]), source: "/x/p.png")
+        #expect(UndoStore.plan(forKey: "/x/p.png", in: keyed([e]), isLive: { _ in true }) == .fromOriginal(e, source: "/x/p.png"))
+        #expect(UndoStore.plan(forKey: "/x/other.png", in: keyed([e]), isLive: { _ in true }) == .asNew)
+        // blocked (edited, moved, original gone): treated as a new file
+        #expect(UndoStore.plan(forKey: "/x/p.png", in: keyed([e]), isLive: { _ in false }) == .asNew)
+    }
+
+    /// PNG → AVIF with originals kept: nothing is restored, yet photo.avif maps back to photo.png, and so
+    /// does photo.png itself (its result is put away first, so the new one doesn't clash or pile up).
+    @Test func renamedResultMapsBackToTheKeptOriginal() {
+        let e = UndoEntry(name: "photo.png", inBytes: 10, outBytes: 5, undo: info(output: "/x/photo.avif", restore: []), source: "/x/photo.png")
+        #expect(UndoStore.plan(forKey: "/x/photo.avif", in: keyed([e]), isLive: { _ in true }) == .fromOriginal(e, source: "/x/photo.png"))
+        #expect(UndoStore.plan(forKey: "/x/photo.png", in: keyed([e]), isLive: { _ in true }) == .fromOriginal(e, source: "/x/photo.png"))
+        // following a chain back only looks at what a job wrote
+        #expect(UndoStore.plan(forKey: "/x/photo.png", in: keyed([e]), outputsOnly: true, isLive: { _ in true }) == .asNew)
+    }
+
+    /// PNG → AVIF with originals trashed, recorded before entries kept their source: the restore target is the original.
+    @Test func olderEntriesFindTheirSourceInTheRestoreList() {
+        let trashed = UndoEntry(name: "photo.png", inBytes: 10, outBytes: 5, undo: info(output: "/x/photo.avif", restore: [("/x/photo.png", "/b/1/photo.png")]))
+        #expect(trashed.sourcePath == "/x/photo.png")
+        #expect(UndoStore.plan(forKey: "/x/photo.avif", in: keyed([trashed]), isLive: { _ in true }) == .fromOriginal(trashed, source: "/x/photo.png"))
+        let inPlace = UndoEntry(name: "p.png", inBytes: 10, outBytes: 5, undo: info(output: "/x/p.png", restore: [("/x/p.png", "/b/2/p.png")]))
+        #expect(inPlace.sourcePath == "/x/p.png")
+        // an index written by an older version (no "source") still loads
+        let old = #"{"id":"\#(UUID().uuidString)","date":"2026-01-01T00:00:00Z","name":"p.png","inBytes":10,"outBytes":5,"undo":{"output":"/x/p.png","out_size":5,"out_hash":"h","restore":[]}}"#
+        let dec = JSONDecoder(); dec.dateDecodingStrategy = .iso8601
+        #expect((try? dec.decode(UndoEntry.self, from: Data(old.utf8)))?.source == nil)
+    }
+
+    /// The newest live entry wins: a second run on the same file shadows the first.
+    @Test func newestLiveEntryWins() {
+        let older = UndoEntry(name: "p.png", inBytes: 10, outBytes: 5, undo: info(output: "/x/p.webp", restore: []), source: "/x/p.png")
+        let newer = UndoEntry(name: "p.png", inBytes: 10, outBytes: 4, undo: info(output: "/x/p.avif", restore: []), source: "/x/p.png")
+        #expect(UndoStore.plan(forKey: "/x/p.png", in: keyed([newer, older]), isLive: { _ in true }) == .fromOriginal(newer, source: "/x/p.png"))
+        #expect(UndoStore.plan(forKey: "/x/p.png", in: keyed([newer, older]), isLive: { $0.id == older.id }) == .fromOriginal(older, source: "/x/p.png"))
+    }
+
+    /// Real engine: compress in place with an undo copy, add the result again with other settings: the
+    /// original is put back first, the row is queued for the original, and the new run starts from its bytes.
+    @Test func addingAResultAgainStartsFromTheOriginal() async throws {
+        guard FileManager.default.isExecutableFile(atPath: cliBinary.path) else { Issue.record("build the CLI first (make cli)"); return }
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let undo = UndoStore(root: dir.appendingPathComponent("root"), tempRoot: dir.appendingPathComponent("tmp"))
+        let presets = PresetStore(directory: dir.appendingPathComponent("Presets"), order: dir.appendingPathComponent("o.json"))
+        let store = JobStore(presets: presets, defaults: UserDefaults(suiteName: "ic-test-\(UUID().uuidString)")!, undoStore: undo)
+        let file = dir.appendingPathComponent("p.png")
+        try FileManager.default.copyItem(at: repoRoot.appendingPathComponent("fixtures/png/flat_illustration.png"), to: file)
+        let original = try Data(contentsOf: file)
+
+        // first run: lossy, in place, with an undo copy; the row and entry are what `apply(.finished)` records
+        // (apply itself also drives the Dock tile, which needs a running app)
+        let lossy = Options(["history": .bool(false), "png-quantize": .array([.int(40), .int(60)])])
+        var row = JobItem(path: file.path, isDirectory: false)
+        for try await e in EngineRunner(executable: cliBinary).run(paths: [file.path], options: lossy, backupDir: undo.backupDir) {
+            guard case .finished(let p, let out, let i, let o, _, _, let info?) = e else { continue }
+            let entry = UndoEntry(name: row.name, inBytes: i, outBytes: o, undo: info, source: p)
+            undo.add(entry)
+            row.status = .done; row.inBytes = i; row.outBytes = o; row.output = out; row.undoEntry = entry
+        }
+        store.items = [row]
+        #expect(row.status == .done && row.undoEntry?.sourcePath == file.path)
+        #expect(try Data(contentsOf: file) != original)
+        #expect(store.canCompressAgain([row.id]))
+
+        // adding the result again puts the original back and hands it on to be queued
+        var queued: [URL] = []
+        await withCheckedContinuation { (done: CheckedContinuation<Void, Never>) in
+            store.prepareAgain([file], executable: cliBinary) { urls in queued = urls; store.add(urls); done.resume() }
+        }
+        #expect(queued.map(\.path) == [file.path])
+        #expect(try Data(contentsOf: file) == original)
+        #expect(undo.entries.isEmpty)
+        #expect(store.items.count == 1 && store.items[0].status == .queued && store.items[0].undoEntry == nil)
+
+        // the next run measures against the original
+        var inBytes: UInt64?
+        for try await e in EngineRunner(executable: cliBinary).run(paths: [file.path], options: Options(["history": .bool(false)]), backupDir: undo.backupDir) {
+            if case .finished(_, _, let i, _, _, _, _) = e { inBytes = i }
+        }
+        #expect(inBytes == UInt64(original.count))
+    }
+
+    /// When the engine refuses to put the original back, nothing is queued and the file is left alone.
+    @Test func refusedRestoreQueuesNothing() async throws {
+        guard FileManager.default.isExecutableFile(atPath: cliBinary.path) else { Issue.record("build the CLI first (make cli)"); return }
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let undo = UndoStore(root: dir.appendingPathComponent("root"), tempRoot: dir.appendingPathComponent("tmp"))
+        let presets = PresetStore(directory: dir.appendingPathComponent("Presets"), order: dir.appendingPathComponent("o.json"))
+        let store = JobStore(presets: presets, defaults: UserDefaults(suiteName: "ic-test-\(UUID().uuidString)")!, undoStore: undo)
+        let file = dir.appendingPathComponent("p.png"), backup = dir.appendingPathComponent("tmp/1/p.png")
+        try FileManager.default.createDirectory(at: backup.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("original".utf8).write(to: backup)
+        try Data("12345".utf8).write(to: file)   // same size as recorded, different bytes: only the engine's hash check catches it
+        let e = UndoEntry(name: "p.png", inBytes: 8, outBytes: 5, undo: info(output: file.path, restore: [(file.path, backup.path)]), source: file.path)
+        undo.add(e)
+        let urls = await store.restoreOriginals([(file, .fromOriginal(e, source: file.path))], executable: cliBinary)
+        #expect(urls.isEmpty)
+        #expect(store.lastError?.contains("p.png") == true)
+        #expect(try Data(contentsOf: file) == Data("12345".utf8))
+        #expect(FileManager.default.fileExists(atPath: backup.path))
+    }
+
     @Test func networkUndoCopiesLiveInAPrivateFolderClearedAtStartup() throws {
         let dir = UndoStore.bootTemporaryRoot()
         #expect(dir.path == "/private/tmp/ImageCompressUndo-\(getuid())")

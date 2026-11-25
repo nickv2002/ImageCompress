@@ -16,6 +16,7 @@
 		267F5B63203EFAA6541FFB08 /* CompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DF830791AB6283E922D756 /* CompareView.swift */; };
 		2B27BED03C4837AEC084790D /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44CD64AAD4A71F40B9ABA97C /* Feedback.swift */; };
 		2C4AB46544D2E89782DEB8B5 /* Presets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945FD6157BD8BF9048CAED4F /* Presets.swift */; };
+		2E234F56951E0FFC9AE29C97 /* JobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C05DAF501E78064FAFA4B9E /* JobStore.swift */; };
 		3054B564BC484414782A0822 /* SimpleModePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA0CDB6727A63FADE6D099B /* SimpleModePicker.swift */; };
 		35EF81436AC84EDB00728C0F /* EngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBB65E7EB127F4D2146D6D2 /* EngineTests.swift */; };
 		41D55216EC8AE1624B7D5E87 /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCFA39EF5515E9C44DAEA4F9 /* JSONValue.swift */; };
@@ -41,6 +42,7 @@
 		A4DBF2932CF4179E37D13A5B /* EngineRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D11E02DB5D4C72ABC314D99 /* EngineRunner.swift */; };
 		AB6934173005CF354C429B53 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B0C733738CD5DBC419BACE /* ContentView.swift */; };
 		AF3B5D6C31403C0E28F7AA43 /* SimpleMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFBFFD331297506F6FAE8DB /* SimpleMode.swift */; };
+		BB15DFCFBBEEE9453C61D66A /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44CD64AAD4A71F40B9ABA97C /* Feedback.swift */; };
 		BC36D733FF4364A9CEC94F46 /* EngineRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D11E02DB5D4C72ABC314D99 /* EngineRunner.swift */; };
 		BEE7B61B7108D5F42285F99B /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A629434B7A95EEE2A418A71E /* FinderSync.swift */; };
 		C3BF78CA64D3C262D0FED727 /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C38240CE546CFF5BE73E256 /* PresetStore.swift */; };
@@ -432,8 +434,10 @@
 				5D1AC2D438495253CE160B25 /* CLI.swift in Sources */,
 				BC36D733FF4364A9CEC94F46 /* EngineRunner.swift in Sources */,
 				35EF81436AC84EDB00728C0F /* EngineTests.swift in Sources */,
+				BB15DFCFBBEEE9453C61D66A /* Feedback.swift in Sources */,
 				47ACB15CF6A1E5AAF5D430DE /* JSONValue.swift in Sources */,
 				712936FE42B1DAA25861392B /* JobEvent.swift in Sources */,
+				2E234F56951E0FFC9AE29C97 /* JobStore.swift in Sources */,
 				640C18B603924C34B11885F0 /* OptionCatalog.swift in Sources */,
 				A2E918EDCAF8E1097CAB791B /* Options.swift in Sources */,
 				C86013C56A67B14D62C50A08 /* PresetAxes.swift in Sources */,

@@ -16,7 +16,7 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if store.items.isEmpty { DropZone(targeted: dropTargeted) } else { jobList }
+            if store.items.isEmpty { DropZone(targeted: dropTargeted) } else { jobList.overlay(alignment: .bottom) { redoBanner } }
             Divider()
             footer
         }
@@ -119,6 +119,8 @@ struct ContentView: View {
                 Divider()
                 Button(picked.count == 1 ? "Undo Compression" : "Undo Compression of \(picked.count) Images") { store.undo(picked.map(\.id)) }
                     .disabled(!store.canUndo(picked.map(\.id)))
+                Button("Compress Again from Original") { store.compressAgain(picked.map(\.id)) }
+                    .disabled(!store.canCompressAgain(picked.map(\.id)))
                 Button("Remove from List") { store.remove(ids: ids) }
             }
         } primaryAction: { ids in
@@ -136,6 +138,36 @@ struct ContentView: View {
             .opacity(0).allowsHitTesting(false).accessibilityHidden(true)
         }
         .accessibilityLabel("Images")
+    }
+
+    /// A quiet offer after the settings changed: compress the finished images again from their originals.
+    /// Pinned above the footer, never modal, and gone after a dismiss until the settings change again.
+    @ViewBuilder private var redoBanner: some View {
+        let ids = store.redoOffer
+        if !ids.isEmpty {
+            HStack(spacing: 10) {
+                Image(systemName: "arrow.triangle.2.circlepath").foregroundStyle(.secondary).accessibilityHidden(true)
+                Text(ids.count == 1 ? "Settings changed. Compress this image again from its original?"
+                                    : "Settings changed. Compress these \(ids.count) images again from their originals?")
+                    .lineLimit(2)
+                Button("Compress Again") { store.compressAgain(ids) }
+                    .controlSize(.small)
+                    .help("Put the originals back and compress them with the current settings")
+                    .accessibilityLabel(ids.count == 1 ? "Compress again from the original" : "Compress \(ids.count) images again from their originals")
+                Button { withAnimation(.snappy) { store.dismissRedoOffer() } } label: { Image(systemName: "xmark") }
+                    .buttonStyle(.borderless).controlSize(.small).foregroundStyle(.secondary)
+                    .help("Dismiss").accessibilityLabel("Dismiss")
+            }
+            .font(.callout)
+            .padding(.horizontal, 12).padding(.vertical, 7)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.separator))
+            .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
+            .padding(10)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Settings changed")
+        }
     }
 
     private func compareSelection() {

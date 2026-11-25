@@ -42,6 +42,10 @@ The app updates itself. See [Updates](#updates).
 By default the app replaces each file with the smaller version. It keeps a copy of every original so you can
 [undo]({{ site.baseurl }}/undo/). A result is only kept if it is smaller than the original.
 
+To try other settings on images you already compressed, change the Format or Quality and add them again. You can also
+right-click them and choose **Compress Again from Original**. For 24 hours this starts from the kept original, not
+from the earlier result. See [Changing settings and compressing again]({{ site.baseurl }}/undo/#changing-settings-and-compressing-again).
+
 Select a finished image and press Space or ⌘Y to compare Before and After. The comparison opens at once on the
 original and the result, and rates how different they look, from *Visually lossless* to *Large differences*.
 Use the slider, put the two side by side, or show only the difference. Zoom up to 8× (pinch, ⌘-scroll, or ⌘= and ⌘-)

@@ -28,6 +28,8 @@ struct JobItem: Identifiable, Equatable {
     var undoEntry: UndoEntry?
     var undoID: UUID? { undoEntry?.id }
     var restored = false
+    /// The settings of the run that made this result (to offer compressing it again when they change).
+    var madeWith: Options?
     /// The symlink-resolved path, worked out once: matching engine events against it is a hot path.
     let key: String
 
@@ -56,7 +58,12 @@ final class JobStore {
     private var runUndoable: [UUID] = []
     /// Files of the last run that were put back since (shown in the footer).
     private(set) var undoneInRun = 0
-    let undoStore = UndoStore.shared
+    let undoStore: UndoStore
+    /// A notice that must survive the start of the next run (it is about the files that run compresses).
+    private var carryNotice: String?
+    /// The settings that count as "unchanged" for the Compress Again banner: those of the last run (or the
+    /// window's own ones once a Finder hand-off is over), or the ones showing when the banner was dismissed.
+    private var offerBaseline: Options?
     var progressDone = 0
     var progressTotal = 0
     private var runner: EngineRunner?
@@ -74,8 +81,9 @@ final class JobStore {
 
     private let defaults: UserDefaults
 
-    init(presets: PresetStore = .shared, settings: AppSettings = .shared, defaults: UserDefaults = .standard) {
+    init(presets: PresetStore = .shared, settings: AppSettings = .shared, defaults: UserDefaults = .standard, undoStore: UndoStore = .shared) {
         self.defaults = defaults
+        self.undoStore = undoStore
         self.presets = presets
         self.settings = settings
         presetName = settings.defaultPreset
@@ -159,21 +167,35 @@ final class JobStore {
         return path
     }
 
+    /// Queues files. A file already in the list is queued again once it has finished (a folder, or a file
+    /// that is waiting or running, is left as it is). `prepareAgain` has already put back the originals it could.
     func add(_ urls: [URL]) {
+        var asIs: [String] = []
         for u in urls where u.isFileURL {
             let k = Self.key(u.path)
-            guard !items.contains(where: { $0.key == k }) else { continue }
+            // an earlier result whose original could not be put back is compressed as it is: say so
+            if items.contains(where: { $0.status == .done && !$0.restored && $0.output.map(Self.key) == k }) { asIs.append(u.lastPathComponent) }
+            if let n = items.firstIndex(where: { $0.key == k }) {
+                let row = items[n]
+                guard !row.isDirectory, isFinished(row.status) else { continue }
+                items[n] = JobItem(path: row.path, isDirectory: false)
+                continue
+            }
             let dir = (try? u.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
             items.append(JobItem(path: u.path, isDirectory: dir))
         }
+        if !asIs.isEmpty { sayCompressedAsIs(asIs) }
     }
 
     /// Drops, Add Files and Open With: queue the files and start right away (the Process button remains for
     /// anything left queued, e.g. after cancelling the Trash confirmation). Files added mid-run join the next run.
+    /// Earlier results that can still be undone are put back to their originals first (see `prepareAgain`).
     func ingest(_ urls: [URL]) {
-        add(urls)
-        guard settings.autoProcess else { return }
-        if isRunning { runAgain = hasQueued } else { process() }
+        prepareAgain(urls) { [self] urls in
+            add(urls)
+            guard settings.autoProcess else { return }
+            if isRunning { runAgain = hasQueued } else { process() }
+        }
     }
 
     /// Removes finished/queued rows (never ones that are mid-run).
@@ -208,8 +230,11 @@ final class JobStore {
                     else { notice = "The preset “\(p)” no longer exists, so the current settings were used." }
                 }
                 if let o = job.overrides { overrides = Options(o) }
-                add(job.paths.map { URL(fileURLWithPath: $0) })
-                if job.start == true { if isRunning { runAgain = true } else { process() } }
+                let start = job.start == true
+                prepareAgain(job.paths.map { URL(fileURLWithPath: $0) }) { [self] urls in
+                    add(urls)
+                    if start { if isRunning { runAgain = true } else { process() } }
+                }
             } else {
                 files.append(u)
             }
@@ -223,6 +248,7 @@ final class JobStore {
         presetName = r.presetName; overrides = r.overrides
         if let c = r.choice { defaults.set(c, forKey: Self.choiceKey) }
         if let l = r.legacy { defaults.set(l, forKey: Self.legacyChoiceKey) }
+        offerBaseline = effectiveOptions   // the window's own settings coming back is no change to point out
     }
 
     func process() {
@@ -237,9 +263,10 @@ final class JobStore {
         case .proceed: break
         }
         let targetIDs = Set(targets.map(\.id))
+        runOptions = effectiveOptions; offerBaseline = runOptions
         let runner = EngineRunner(executable: EngineRunner.bundledExecutable())
         self.runner = runner
-        isRunning = true; totals = nil; lastError = nil; notice = nil; stopRequested = false; runOutputs = []; runUndoable = []; undoneInRun = 0
+        isRunning = true; totals = nil; lastError = nil; notice = carryNotice; carryNotice = nil; stopRequested = false; runOutputs = []; runUndoable = []; undoneInRun = 0
         let backupDir = settings.keepUndo ? undoStore.backupDir : nil
         progressDone = 0; progressTotal = targets.count
         Feedback.update(done: 0, total: progressTotal)
@@ -376,6 +403,7 @@ final class JobStore {
     }
 
     private func isRunningStatus(_ s: JobStatus) -> Bool { if case .running = s { return true } else { return false } }
+    private func isFinished(_ s: JobStatus) -> Bool { s != .queued && !isRunningStatus(s) }
 
     private func index(for path: String) -> Int {
         if let i = items.lastIndex(where: { $0.path == path }) { return i }   // same spelling: no file-system call
@@ -391,6 +419,8 @@ final class JobStore {
     }
 
     private var pendingEvents: [JobEvent] = []
+    /// The settings of the run in progress as the window had them (before a Keep Originals fallback).
+    private var runOptions: Options?
     private func flushEvents() {
         guard !pendingEvents.isEmpty else { return }
         let batch = pendingEvents; pendingEvents = []
@@ -405,9 +435,10 @@ final class JobStore {
         case .finished(let p, let out, let i, let o, _, let trace, let undo):
             let n = index(for: p)
             items[n].status = .done; items[n].inBytes = i; items[n].outBytes = o; items[n].output = out; items[n].trace = trace
+            items[n].madeWith = runOptions
             runOutputs.append(URL(fileURLWithPath: out))
             if let undo {
-                let e = UndoEntry(name: items[n].name, inBytes: i, outBytes: o, undo: undo)
+                let e = UndoEntry(name: items[n].name, inBytes: i, outBytes: o, undo: undo, source: p)
                 undoStore.add(e); items[n].undoEntry = e; items[n].restored = false; runUndoable.append(items[n].id)
             }
             tick()
@@ -417,6 +448,109 @@ final class JobStore {
         case .unknown: break
         }
     }
+
+    // MARK: Compressing again from the original
+
+    /// A file added again whose earlier result can still be undone (it is that result, or the original it was
+    /// made from) is put back to its original first, so the original, not the earlier result, is compressed
+    /// with the current settings. Then `body` gets the files to queue; with no such file it runs right away.
+    func prepareAgain(_ urls: [URL], executable: URL? = nil, then body: @escaping @MainActor ([URL]) -> Void) {
+        let busy = Set(items.filter { !isFinished($0.status) }.map(\.key))
+        let files = urls.filter { $0.isFileURL && !busy.contains(Self.key($0.path)) }
+        let found = undoStore.plans(for: files.map(\.path))
+        guard found.contains(where: { $0 != .asNew }) else { body(urls); return }
+        let plan = Dictionary(zip(files, found), uniquingKeysWith: { a, _ in a })
+        Task { body(await restoreOriginals(urls.map { ($0, plan[$0] ?? .asNew) }, executable: executable)) }
+    }
+
+    /// Puts the originals back for `plans` and returns the files to queue: each original in place of the file
+    /// that was added. A file whose original the engine refuses to put back (it checks more than `blocker`
+    /// does) is left exactly as it is and not queued; the reason is shown in the footer.
+    func restoreOriginals(_ plans: [(URL, AgainPlan)], executable: URL? = nil) async -> [URL] {
+        let exe = executable ?? CLI.executable()
+        var out: [URL] = [], failures: [String] = []
+        for (u, plan) in plans {
+            guard case .fromOriginal(let e, var source) = plan else { out.append(u); continue }
+            do { try await undoStore.undo(e.id, executable: exe) }
+            catch { failures.append("“\(u.lastPathComponent)”: \(error.localizedDescription)"); continue }
+            var undone = [e]
+            // The original may itself be an earlier result (compressed again before this existed): go back to the first.
+            for _ in 0..<8 {
+                guard case .fromOriginal(let older, let s) = undoStore.plans(for: [source], outputsOnly: true)[0],
+                      (try? await undoStore.undo(older.id, executable: exe)) != nil else { break }
+                undone.append(older); source = s
+            }
+            resetRows(undone: undone, source: source)
+            out.append(URL(fileURLWithPath: source))
+        }
+        if !failures.isEmpty {
+            lastError = "Could not put the original back, so nothing was compressed or changed for " + failures.joined(separator: "; ")
+        }
+        return out
+    }
+
+    /// The rows of the results just undone become one waiting row for their original.
+    private func resetRows(undone: [UndoEntry], source: String) {
+        let ids = Set(undone.map(\.id)), src = Self.key(source)
+        let gone = Set(undone.map { Self.key($0.undo.output) })
+        let hits = items.indices.filter { i in
+            let r = items[i]
+            return !r.isDirectory && !isRunningStatus(r.status) && (r.undoID.map(ids.contains) == true || r.key == src || gone.contains(r.key))
+        }
+        guard let first = hits.first else { return }
+        let path = items[first].key == src ? items[first].path : source
+        for i in hits.dropFirst().reversed() { items.remove(at: i) }
+        items[first] = JobItem(path: path, isDirectory: false)
+    }
+
+    private func sayCompressedAsIs(_ names: [String]) {
+        let one = names.count == 1
+        let what = one ? "“\(names[0])” is" : "\(names.count) images are"
+        let why = !settings.keepUndo ? "Undo copies are turned off, so no original was kept"
+            : one ? "its original copy is no longer available" : "their original copies are no longer available"
+        notice = "\(what) compressed again as it is now: \(why)."
+        carryNotice = notice
+    }
+
+    /// What Compress Again from Original does for a row, or nil when it can't.
+    private func againPlan(for r: JobItem, live: Set<UUID>? = nil) -> AgainPlan? {
+        guard !r.isDirectory, r.status == .done else { return nil }
+        if r.restored { return .asNew }   // its original is already back
+        guard let e = r.undoEntry, live?.contains(e.id) ?? undoStore.entries.contains(where: { $0.id == e.id }),
+              undoStore.blocker(e) == nil else { return nil }
+        return .fromOriginal(e, source: e.sourcePath)
+    }
+
+    func canCompressAgain(_ ids: [UUID]) -> Bool { items.contains { ids.contains($0.id) && againPlan(for: $0) != nil } }
+
+    /// Compress Again from Original: puts the originals of these finished rows back and compresses them with
+    /// the current settings. Rows whose original can't be put back are left alone.
+    func compressAgain(_ ids: [UUID]) {
+        let plans = items.filter { ids.contains($0.id) }.compactMap { r in againPlan(for: r).map { (r.url, $0) } }
+        guard !plans.isEmpty else { return }
+        Task {
+            let urls = await restoreOriginals(plans)
+            guard !urls.isEmpty else { return }
+            add(urls)
+            if isRunning { runAgain = hasQueued } else { process() }
+        }
+    }
+
+    /// Rows the settings banner offers to compress again: finished with other settings than the current ones,
+    /// and still undoable. Empty during a run, until the settings change, and after the banner was dismissed.
+    var redoOffer: [UUID] {
+        guard !isRunning, let base = offerBaseline else { return [] }
+        let now = effectiveOptions
+        guard now != base else { return [] }
+        let live = Set(undoStore.entries.map(\.id))
+        return items.filter { r in
+            guard let m = r.madeWith, m != now, !r.restored, case .fromOriginal = againPlan(for: r, live: live) else { return false }
+            return true
+        }.map(\.id)
+    }
+
+    /// Hides the banner until the settings change again or another run finishes.
+    func dismissRedoOffer() { offerBaseline = effectiveOptions }
 
     func addViaPanel() {
         let panel = NSOpenPanel()

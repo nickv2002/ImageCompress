@@ -47,6 +47,37 @@ Undo puts the original back. If the run made a new file next to it, that new fil
 
 If you do not want undo copies, turn off **Keep undo copies of replaced originals** in Settings → General.
 
+## Changing settings and compressing again
+{: .mac}
+
+Say you compressed `photo.png` to AVIF and now want WebP, or a different quality. While the undo copy exists
+(24 hours), compressing again starts from the original, not from the earlier result. That way quality is not lost twice.
+
+There are three ways to do it:
+
+- **Add the file again.** Drop it on the window, use Add Files…, Open With or the Finder menu. You can add either
+  the result (`photo.avif`) or the original, if it is still there (`photo.png`).
+- **Right-click finished images** and choose **Compress Again from Original**.
+- **Click Compress Again** in the bar that appears above the list when you change the format, quality, preset or
+  options while finished images can still be redone. The bar counts only those images. Click × to hide it. It comes back
+  when you change the settings again or the next images finish. Nothing is compressed again unless you ask.
+
+In each case ImageCompress first does what Undo does: it puts the original back, and an earlier result with a new name
+goes to the Trash. Then it compresses the original with the current settings. The row shows the new result. Its
+savings are measured against the original. To keep the earlier result as well, rename or move it first. After that
+it counts as a separate file.
+
+If the original can't be put back, ImageCompress leaves everything as it is and says why in the window. For example,
+the result may have been edited since. Nothing is compressed in that case.
+
+Once the undo copy is gone, the file you add is compressed as it is now. The copy goes after 24 hours, after a restart,
+or when you edit or move the result. The same happens with undo copies turned off. When that file is an earlier result,
+the window says so. Compressing a lossy result again loses a little more quality each time. So for a different format
+or quality, start from your own copy of the original when you can.
+
+Adding a folder again compresses the files in it as they are now. To redo images from a folder, select their rows
+and choose **Compress Again from Original**.
+
 ## Undo on the command line
 {: .cli}
 
@@ -65,6 +96,10 @@ imgcompress undo holiday-undo.json
 A record covers one file, so a run on many files gives you one record per file. `imgcompress undo` puts the original back
 from the backup folder. It refuses, changes nothing and exits with 1 when the compressed file was edited, moved or deleted
 since the run, or when the saved original is gone. See [Command line]({{ site.baseurl }}/cli/) for the other options.
+
+`imgcompress run` always works on the file as it is. It does not look up earlier records, so running it again on a
+result compresses the result, not the original. To redo a file with other settings, run `imgcompress undo RECORD`
+first. Then run the new command on the original.
 
 ## Files are replaced safely
 

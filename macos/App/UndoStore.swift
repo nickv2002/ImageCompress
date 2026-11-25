@@ -9,6 +9,24 @@ struct UndoEntry: Codable, Identifiable, Equatable, Sendable {
     var inBytes: UInt64
     var outBytes: UInt64
     var undo: UndoInfo
+    /// The file the job read (optional: entries saved before this was recorded decode without it).
+    var source: String?
+
+    /// Where the original is once this entry is undone: put back from its copy, or left where it was.
+    var sourcePath: String {
+        if let source { return source }
+        // older entries: a restore target other than the output is the original that was trashed or deleted;
+        // otherwise the job most likely ran in place
+        return undo.restore.first { $0.path != undo.output }?.path ?? undo.output
+    }
+}
+
+/// What to do with a file that is added again.
+enum AgainPlan: Equatable {
+    /// Nothing known about it: compress it as it is.
+    case asNew
+    /// It is (or came from) a result that can still be undone: put the original back, then compress `source`.
+    case fromOriginal(UndoEntry, source: String)
 }
 
 /// Undo history that survives relaunches. Backups are kept for a day, up to 1 GB in total, in a temporary folder
@@ -75,6 +93,33 @@ final class UndoStore {
         let size = (try? URL(fileURLWithPath: e.undo.output).resourceValues(forKeys: [.fileSizeKey]).fileSize).map { UInt64($0) }
         guard let size else { return "The compressed file was moved or deleted" }
         return size == e.undo.outSize ? nil : "The file was changed after it was compressed"
+    }
+
+    /// An entry with its output and source paths resolved once (matching runs for every file added).
+    struct Keyed: Sendable {
+        var entry: UndoEntry, output: String, source: String
+    }
+
+    /// The newest entry that can still be undone for a file being added again (`key`: its symlink-resolved
+    /// path). First the entry that wrote it (photo.avif made from photo.png, or photo.png compressed in place);
+    /// unless `outputsOnly`, then one made from it whose result went elsewhere (the original was kept).
+    /// `isLive` says whether Undo can run (see `blocker`). Entries are newest first.
+    nonisolated static func plan(forKey k: String, in keyed: [Keyed], outputsOnly: Bool = false,
+                                 isLive: (UndoEntry) -> Bool) -> AgainPlan {
+        if let m = keyed.first(where: { $0.output == k && isLive($0.entry) }) { return .fromOriginal(m.entry, source: m.entry.sourcePath) }
+        if !outputsOnly, let m = keyed.first(where: { $0.source == k && $0.output != k && isLive($0.entry) }) {
+            return .fromOriginal(m.entry, source: m.entry.sourcePath)
+        }
+        return .asNew
+    }
+
+    nonisolated static func key(_ p: String) -> String { URL(fileURLWithPath: p).resolvingSymlinksInPath().path }
+
+    /// `plan(forKey:)` for each path against this store, with the cheap on-disk check.
+    func plans(for paths: [String], outputsOnly: Bool = false) -> [AgainPlan] {
+        guard !entries.isEmpty else { return paths.map { _ in .asNew } }
+        let keyed = entries.map { Keyed(entry: $0, output: Self.key($0.undo.output), source: Self.key($0.sourcePath)) }
+        return paths.map { Self.plan(forKey: Self.key($0), in: keyed, outputsOnly: outputsOnly, isLive: { blocker($0) == nil }) }
     }
 
     /// A big run adds hundreds of entries: write the index at most about once a second while they stream in
