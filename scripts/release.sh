@@ -34,9 +34,13 @@ done
 # shellcheck disable=SC1091
 [ -f scripts/release.local.env ] && . scripts/release.local.env
 . scripts/op_retry.sh
-echo "==> 1Password: approve the prompt now"
-op_retry vault get ${OP_ACCOUNT:+--account "$OP_ACCOUNT"} "${OP_VAULT:-Private}" >/dev/null \
-  || { echo "error: 1Password did not unlock" >&2; exit 1; }
+if [[ -n "${ASC_KEY_PATH:-}" && -f "${ASC_KEY_PATH}" && -n "${REPO_KEY_FILE:-}" && -f "${REPO_KEY_FILE}" ]]; then
+  echo "==> using local copies of the signing keys (ASC_KEY_PATH, REPO_KEY_FILE); no 1Password prompt"
+else
+  echo "==> 1Password: approve the prompt now"
+  op_retry vault get ${OP_ACCOUNT:+--account "$OP_ACCOUNT"} "${OP_VAULT:-Private}" >/dev/null \
+    || { echo "error: 1Password did not unlock" >&2; exit 1; }
+fi
 
 version=$(scripts/next_version.sh)
 cargo_version=$(scripts/next_version.sh --cargo "$version")

@@ -69,20 +69,26 @@ for item in "${nested[@]}"; do
 done
 codesign --verify --deep --strict --verbose=2 "$app_path"
 
-echo "==> fetching App Store Connect API key from 1Password (${op_item})"
-# op_retry beeps and asks again if an approval prompt times out.
-. "$repo_root/scripts/op_retry.sh"
-key_filename=$(op_retry item get "$op_item_name" --vault "$op_vault" --account "$op_account" --format json \
-  | /usr/bin/python3 -c 'import json, sys; print(json.load(sys.stdin)["files"][0]["name"])')
-key_id=$(echo "$key_filename" | sed -E 's/^AuthKey_([A-Za-z0-9]+)\.p8$/\1/')
-issuer_id=$(op_retry read "${op_item}/issuer id" --account "$op_account")
+if [[ -n "${ASC_KEY_PATH:-}" && -n "${ASC_KEY_ID:-}" && -n "${ASC_ISSUER_ID:-}" ]]; then
+  # A local copy (e.g. .context/secrets, gitignored, set in release.local.env) lets a release run unattended.
+  echo "==> using the App Store Connect API key at $ASC_KEY_PATH"
+  key_path="$ASC_KEY_PATH"; key_id="$ASC_KEY_ID"; issuer_id="$ASC_ISSUER_ID"
+else
+  echo "==> fetching App Store Connect API key from 1Password (${op_item})"
+  # op_retry beeps and asks again if an approval prompt times out.
+  . "$repo_root/scripts/op_retry.sh"
+  key_filename=$(op_retry item get "$op_item_name" --vault "$op_vault" --account "$op_account" --format json \
+    | /usr/bin/python3 -c 'import json, sys; print(json.load(sys.stdin)["files"][0]["name"])')
+  key_id=$(echo "$key_filename" | sed -E 's/^AuthKey_([A-Za-z0-9]+)\.p8$/\1/')
+  issuer_id=$(op_retry read "${op_item}/issuer id" --account "$op_account")
 
-secret_dir=$(mktemp -d)
-trap 'rm -rf "$secret_dir"' EXIT
-chmod 700 "$secret_dir"
-key_path="${secret_dir}/${key_filename}"
-op_retry read "${op_item}/${key_filename}" --account "$op_account" --out-file "$key_path" >/dev/null
-chmod 600 "$key_path"
+  secret_dir=$(mktemp -d)
+  trap 'rm -rf "$secret_dir"' EXIT
+  chmod 700 "$secret_dir"
+  key_path="${secret_dir}/${key_filename}"
+  op_retry read "${op_item}/${key_filename}" --account "$op_account" --out-file "$key_path" >/dev/null
+  chmod 600 "$key_path"
+fi
 
 echo "==> zipping for submission"
 rm -f "$submit_zip"

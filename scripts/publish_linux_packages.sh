@@ -16,7 +16,7 @@
 #   --no-push  build the site in build/packages/site and stop (for testing)
 #   --reset    drop everything already published (versions are then optional: none publishes an empty repository)
 # Env: PACKAGES_REMOTE (default https://github.com/nickv2002/packages.git), SITE_URL (default
-#      https://nickv2002.github.io/packages), KEEP (default 3), REPO_KEY_FILE (tests only, see repo_key.sh).
+#      https://nickv2002.github.io/packages), KEEP (default 3), REPO_KEY_FILE (a local copy of the key, see repo_key.sh).
 set -euo pipefail
 
 push=1

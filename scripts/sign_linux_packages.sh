@@ -4,7 +4,7 @@
 # (.deb packages are not signed individually; apt verifies them through the signed repository index.)
 #
 # Usage: scripts/sign_linux_packages.sh <version>
-# Env: REPO_KEY_FILE=<armored private key> instead of 1Password (tests only).
+# Env: REPO_KEY_FILE=<armored private key> instead of 1Password (tests, or an unattended release).
 set -euo pipefail
 
 version="${1:?usage: sign_linux_packages.sh <version>}"
