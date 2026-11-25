@@ -171,7 +171,7 @@ final class JobStore {
     /// Drops, Add Files and Open With: queue the files and start right away (the Process button remains for
     /// anything left queued, e.g. after cancelling the Trash confirmation). Files added mid-run join the next run.
     func ingest(_ urls: [URL]) {
-        add(urls)
+        add(urls.map { ScreenshotDrop.adopt($0) })   // a dragged screenshot thumbnail goes where screenshots are saved
         guard settings.autoProcess else { return }
         if isRunning { runAgain = hasQueued } else { process() }
     }

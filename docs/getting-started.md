@@ -42,6 +42,10 @@ The app updates itself. See [Updates](#updates).
 By default the app replaces each file with the smaller version. It keeps a copy of every original so you can
 [undo]({{ site.baseurl }}/undo/). A result is only kept if it is smaller than the original.
 
+Just took a screenshot? Drag the small thumbnail that appears in the corner of the screen straight onto the
+ImageCompress window or its Dock icon. The compressed screenshot is saved where your screenshots normally go
+(the Desktop, unless you changed it in the Screenshot app's Options menu).
+
 Select a finished image and press Space or ⌘Y to compare Before and After. The comparison opens at once on the
 original and the result, and rates how different they look, from *Visually lossless* to *Large differences*.
 Use the slider, put the two side by side, or show only the difference. Zoom up to 8× (pinch, ⌘-scroll, or ⌘= and ⌘-)

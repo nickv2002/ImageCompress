@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		059F43CDFFA0C2C99CC4C2D3 /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C38240CE546CFF5BE73E256 /* PresetStore.swift */; };
+		13F6D5B0814144A64407B5DE /* FileDropTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4ADC170E0FA130B45A23EF2 /* FileDropTarget.swift */; };
 		1540DB5C219C84C4ADA2A414 /* OptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B2B52CDC4A7474A534F46E /* OptionCatalog.swift */; };
 		17E89EFAE140DA53EA498389 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796EAE1577123B8B9D80590B /* AppGroup.swift */; };
 		1EC79C3E97A3418796E2EF75 /* SimpleMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFBFFD331297506F6FAE8DB /* SimpleMode.swift */; };
@@ -22,6 +23,7 @@
 		47ACB15CF6A1E5AAF5D430DE /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCFA39EF5515E9C44DAEA4F9 /* JSONValue.swift */; };
 		5537290D896B8926F4E08163 /* Presets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945FD6157BD8BF9048CAED4F /* Presets.swift */; };
 		57B81587284F5F88AF317663 /* JobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C05DAF501E78064FAFA4B9E /* JobStore.swift */; };
+		58C39E45C7C983E6FEFDD9C7 /* ScreenshotDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03E2048FF3F887F037D9707 /* ScreenshotDrop.swift */; };
 		5A91D2F3446E4A1CF0F2356F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 66F3611155E68C63C32EC640 /* Assets.xcassets */; };
 		5D1AC2D438495253CE160B25 /* CLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA1E7024C194E2B578B8452 /* CLI.swift */; };
 		640C18B603924C34B11885F0 /* OptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B2B52CDC4A7474A534F46E /* OptionCatalog.swift */; };
@@ -33,6 +35,7 @@
 		82FED42F405BE7F19EC6AEDD /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71386975EF23347E141A4B4 /* Preview.swift */; };
 		855BC26D24DC8CDD37BFBDA9 /* CLIInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDD3C5F72F44984F2D607AD4 /* CLIInstaller.swift */; };
 		878B98CD271B50449DA868EB /* JobEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2F38331664F14F60A0EADA /* JobEvent.swift */; };
+		939C1588161ADBBBB3FE3CA1 /* ScreenshotDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03E2048FF3F887F037D9707 /* ScreenshotDrop.swift */; };
 		98C89091FE176B2CDC2FED54 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71386975EF23347E141A4B4 /* Preview.swift */; };
 		9B712BBABE7430FA66612FA7 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E5F9DD9C035E67F3ABE82F /* Options.swift */; };
 		9ECB550D3B61CD936389F86A /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796EAE1577123B8B9D80590B /* AppGroup.swift */; };
@@ -46,6 +49,7 @@
 		C3BF78CA64D3C262D0FED727 /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C38240CE546CFF5BE73E256 /* PresetStore.swift */; };
 		C41E54A1EC45CB44E86312DE /* Presets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945FD6157BD8BF9048CAED4F /* Presets.swift */; };
 		C53A7520E4AB54C95169AD7A /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E5F9DD9C035E67F3ABE82F /* Options.swift */; };
+		C5EE2916D598A9AF0C412F71 /* ScreenshotDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EDF1E21DEE5BF9A9299CFE /* ScreenshotDropTests.swift */; };
 		C86013C56A67B14D62C50A08 /* PresetAxes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129FFF21788B28A80FCEFCFE /* PresetAxes.swift */; };
 		CF76B368FF88978633C2E09C /* PresetAxes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129FFF21788B28A80FCEFCFE /* PresetAxes.swift */; };
 		D5DE3285ECEDB01C1DAD0E4D /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = D644D34C648EC314D500DA04 /* Services.swift */; };
@@ -86,6 +90,7 @@
 
 /* Begin PBXFileReference section */
 		03287BC0BDD769337DB539C9 /* ImageCompress.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ImageCompress.entitlements; sourceTree = "<group>"; };
+		04EDF1E21DEE5BF9A9299CFE /* ScreenshotDropTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotDropTests.swift; sourceTree = "<group>"; };
 		129FFF21788B28A80FCEFCFE /* PresetAxes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetAxes.swift; sourceTree = "<group>"; };
 		1339839E9370E18BC792EAF4 /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
 		1C38240CE546CFF5BE73E256 /* PresetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetStore.swift; sourceTree = "<group>"; };
@@ -105,12 +110,14 @@
 		945FD6157BD8BF9048CAED4F /* Presets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Presets.swift; sourceTree = "<group>"; };
 		97E5F9DD9C035E67F3ABE82F /* Options.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Options.swift; sourceTree = "<group>"; };
 		9EA0CDB6727A63FADE6D099B /* SimpleModePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleModePicker.swift; sourceTree = "<group>"; };
+		A4ADC170E0FA130B45A23EF2 /* FileDropTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDropTarget.swift; sourceTree = "<group>"; };
 		A5B2B52CDC4A7474A534F46E /* OptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionCatalog.swift; sourceTree = "<group>"; };
 		A629434B7A95EEE2A418A71E /* FinderSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSync.swift; sourceTree = "<group>"; };
 		A71386975EF23347E141A4B4 /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		AA2F38331664F14F60A0EADA /* JobEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobEvent.swift; sourceTree = "<group>"; };
 		B97A9386EBE40B41305E925F /* SchemaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaStore.swift; sourceTree = "<group>"; };
 		BDD3C5F72F44984F2D607AD4 /* CLIInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIInstaller.swift; sourceTree = "<group>"; };
+		C03E2048FF3F887F037D9707 /* ScreenshotDrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotDrop.swift; sourceTree = "<group>"; };
 		CAF0FCC8A3F48233E2AA7F2D /* ImageCompress.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageCompress.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAF30A314618C033E46E2FB7 /* ImageCompressTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageCompressTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D56C6D446720EE156B441ABB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -140,6 +147,7 @@
 			isa = PBXGroup;
 			children = (
 				EBBB65E7EB127F4D2146D6D2 /* EngineTests.swift */,
+				04EDF1E21DEE5BF9A9299CFE /* ScreenshotDropTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -170,6 +178,7 @@
 				129FFF21788B28A80FCEFCFE /* PresetAxes.swift */,
 				1C38240CE546CFF5BE73E256 /* PresetStore.swift */,
 				B97A9386EBE40B41305E925F /* SchemaStore.swift */,
+				C03E2048FF3F887F037D9707 /* ScreenshotDrop.swift */,
 				D644D34C648EC314D500DA04 /* Services.swift */,
 				26B0025EDE2F70045D36D14D /* UndoStore.swift */,
 				1339839E9370E18BC792EAF4 /* Updater.swift */,
@@ -204,6 +213,7 @@
 			children = (
 				70DF830791AB6283E922D756 /* CompareView.swift */,
 				71B0C733738CD5DBC419BACE /* ContentView.swift */,
+				A4ADC170E0FA130B45A23EF2 /* FileDropTarget.swift */,
 				A5B2B52CDC4A7474A534F46E /* OptionCatalog.swift */,
 				D655FC4BE2C4FFDE07DD1208 /* OptionsForm.swift */,
 				EE2BBA584400B5CFDC08F4A5 /* SettingsView.swift */,
@@ -400,6 +410,7 @@
 				AB6934173005CF354C429B53 /* ContentView.swift in Sources */,
 				A4DBF2932CF4179E37D13A5B /* EngineRunner.swift in Sources */,
 				2B27BED03C4837AEC084790D /* Feedback.swift in Sources */,
+				13F6D5B0814144A64407B5DE /* FileDropTarget.swift in Sources */,
 				DE3229F76F28A20A8179E7F4 /* FinderExtension.swift in Sources */,
 				E8368012D0F332010594CDD5 /* ImageCompressApp.swift in Sources */,
 				78F990E732525503C755198C /* JSONValue.swift in Sources */,
@@ -414,6 +425,7 @@
 				2C4AB46544D2E89782DEB8B5 /* Presets.swift in Sources */,
 				82FED42F405BE7F19EC6AEDD /* Preview.swift in Sources */,
 				A1EA12CD16716CBEBEBF0C73 /* SchemaStore.swift in Sources */,
+				939C1588161ADBBBB3FE3CA1 /* ScreenshotDrop.swift in Sources */,
 				D5DE3285ECEDB01C1DAD0E4D /* Services.swift in Sources */,
 				D93334FC44BDB4EEE4D3E54F /* SettingsView.swift in Sources */,
 				1EC79C3E97A3418796E2EF75 /* SimpleMode.swift in Sources */,
@@ -440,6 +452,8 @@
 				C3BF78CA64D3C262D0FED727 /* PresetStore.swift in Sources */,
 				5537290D896B8926F4E08163 /* Presets.swift in Sources */,
 				98C89091FE176B2CDC2FED54 /* Preview.swift in Sources */,
+				58C39E45C7C983E6FEFDD9C7 /* ScreenshotDrop.swift in Sources */,
+				C5EE2916D598A9AF0C412F71 /* ScreenshotDropTests.swift in Sources */,
 				AF3B5D6C31403C0E28F7AA43 /* SimpleMode.swift in Sources */,
 				E5C9DD14F13A3DFAB390122B /* UndoStore.swift in Sources */,
 			);
