@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026.11.28.1 — 2026-11-28
+
+- Conversions to a larger format: a "Keep results: If smaller, or converted" setting (now in the inspector's Common section; --replace-if smaller-or-converted) keeps files that change format whatever their size; after a run that skipped larger conversions a bar offers Convert Anyway; skipped files are offered again when the settings change instead of needing the list cleared; a PNG that could not get a colour palette says why
+
 ## 2026.11.25.1 — 2026-11-25
 
 - Docs site: contents sidebar, real screenshots, macOS/CLI pills, star nudge and a format comparison page

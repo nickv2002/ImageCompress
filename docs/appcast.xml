@@ -43,5 +43,17 @@
         length="29431790"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>2026.11.28.1</title>
+      <sparkle:version>2026.11.28.1</sparkle:version>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <pubDate>Sat, 28 Nov 2026 08:56:53 +0000</pubDate>
+      <description><![CDATA[<p>Conversions that change a file's format are now kept whatever their size under a new Keep results option, and a Convert Anyway bar offers to redo skipped files.</p><ul><li>Conversions to a larger format: a "Keep results: If smaller, or converted" setting (now in the inspector's Common section; --replace-if smaller-or-converted) keeps files that change format whatever their size; after a run that skipped larger conversions a bar offers Convert Anyway; skipped files are offered again when the settings change instead of needing the list cleared; a PNG that could not get a colour palette says why</li></ul>]]></description>
+      <enclosure
+        url="https://github.com/nickv2002/ImageCompress/releases/download/v2026.11.28.1/ImageCompress-2026.11.28.1.zip"
+        sparkle:edSignature="fIMSD+MzBt8YPFfEDFJvfT8sMqvoR2dpkkKoP+LNWoUKTNNf5C7ny0Zo+Bo9GoHWUpNNRqvaBIl03a9RCV6PDQ=="
+        length="29446434"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
