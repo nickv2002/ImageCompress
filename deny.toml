@@ -8,7 +8,9 @@ all-features = false
 
 [licenses]
 confidence-threshold = 0.8
-# Entries not matched by the default feature set (heic: LGPL/GPL-2.0+, MPL, ...) just warn.
+# Some entries are only matched by optional features or other targets (heic: LGPL/GPL-2.0+; blessing: sqlite on
+# some builds), so an allowance the default tree does not use is expected, not a warning.
+unused-allowed-license = "allow"
 allow = [
     "MIT",
     "Apache-2.0",

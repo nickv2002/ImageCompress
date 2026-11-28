@@ -278,8 +278,9 @@ final class JobStore {
             do {
                 // Events are applied in batches about ten times a second: one list update per batch instead of
                 // three per file keeps the window responsive in big runs.
-                let flusher = Task { @MainActor [weak self] in
-                    while !Task.isCancelled { try? await Task.sleep(for: .milliseconds(100)); self?.flushEvents() }
+                // The enclosing task holds `self` for the whole run anyway, and `defer` cancels this one with it.
+                let flusher = Task { @MainActor in
+                    while !Task.isCancelled { try? await Task.sleep(for: .milliseconds(100)); self.flushEvents() }
                 }
                 defer { flusher.cancel() }
                 for try await e in stream { pendingEvents.append(e) }

@@ -16,40 +16,55 @@ for t in "${TARGETS[@]}"; do grep -qx "$t" <<<"$installed" || rustup target add 
 
 # libdav1d-sys runs `meson setup` natively and only knows cross files for Linux/Windows/wasm, so an x86_64 build on
 # an arm64 host would compile arm64 objects. A `meson` shim on PATH injects a macOS cross file for the target arch.
-SHIM_DIR=$(mktemp -d); trap 'rm -rf "$SHIM_DIR"' EXIT
+# nasm writes Mach-O objects without an LC_BUILD_VERSION load command, so linking the x86_64 SIMD objects (mozjpeg,
+# dav1d) warns "no platform load command found ... assuming: macOS". A `nasm` shim (first on PATH for nasm-rs, and
+# named in the cross file for meson) stamps macho64 output with the deployment target.
+# The shims live under the target dir, one folder per arch, not in a temp dir: meson records the cross file's path
+# in its build folder and reads it again whenever it reconfigures.
 REAL_MESON=$(command -v meson)
-make_meson_shim() {  # $1 = clang arch (arm64|x86_64), $2 = meson cpu_family
-  cat > "$SHIM_DIR/cross.meson" <<CROSS
+REAL_NASM=$(command -v nasm)
+IFS=. read -r MIN_MAJOR MIN_MINOR _ <<<"$MACOSX_DEPLOYMENT_TARGET.0"
+make_shims() {  # $1 = shim folder, $2 = clang arch (arm64|x86_64), $3 = meson cpu_family
+  mkdir -p "$1"
+  cat > "$1/cross.meson" <<CROSS
 [binaries]
-c = ['clang', '-arch', '$1']
-cpp = ['clang++', '-arch', '$1']
+c = ['clang', '-arch', '$2']
+cpp = ['clang++', '-arch', '$2']
 ar = 'ar'
 strip = 'strip'
-nasm = 'nasm'
+nasm = '$1/nasm'
 [host_machine]
 system = 'darwin'
 subsystem = 'macos'
-cpu_family = '$2'
-cpu = '$2'
+cpu_family = '$3'
+cpu = '$3'
 endian = 'little'
 [built-in options]
-c_args = ['-arch', '$1', '-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET']
-c_link_args = ['-arch', '$1', '-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET']
+c_args = ['-arch', '$2', '-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET']
+c_link_args = ['-arch', '$2', '-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET']
 CROSS
-  cat > "$SHIM_DIR/meson" <<SHIM
+  cat > "$1/meson" <<SHIM
 #!/bin/bash
-if [[ "\$1" == setup ]]; then shift; exec "$REAL_MESON" setup --cross-file "$SHIM_DIR/cross.meson" "\$@"; fi
+if [[ "\$1" == setup ]]; then shift; exec "$REAL_MESON" setup --cross-file "$1/cross.meson" "\$@"; fi
 exec "$REAL_MESON" "\$@"
 SHIM
-  chmod +x "$SHIM_DIR/meson"
+  cat > "$1/nasm" <<SHIM
+#!/bin/bash
+for a in "\$@"; do
+  if [[ "\$a" == macho64 || "\$a" == -fmacho64 ]]; then exec "$REAL_NASM" --pragma "macho build_version macos, $MIN_MAJOR, ${MIN_MINOR:-0}" "\$@"; fi
+done
+exec "$REAL_NASM" "\$@"
+SHIM
+  chmod +x "$1/meson" "$1/nasm"
 }
 
 for t in "${TARGETS[@]}"; do
   arch=${t%%-*}; [[ $arch == aarch64 ]] && cmake_arch=arm64 || cmake_arch=$arch
   echo "==> cargo build --release --target $t"
-  make_meson_shim "$cmake_arch" "$arch"
+  shims="$CARGO_TARGET_DIR/mac-build-shims/$t"
+  make_shims "$shims" "$cmake_arch" "$arch"
   # CMAKE_OSX_ARCHITECTURES: cmake-based -sys crates (libaom, libavif, jpegli, ...) otherwise build for the host arch.
-  PATH="$SHIM_DIR:$PATH" \
+  PATH="$shims:$PATH" \
   CMAKE_OSX_ARCHITECTURES="$cmake_arch" \
   CMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
     cargo build --release --locked -p imgcompress --target "$t"
