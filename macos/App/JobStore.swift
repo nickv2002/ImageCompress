@@ -15,6 +15,8 @@ struct JobItem: Identifiable, Equatable {
     var outBytes: UInt64?
     var output: String?
     var trace: [TraceEntry] = []
+    /// The engine's remark about this result (e.g. why a PNG got no colour palette).
+    var note: String?
     var name: String { (path as NSString).lastPathComponent }
     var url: URL { URL(fileURLWithPath: path) }
     var savings: Double? {
@@ -28,7 +30,7 @@ struct JobItem: Identifiable, Equatable {
     var undoEntry: UndoEntry?
     var undoID: UUID? { undoEntry?.id }
     var restored = false
-    /// The settings of the run that made this result (to offer compressing it again when they change).
+    /// The settings of the run that made this result or skipped this file (to offer processing it again when they change).
     var madeWith: Options?
     /// The symlink-resolved path, worked out once: matching engine events against it is a hot path.
     let key: String
@@ -434,9 +436,9 @@ final class JobStore {
         case .queued(let n): progressTotal = max(progressTotal, n)
         case .started(let p): items[index(for: p)].status = .running("Starting")
         case .stage(let p, let s): items[index(for: p)].status = .running(s)
-        case .finished(let p, let out, let i, let o, _, let trace, let undo):
+        case .finished(let p, let out, let i, let o, _, let trace, let undo, let note):
             let n = index(for: p)
-            items[n].status = .done; items[n].inBytes = i; items[n].outBytes = o; items[n].output = out; items[n].trace = trace
+            items[n].status = .done; items[n].inBytes = i; items[n].outBytes = o; items[n].output = out; items[n].trace = trace; items[n].note = note
             items[n].madeWith = runOptions
             runOutputs.append(URL(fileURLWithPath: out))
             if let undo {
@@ -444,7 +446,9 @@ final class JobStore {
                 undoStore.add(e); items[n].undoEntry = e; items[n].restored = false; runUndoable.append(items[n].id)
             }
             tick()
-        case .skipped(let p, let r): items[index(for: p)].status = .skipped(r); tick()
+        case .skipped(let p, let r):
+            let n = index(for: p)
+            items[n].status = .skipped(r); items[n].madeWith = runOptions; tick()
         case .failed(let p, let err): items[index(for: p)].status = .failed(err); tick()
         case .totals(let t): totals = t
         case .unknown: break
@@ -519,7 +523,10 @@ final class JobStore {
 
     /// What Compress Again from Original does for a row, or nil when it can't.
     private func againPlan(for r: JobItem, live: Set<UUID>? = nil) -> AgainPlan? {
-        guard !r.isDirectory, r.status == .done else { return nil }
+        guard !r.isDirectory else { return nil }
+        // a skipped file was never changed: it is processed again as it is
+        if case .skipped(let why) = r.status { return Self.redoableSkip(why) ? .asNew : nil }
+        guard r.status == .done else { return nil }
         if r.restored { return .asNew }   // its original is already back
         guard let e = r.undoEntry, live?.contains(e.id) ?? undoStore.entries.contains(where: { $0.id == e.id }),
               undoStore.blocker(e) == nil else { return nil }
@@ -541,17 +548,51 @@ final class JobStore {
         }
     }
 
-    /// Rows the settings banner offers to compress again: finished with other settings than the current ones,
-    /// and still undoable. Empty during a run, and after the banner was dismissed until the settings change.
+    /// Skip reasons that other settings can change (not an empty file or an unsupported format).
+    static func redoableSkip(_ why: String) -> Bool { why == "not smaller" || why == "unchanged since last run (history)" }
+
+    /// Rows the settings banner offers to process again: finished with other settings than the current ones
+    /// and still undoable, or skipped as not smaller under other settings (nothing was written, so they just
+    /// run again). Empty during a run, and after the banner was dismissed until the settings change.
     var redoOffer: [UUID] {
         guard !isRunning, items.contains(where: { $0.madeWith != nil }) else { return [] }
         let now = effectiveOptions
         guard now != offerDismissedAt else { return [] }
         let live = Set(undoStore.entries.map(\.id))
         return items.filter { r in
-            guard let m = r.madeWith, m != now, !r.restored, case .fromOriginal = againPlan(for: r, live: live) else { return false }
-            return true
+            guard let m = r.madeWith, m != now, !r.restored, let plan = againPlan(for: r, live: live) else { return false }
+            if case .fromOriginal = plan { return true }
+            if case .skipped = r.status { return true }
+            return false
         }.map(\.id)
+    }
+
+    /// Files of the last run that were skipped only because their new format came out larger, while the
+    /// settings are unchanged since: the banner offers to keep those conversions (`keepLargerConversions`).
+    var largerConversions: [UUID] {
+        guard !isRunning else { return [] }
+        let now = effectiveOptions
+        guard now != offerDismissedAt, (now.string("replace-if") ?? "smaller") == "smaller" else { return [] }
+        return items.filter { r in
+            guard case .skipped("not smaller") = r.status, let m = r.madeWith, m == now else { return false }
+            return Self.changesFormat(r.path, m)
+        }.map(\.id)
+    }
+
+    /// Does `o` convert the file at `path` to another format?
+    static func changesFormat(_ path: String, _ o: Options) -> Bool {
+        let f = o.string("format") ?? "keep"
+        guard f != "keep" else { return false }
+        let ext = (path as NSString).pathExtension.lowercased()
+        let same: [String: Set<String>] = ["jpeg": ["jpg", "jpeg"], "png": ["png"], "webp": ["webp"], "heic": ["heic", "heif"], "avif": ["avif"], "jxl": ["jxl"]]
+        return !(same[f]?.contains(ext) ?? false)
+    }
+
+    /// Keeps converted files even when they are larger (Replace when: smaller, or any size when converting)
+    /// and processes `ids` again with that.
+    func keepLargerConversions(_ ids: [UUID]) {
+        overrides["replace-if"] = .string("smaller-or-converted")
+        compressAgain(ids)
     }
 
     /// Hides the banner until the settings change again or another run finishes.

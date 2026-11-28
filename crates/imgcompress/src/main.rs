@@ -320,10 +320,11 @@ fn print_event(ev: &JobEvent, json: bool, quiet: bool, verbose: bool) {
     match ev {
         JobEvent::Failed { path, error } => eprintln!("{}: FAILED {error}", path.display()),
         _ if quiet => {}
-        JobEvent::Finished { path, output, in_bytes, out_bytes, encoder, trace, .. } => {
+        JobEvent::Finished { path, output, in_bytes, out_bytes, encoder, trace, note, .. } => {
             let pct = 100.0 * (1.0 - *out_bytes as f64 / (*in_bytes).max(1) as f64);
             let dst = if output != path { format!(" => {}", output.display()) } else { String::new() };
             eprintln!("{}{dst}: {in_bytes} -> {out_bytes} ({pct:.1}% smaller, {encoder})", path.display());
+            if let Some(n) = note { eprintln!("    note: {n}") }
             if verbose {
                 for (s, b) in trace { eprintln!("    {s}: {b}") }
             }

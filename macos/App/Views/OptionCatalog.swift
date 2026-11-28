@@ -37,7 +37,7 @@ enum OptionCatalog {
             .init(key: "destination", title: "Destination", hint: "Replace each file, save next to it with the suffix, or collect results in a folder you choose.", control: .destination),
             .init(key: "suffix", title: "Suffix", hint: "Added to the file name when writing alongside the original.", control: .text),
             .init(key: "originals", title: "Originals", hint: "For results saved alongside or in a folder: keep the source, move it to the Trash, or delete it. Replace in place always overwrites the file.", control: .choice),
-            .init(key: "replace-if", title: "Replace when", hint: "Only write a result that is smaller, or always.", control: .choice),
+            .init(key: "replace-if", title: "Keep results", hint: "Only keep a result that is smaller than the original (otherwise the file is skipped). The middle choice also keeps a file converted to another format when it comes out larger, e.g. JPEG to PNG.", control: .choice),
             .init(key: "overwrite", title: "If the file exists", hint: "When the output name is already taken by another file: skip the image, save under a new name (name-2), or replace it. Images in one run never overwrite each other.", control: .choice),
             .init(key: "preserve-dates", title: "Preserve dates", hint: "Keep the original modification date.", control: .toggle),
         ]),
@@ -117,7 +117,7 @@ enum OptionCatalog {
     ]
 
     /// The few options most people ever touch; everything else lives under "Advanced" in the inspector.
-    static let essentialKeys = ["originals", "max-dimension", "metadata"]
+    static let essentialKeys = ["originals", "replace-if", "max-dimension", "metadata"]
     static var essentials: [OptionSpec] {
         let byKey = Dictionary(uniqueKeysWithValues: panels.flatMap(\.specs).map { ($0.key, $0) })
         return essentialKeys.compactMap { byKey[$0] }
@@ -133,7 +133,7 @@ enum OptionCatalog {
     static let generalCommonKeys = ["recursive", "history"]
 
     /// Preset editor: the few output options up front, everything else under Advanced.
-    static let presetCommonKeys = ["format", "originals", "destination", "max-dimension", "metadata"]
+    static let presetCommonKeys = ["format", "originals", "replace-if", "destination", "max-dimension", "metadata"]
     static var presetCommon: [OptionSpec] {
         let byKey = Dictionary(uniqueKeysWithValues: panels.flatMap(\.specs).map { ($0.key, $0) })
         return presetCommonKeys.compactMap { byKey[$0] }
@@ -151,7 +151,7 @@ enum OptionCatalog {
             "originals": ["keep": "Keep", "trash": "Move to Trash", "delete": "Delete"],
             "metadata": ["none": "None", "icc": "Colour profile only", "all": "All", "exif-no-gps": "All except location"],
             "overwrite": ["skip": "Skip the file", "rename": "Add a number", "replace": "Replace"],
-            "replace-if": ["smaller": "Only if smaller", "always": "Always"],
+            "replace-if": ["smaller": "Only if smaller", "smaller-or-converted": "If smaller, or converted", "always": "Always"],
             "anim-to": ["keep": "Same format", "webp": "WebP", "avif": "AVIF"],
             "format": ["keep": "Preserve", "jpeg": "JPEG", "png": "PNG", "webp": "WebP", "heic": "HEIC", "avif": "AVIF", "jxl": "JPEG XL"],
             "jpeg-encoder": ["jpegli": "jpegli", "mozjpeg": "MozJPEG"],

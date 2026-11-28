@@ -12,7 +12,12 @@ pub enum Originals {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "kebab-case")]
 pub enum ReplaceIf {
+    /// Keep a result only if it is smaller than the input; otherwise skip the file ("not smaller").
     Smaller,
+    /// Like `smaller` for a file that stays in its format, but a file converted to another format is kept
+    /// whatever its size (for when the format itself is the point, e.g. JPEG -> PNG).
+    SmallerOrConverted,
+    /// Keep every result.
     Always,
 }
 

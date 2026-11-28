@@ -19,7 +19,7 @@ pub struct Outcome {
 }
 
 enum Res {
-    Done { output: PathBuf, in_b: u64, out_b: u64, encoder: String, trace: Vec<(String, u64)>, undo: Option<Undo> },
+    Done { output: PathBuf, in_b: u64, out_b: u64, encoder: String, trace: Vec<(String, u64)>, undo: Option<Undo>, note: Option<String> },
     Skip(String),
 }
 
@@ -39,11 +39,11 @@ pub fn run(paths: &[PathBuf], o: &Options, cancel: &AtomicBool, emit: &(dyn Fn(J
             let r = process(p, o, &plan, emit);
             let mut t = tot.lock().unwrap();
             match r {
-                Ok(Res::Done { output, in_b, out_b, encoder, trace, undo }) => {
+                Ok(Res::Done { output, in_b, out_b, encoder, trace, undo, note }) => {
                     t.0 += 1;
                     t.3 += in_b;
                     t.4 += out_b;
-                    emit(JobEvent::Finished { path: p.clone(), output, in_bytes: in_b, out_bytes: out_b, encoder, trace, undo });
+                    emit(JobEvent::Finished { path: p.clone(), output, in_bytes: in_b, out_bytes: out_b, encoder, trace, undo, note });
                 }
                 Ok(Res::Skip(reason)) => {
                     t.1 += 1;
@@ -178,7 +178,8 @@ fn process(p: &Path, o: &Options, plan: &Plan, emit: &(dyn Fn(JobEvent) + Sync))
     };
     let reencoded = converting || o.jpeg_quality.is_some();
     let bytes = crate::extras::finalize(&data, bytes, src_fmt, &out_ext, o, reencoded);
-    if o.replace_if == ReplaceIf::Smaller && bytes.len() as u64 >= in_b {
+    let format_changed = Fmt::from_ext(&out_ext) != src_fmt;
+    if !size_ok(o.replace_if, bytes.len() as u64, in_b, format_changed) {
         return Ok(Res::Skip("not smaller".into()));
     }
     if o.dry_run {
@@ -198,7 +199,21 @@ fn process(p: &Path, o: &Options, plan: &Plan, emit: &(dyn Fn(JobEvent) + Sync))
         }
     }
     let (out_path, undo) = commit(p, &bytes, o, &out_ext, plan)?;
-    Ok(Res::Done { output: out_path, in_b, out_b: bytes.len() as u64, encoder, trace, undo })
+    // the palette was asked for but could not reach its quality floor (photos): the PNG is lossless instead
+    let note = (o.png_quantize.is_some() && out_ext == "png" && encoder == "oxipng" && frames_in <= 1).then(|| PNG_NO_PALETTE.to_string());
+    Ok(Res::Done { output: out_path, in_b, out_b: bytes.len() as u64, encoder, trace, undo, note })
+}
+
+/// Note on a PNG that was written lossless because a colour palette would have changed it visibly.
+pub const PNG_NO_PALETTE: &str = "no colour palette: it would visibly change this image, so the PNG is lossless. Photos are smaller as JPEG, WebP or JPEG XL";
+
+/// The `replace-if` size guard: may a result of `out_b` bytes made from `in_b` bytes be kept?
+fn size_ok(r: ReplaceIf, out_b: u64, in_b: u64, format_changed: bool) -> bool {
+    match r {
+        ReplaceIf::Always => true,
+        ReplaceIf::SmallerOrConverted if format_changed => true,
+        ReplaceIf::Smaller | ReplaceIf::SmallerOrConverted => out_b < in_b,
+    }
 }
 
 fn commit(src: &Path, bytes: &[u8], o: &Options, ext: &str, plan: &Plan) -> Result<(PathBuf, Option<Undo>), String> {

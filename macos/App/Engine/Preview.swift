@@ -39,7 +39,7 @@ enum Preview {
         try FileManager.default.copyItem(at: file, to: copy)
         let run = await CLI.exec(["run", "--json", "--options-file", optsFile.path, "--", copy.path], executable: executable)
         for line in run.text.split(separator: "\n") {
-            if case .finished(_, let output, let i, let o, _, _, _)? = JobEvent.parse(line: String(line)) {
+            if case .finished(_, let output, let i, let o, _, _, _, _)? = JobEvent.parse(line: String(line)) {
                 return PreviewResult(output: URL(fileURLWithPath: output), inBytes: i, outBytes: o)
             }
             if case .skipped(_, let reason)? = JobEvent.parse(line: String(line)) {

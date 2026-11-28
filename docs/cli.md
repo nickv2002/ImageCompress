@@ -91,7 +91,7 @@ always tried.
 | `--destination in-place\|alongside\|DIR` | Replace the file, write next to it with a suffix, or write into a folder. |
 | `--suffix SUFFIX` | The suffix for `alongside`. Default `-min`. |
 | `--overwrite skip\|rename\|replace` | What to do when the output name is taken by another file. Default `skip`. |
-| `--replace-if smaller\|always` | Keep a result only if it is smaller (default), or always. |
+| `--replace-if smaller\|smaller-or-converted\|always` | Keep a result only if it is smaller (default); also when it changes format, whatever its size; or always. |
 | `--preserve-dates`, `--no-preserve-dates` | Keep the file's dates. On by default. |
 | `--anim-to keep\|webp\|avif` | What animated GIF, PNG, WebP and AVIF files become. |
 

@@ -29,7 +29,8 @@ pub struct OptFlags {
     suffix: Option<String>,
     #[arg(long, value_parser = ["keep", "trash", "delete"])]
     originals: Option<String>,
-    #[arg(long, value_parser = ["smaller", "always"])]
+    /// Keep a result only if it is smaller, also when it is converted to another format, or always
+    #[arg(long, value_parser = ["smaller", "smaller-or-converted", "always"])]
     replace_if: Option<String>,
     /// What to do when the output name is taken by a file that is not the input itself
     #[arg(long, value_parser = ["skip", "rename", "replace"])]

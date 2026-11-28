@@ -142,18 +142,31 @@ struct ContentView: View {
 
     /// A quiet offer after the settings changed: compress the finished images again from their originals.
     /// Pinned above the footer, never modal, and gone after a dismiss until the settings change again.
+    /// Or, right after a run, an offer to keep the conversions that were skipped because they came out larger.
     private var redoBanner: some View {
-        let ids = store.redoOffer
+        let larger = store.largerConversions
+        let ids = larger.isEmpty ? store.redoOffer : larger
+        let target = store.effectiveOptions.string("format").map { AxisTags.formatShort($0) } ?? ""
         return VStack(spacing: 0) { if !ids.isEmpty {
             HStack(spacing: 10) {
-                Image(systemName: "arrow.triangle.2.circlepath").foregroundStyle(.secondary).accessibilityHidden(true)
-                Text(ids.count == 1 ? "Settings changed. Compress this image again from its original?"
-                                    : "Settings changed. Compress these \(ids.count) images again from their originals?")
-                    .lineLimit(2)
-                Button("Compress Again") { store.compressAgain(ids) }
-                    .controlSize(.small)
-                    .help("Put the originals back and compress them with the current settings")
-                    .accessibilityLabel(ids.count == 1 ? "Compress again from the original" : "Compress \(ids.count) images again from their originals")
+                Image(systemName: larger.isEmpty ? "arrow.triangle.2.circlepath" : "arrow.up.right.square").foregroundStyle(.secondary).accessibilityHidden(true)
+                if larger.isEmpty {
+                    Text(ids.count == 1 ? "Settings changed. Process this image again with them?"
+                                        : "Settings changed. Process these \(ids.count) images again with them?")
+                        .lineLimit(2)
+                    Button("Compress Again") { store.compressAgain(ids) }
+                        .controlSize(.small)
+                        .help("Put back any originals and process them with the current settings")
+                        .accessibilityLabel(ids.count == 1 ? "Process the image again" : "Process \(ids.count) images again")
+                } else {
+                    Text(ids.count == 1 ? "This image was skipped: as \(target) it would be larger than the original."
+                                        : "\(ids.count) images were skipped: as \(target) they would be larger than the originals.")
+                        .lineLimit(2)
+                    Button("Convert Anyway") { store.keepLargerConversions(ids) }
+                        .controlSize(.small)
+                        .help("Keep converted files even when they are larger (Keep results: If smaller, or converted), and convert these now")
+                        .accessibilityLabel(ids.count == 1 ? "Convert the image anyway" : "Convert \(ids.count) images anyway")
+                }
                 Button { withAnimation(.snappy) { store.dismissRedoOffer() } } label: { Image(systemName: "xmark") }
                     .buttonStyle(.borderless).controlSize(.small).foregroundStyle(.secondary)
                     .help("Dismiss").accessibilityLabel("Dismiss")
@@ -166,7 +179,7 @@ struct ContentView: View {
             .padding(10)
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("Settings changed")
+            .accessibilityLabel(larger.isEmpty ? "Settings changed" : "Larger conversions skipped")
         } }
         // the settings change from the toolbar, outside any animation: slide in and out here
         .animation(.snappy, value: ids.isEmpty)
@@ -309,6 +322,9 @@ struct JobRow: View {
             Text(item.name).lineLimit(1)
             if showFolder { Text(parentFolder).font(.caption).foregroundStyle(.tertiary).lineLimit(1).truncationMode(.head) }
             Text(statusText).font(.caption).foregroundStyle(statusColor).lineLimit(1)
+            if let note = item.note, item.status == .done, !item.restored {
+                Text(note.prefix(1).uppercased() + note.dropFirst() + ".").font(.caption).foregroundStyle(.secondary).lineLimit(1).help(note)
+            }
         }
     }
 
@@ -338,7 +354,7 @@ struct JobRow: View {
 
     private var accessibilityTitle: String {
         let where_ = showFolder ? ", in \(parentFolder)" : ""
-        return "\(item.name)\(where_), \(statusText)"
+        return "\(item.name)\(where_), \(statusText)" + (item.note.map { ", \($0)" } ?? "")
     }
 
     private var accessibilityValueText: String {
@@ -364,6 +380,8 @@ struct JobRow: View {
             }
             else if let out = item.output, (out as NSString).lastPathComponent != item.name { "Saved as \((out as NSString).lastPathComponent)" }
             else { "Done" }
+        case .skipped("not smaller") where item.madeWith.map({ JobStore.changesFormat(item.path, $0) }) == true:
+            "Kept the original: as \(AxisTags.formatShort(item.madeWith?.string("format") ?? "")) it would be larger"
         case .skipped(let r): Self.skipTitle(r)
         case .failed(let e): "Failed: \(e)"
         }

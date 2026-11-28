@@ -116,6 +116,15 @@ By default a result replaces the original only if it is smaller. Otherwise the f
 and the app says "not smaller". In the command line this is `--replace-if smaller` (the default).
 Use `--replace-if always` to keep the result anyway.
 
+Converting to a format that is larger by nature, such as a JPEG to PNG, is skipped too. When the format is the
+point, choose **Keep results: If smaller, or converted** (`--replace-if smaller-or-converted`): files that change
+format are kept whatever their size, and files that stay in their format still have to get smaller. After a run
+that skipped larger conversions, the app offers **Convert Anyway**, which sets this and converts those files.
+
+A PNG with a colour palette (Visually lossless, Smaller) is much smaller, but a palette cannot hold a photo without
+visible banding. When the palette would miss its quality floor the PNG is written lossless instead, and the result
+says so. Photos are smaller as JPEG, WebP or JPEG XL.
+
 ## Metadata
 
 Photos carry extra data: the colour profile, camera details (EXIF), location and more. You choose what to keep:

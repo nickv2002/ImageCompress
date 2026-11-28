@@ -21,14 +21,14 @@ enum JobEvent: Decodable, Equatable, Sendable {
     case queued(files: Int)
     case started(path: String)
     case stage(path: String, stage: String)
-    case finished(path: String, output: String, inBytes: UInt64, outBytes: UInt64, encoder: String, trace: [TraceEntry], undo: UndoInfo? = nil)
+    case finished(path: String, output: String, inBytes: UInt64, outBytes: UInt64, encoder: String, trace: [TraceEntry], undo: UndoInfo? = nil, note: String? = nil)
     case skipped(path: String, reason: String)
     case failed(path: String, error: String)
     case totals(Totals)
     case unknown(String)
 
     private enum K: String, CodingKey {
-        case event, files, path, stage, output, encoder, trace, reason, error, undo
+        case event, files, path, stage, output, encoder, trace, reason, error, undo, note
         case inBytes = "in_bytes", outBytes = "out_bytes"
         case processed, skipped, failed
     }
@@ -48,7 +48,8 @@ enum JobEvent: Decodable, Equatable, Sendable {
                 outBytes: try c.decode(UInt64.self, forKey: .outBytes),
                 encoder: (try? c.decode(String.self, forKey: .encoder)) ?? "",
                 trace: (try? c.decode([TraceEntry].self, forKey: .trace)) ?? [],
-                undo: try? c.decode(UndoInfo.self, forKey: .undo))
+                undo: try? c.decode(UndoInfo.self, forKey: .undo),
+                note: try? c.decode(String.self, forKey: .note))
         case "skipped": self = .skipped(path: try c.decode(String.self, forKey: .path), reason: try c.decode(String.self, forKey: .reason))
         case "failed": self = .failed(path: try c.decode(String.self, forKey: .path), error: try c.decode(String.self, forKey: .error))
         case "totals":

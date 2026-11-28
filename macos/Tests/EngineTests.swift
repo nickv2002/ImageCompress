@@ -16,18 +16,20 @@ struct EventTests {
             #"{"event":"started","path":"/a.png"}"#,
             #"{"event":"stage","path":"/a.png","stage":"quantize"}"#,
             #"{"event":"finished","path":"/a.png","output":"/a.png","in_bytes":1000,"out_bytes":400,"encoder":"oxipng","trace":[["decode",1000],["oxipng",400]]}"#,
+            #"{"event":"finished","path":"/d.jpg","output":"/d.png","in_bytes":10,"out_bytes":50,"encoder":"oxipng","trace":[],"note":"no colour palette"}"#,
             #"{"event":"skipped","path":"/b.png","reason":"larger"}"#,
             #"{"event":"failed","path":"/c.png","error":"bad"}"#,
             #"{"event":"totals","processed":1,"skipped":1,"failed":1,"in_bytes":1000,"out_bytes":400}"#,
             #"{"event":"future_thing","x":1}"#,
         ]
         let ev = lines.compactMap(JobEvent.parse(line:))
-        #expect(ev.count == 8)
+        #expect(ev.count == 9)
         #expect(ev[0] == .queued(files: 2))
         #expect(ev[3] == .finished(path: "/a.png", output: "/a.png", inBytes: 1000, outBytes: 400, encoder: "oxipng",
                                    trace: [TraceEntry(stage: "decode", bytes: 1000), TraceEntry(stage: "oxipng", bytes: 400)]))
-        #expect(ev[6] == .totals(Totals(processed: 1, skipped: 1, failed: 1, inBytes: 1000, outBytes: 400)))
-        #expect(ev[7] == .unknown("future_thing"))
+        #expect(ev[4] == .finished(path: "/d.jpg", output: "/d.png", inBytes: 10, outBytes: 50, encoder: "oxipng", trace: [], note: "no colour palette"))
+        #expect(ev[7] == .totals(Totals(processed: 1, skipped: 1, failed: 1, inBytes: 1000, outBytes: 400)))
+        #expect(ev[8] == .unknown("future_thing"))
         #expect(JobEvent.parse(line: "not json") == nil)
     }
 
@@ -352,7 +354,7 @@ struct EngineIntegrationTests {
         var finished: UInt64?
         var sawTotals = false
         for try await e in runner.run(paths: [file.path], options: Options(["history": .bool(false)])) {
-            if case .finished(_, _, _, let o, _, _, _) = e { finished = o }
+            if case .finished(_, _, _, let o, _, _, _, _) = e { finished = o }
             if case .totals = e { sawTotals = true }
         }
         #expect(sawTotals)
@@ -503,7 +505,7 @@ struct UndoStoreTests {
         let lossy = Options(["history": .bool(false), "png-quantize": .array([.int(40), .int(60)])])
         var row = JobItem(path: file.path, isDirectory: false)
         for try await e in EngineRunner(executable: cliBinary).run(paths: [file.path], options: lossy, backupDir: undo.backupDir) {
-            guard case .finished(let p, let out, let i, let o, _, _, let info?) = e else { continue }
+            guard case .finished(let p, let out, let i, let o, _, _, let info?, _) = e else { continue }
             let entry = UndoEntry(name: row.name, inBytes: i, outBytes: o, undo: info, source: p)
             undo.add(entry)
             row.status = .done; row.inBytes = i; row.outBytes = o; row.output = out; row.undoEntry = entry
@@ -526,9 +528,58 @@ struct UndoStoreTests {
         // the next run measures against the original
         var inBytes: UInt64?
         for try await e in EngineRunner(executable: cliBinary).run(paths: [file.path], options: Options(["history": .bool(false)]), backupDir: undo.backupDir) {
-            if case .finished(_, _, let i, _, _, _, _) = e { inBytes = i }
+            if case .finished(_, _, let i, _, _, _, _, _) = e { inBytes = i }
         }
         #expect(inBytes == UInt64(original.count))
+    }
+
+    /// JPEG -> lossless PNG comes out larger: skipped by default; the banner offers Convert Anyway, which keeps
+    /// conversions of any size from then on, and the skipped file (nothing was written) runs again as it is.
+    @Test func largerConversionIsOfferedAndKeptOnRequest() async throws {
+        guard FileManager.default.isExecutableFile(atPath: cliBinary.path) else { Issue.record("build the CLI first (make cli)"); return }
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let undo = UndoStore(root: dir.appendingPathComponent("root"), tempRoot: dir.appendingPathComponent("tmp"))
+        let presets = PresetStore(directory: dir.appendingPathComponent("Presets"), order: dir.appendingPathComponent("o.json"))
+        let store = JobStore(presets: presets, defaults: UserDefaults(suiteName: "ic-test-\(UUID().uuidString)")!, undoStore: undo)
+        let file = dir.appendingPathComponent("photo.jpg")
+        try FileManager.default.copyItem(at: repoRoot.appendingPathComponent("fixtures/jpeg/baseline.jpg"), to: file)
+        store.choose(try #require(presets.axisSet.exact(format: "png", quality: "lossless")))
+        store.overrides["history"] = .bool(false)
+        let made = store.effectiveOptions
+
+        var reason: String?
+        for try await e in EngineRunner(executable: cliBinary).run(paths: [file.path], options: made, backupDir: nil) {
+            if case .skipped(_, let r) = e { reason = r }
+        }
+        #expect(reason == "not smaller")
+        var row = JobItem(path: file.path, isDirectory: false)
+        row.status = .skipped("not smaller"); row.madeWith = made
+        store.items = [row]
+        #expect(JobStore.changesFormat(file.path, made))
+        #expect(store.largerConversions == [row.id])
+        #expect(store.redoOffer.isEmpty)          // same settings: nothing to redo yet
+        #expect(store.canCompressAgain([row.id]))
+
+        // Convert Anyway sets the option; the row then counts as made with other settings
+        store.overrides["replace-if"] = .string("smaller-or-converted")
+        #expect(store.largerConversions.isEmpty)
+        #expect(store.redoOffer == [row.id])
+        var kept: (UInt64, UInt64)?
+        for try await e in EngineRunner(executable: cliBinary).run(paths: [file.path], options: store.effectiveOptions, backupDir: nil) {
+            if case .finished(_, _, let i, let o, _, _, _, _) = e { kept = (i, o) }
+        }
+        let (i, o) = try #require(kept)
+        #expect(o > i)
+        #expect(FileManager.default.fileExists(atPath: dir.appendingPathComponent("photo.png").path))
+        #expect(FileManager.default.fileExists(atPath: file.path))
+    }
+
+    @Test func sameFormatIsNotAConversion() {
+        #expect(!JobStore.changesFormat("/a/b.JPG", Options(["format": .string("jpeg")])))
+        #expect(!JobStore.changesFormat("/a/b.heif", Options(["format": .string("heic")])))
+        #expect(!JobStore.changesFormat("/a/b.png", Options()))
+        #expect(JobStore.changesFormat("/a/b.jpg", Options(["format": .string("png")])))
     }
 
     /// When the engine refuses to put the original back, nothing is queued and the file is left alone.
