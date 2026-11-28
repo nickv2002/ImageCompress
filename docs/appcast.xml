@@ -55,5 +55,17 @@
         length="29446434"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>2026.11.28.2</title>
+      <sparkle:version>2026.11.28.2</sparkle:version>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <pubDate>Sat, 28 Nov 2026 17:13:50 +0000</pubDate>
+      <description><![CDATA[<p>Build fixes: the x86_64 command-line tool now links without macOS deployment-target warnings, dependency license checks stop flagging optional features, and a Swift warning in the job runner is gone.</p><ul><li>Build: no linker warnings for the x86_64 CLI (a nasm wrapper stamps mozjpeg, dav1d and libaom assembly with the macOS deployment target; meson's cross file now lives under target/ so reconfigures keep working); cargo deny no longer warns about license allowances only optional features use; fix a Swift capture warning in the job runner</li></ul>]]></description>
+      <enclosure
+        url="https://github.com/nickv2002/ImageCompress/releases/download/v2026.11.28.2/ImageCompress-2026.11.28.2.zip"
+        sparkle:edSignature="ErG81s0nENheMD5ERBfbnlScYleIl0E5RhhRBovS4OPYBNwm+0/lrT0D1HsEkmZo8yLjAF+kbkgKcHqy/lOTAQ=="
+        length="29446231"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>

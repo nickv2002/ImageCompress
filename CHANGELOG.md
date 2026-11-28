@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026.11.28.2 — 2026-11-28
+
+- Build: no linker warnings for the x86_64 CLI (a nasm wrapper stamps mozjpeg, dav1d and libaom assembly with the macOS deployment target; meson's cross file now lives under target/ so reconfigures keep working); cargo deny no longer warns about license allowances only optional features use; fix a Swift capture warning in the job runner
+
 ## 2026.11.28.1 — 2026-11-28
 
 - Conversions to a larger format: a "Keep results: If smaller, or converted" setting (now in the inspector's Common section; --replace-if smaller-or-converted) keeps files that change format whatever their size; after a run that skipped larger conversions a bar offers Convert Anyway; skipped files are offered again when the settings change instead of needing the list cleared; a PNG that could not get a colour palette says why

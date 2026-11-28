@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/compress-core", "crates/imgcompress", "crates/jpegli-sys"]
 
 [workspace.package]
-version = "2026.11.28-1"
+version = "2026.11.28-2"
 edition = "2021"
 license = "GPL-3.0-or-later"
 
